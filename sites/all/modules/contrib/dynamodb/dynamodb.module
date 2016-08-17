@@ -1,0 +1,6 @@
+<?php
+
+/**
+ * @file
+ * Bare .module file to allow dynamodb to show up in Drupal's admin pages.
+ */

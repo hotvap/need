@@ -1,0 +1,81 @@
+<?php
+
+/**
+ * @file
+ * Integrates mcheckout.com's redirected payment service.
+ */
+
+
+/**
+ * Implements hook_menu().
+ */
+function uc_mpayment_menu() {
+}
+
+/**
+ * Implements hook_init().
+ */
+function uc_mpayment_init() {
+}
+
+
+/**
+ * Implements hook_uc_payment_method().
+ *
+ * @see uc_payment_method_mcheckout()
+ */
+function uc_mpayment_method() {
+
+}
+function uc_mpayment_uc_payment_method() {
+  $methods=array();
+
+  $methods['yandex'] = array(
+    'name' => 'yandex',
+    'title' => "Яндекс деньги",
+    'desc' => "Яндекс деньги",
+    'callback' => 'uc_mpayment_method',
+    'checkout' => TRUE,
+    'no_gateway' => TRUE,
+    'weight' => 0,
+  );
+  $methods['webmoney'] = array(
+    'name' => t('webmoney'),
+    'callback' => 'uc_mpayment_method',
+    'title' => "WebMoney",
+    'desc' => "WebMoney",
+    'checkout' => TRUE,
+    'no_gateway' => TRUE,
+    'weight' => 0,
+  );
+  $methods['qiwi'] = array(
+    'name' => t('qiwi'),
+    'title' => "QIWI",
+    'callback' => 'uc_mpayment_method',
+    'desc' => "QIWI",
+    'checkout' => TRUE,
+    'no_gateway' => TRUE,
+    'weight' => 0,
+  );
+  $methods['visa'] = array(
+    'name' => t('VISA'),
+    'title' => "VISA",
+    'desc' => "VISA",
+    'callback' => 'uc_mpayment_method',
+    'checkout' => TRUE,
+    'no_gateway' => TRUE,
+    'weight' => 0,
+  );
+  $methods['check'] = array(
+    'name' => t('check'),
+    'title' => "Безналичный расчет",
+    'desc' => "Безналичный расчет",
+    'callback' => 'uc_mpayment_method',
+    'checkout' => TRUE,
+    'no_gateway' => TRUE,
+    'weight' => 0,
+  );
+
+  return $methods;
+}
+

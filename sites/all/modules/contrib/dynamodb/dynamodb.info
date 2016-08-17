@@ -1,0 +1,3 @@
+name = DynamoDB
+description = Provides integration with <a href="http://aws.amazon.com/dynamodb/">Amazon AWS DynamoDB</a>
+core = 7.x

@@ -1,0 +1,33 @@
+# Ignore configuration files that may contain sensitive information.
+sites/*/settings*.php
+
+# Ignore paths that contain user-generated content.
+sites/*/files
+sites/*/private
+dev/*.php
+
+pdxcache/*
+1s/*
+curs/*
+html/*
+js/*
+mcache/*
+p/*
+sites/default/*
+sites/all/themes/pdxneedto/my.inc
+*.xml
+web.config
+cookie.txt
+.htaccess
+.htpasswd
+compress_timestamp.php
+sites/sites.php
+.DS_Store
+sites/all/themes/pdxneedto/min/*
+sites/logmy/themes/pdxlogmy/min/*
+sites/pickto/themes/pdxpickto/min/*
+*/min/*
+other.jsgz
+pickto.cssgz
+adm.jsgz
+adm.cssgz

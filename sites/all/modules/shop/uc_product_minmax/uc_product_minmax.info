@@ -1,0 +1,14 @@
+name = Product Minimum & Maximum
+description = Set a minimum and maximum quantity for products in a cart necessary for checkout.
+package = Ubercart - extra
+core = 7.x
+files[] = uc_product_minmax.module
+dependencies[] = uc_product
+stylesheets[all][] = uc_product_minmax.css
+configure = admin/store/settings/products/edit/features
+; Information added by drupal.org packaging script on 2013-10-19
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "uc_product_minmax"
+datestamp = "1382149554"
+

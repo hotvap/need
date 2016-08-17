@@ -1,0 +1,3241 @@
+<?php
+
+global $user;
+
+
+if(!defined("pdxcontacts")){
+    define("pdxcontacts", "<div><a href='mailto:onestyle@list.ru'>onestyle@list.ru</a><br /><a href='http://vk.com/drupaldev' target='_blank'>http://vk.com/drupaldev</a><br /><a href='http://freelance.ru/users/parad0x/' target='_blank'>http://freelance.ru/users/parad0x/</a><br />ICQ 282764016</div>");
+}
+
+function parad0x_changes_preprocess_page(&$vars) {
+    global $user; if(isset($user->roles[3]) or isset($user->roles[4])){
+
+    }else{
+        if(!$user->uid and isset($_GET['rev']) and is_numeric($_GET['rev']) ){
+            drupal_set_message(t('To access the site you confirm your e-mail.').' <a href="/toboggan/revalidate/'.$_GET['rev'].'">'.t('request an email with a confirmation link').'</a>');
+        }
+    
+        
+        if( isset($_SESSION['limitmin']) ){
+            if( !isset( $_SESSION['limitmin'][date('i',time())] ) ){
+                unset($_SESSION['limitmin']);
+                $_SESSION['limitmin'][date('i',time())]=1;
+            }else{
+                $_SESSION['limitmin'][date('i',time())]++;
+                if( $_SESSION['limitmin'][date('i',time())]>60 ){
+                    if( arg(0)=='node' and is_numeric(arg(1)) and arg(1)==3 ){}else{
+                        drupal_goto('limit/minute', array(), 302);
+                    }
+                }
+            }
+        }
+        if( isset($_SESSION['limitday']) ){
+            if( !isset( $_SESSION['limitday'][date('i',time())] ) ){
+                unset($_SESSION['limitday']);
+                $_SESSION['limitday'][date('i',time())]=1;
+            }else{
+                $_SESSION['limitday'][date('i',time())]++;
+                if( $_SESSION['limitday'][date('i',time())]>777 ){
+                    if( arg(0)=='node' and is_numeric(arg(1)) and arg(1)==2 ){}else{
+                        drupal_goto('limit/day', array(), 302);
+                    }
+                }
+            }
+        }
+    }
+
+    if(module_exists('metatags_quick') and module_exists('page_title') ){
+        $tid=$out='';
+        switch(arg(0)){
+    //    case 'taxonomy':
+    //        if(is_string(arg(1)) and arg(1)=='term' and is_numeric(arg(2))){ $tid=arg(2); }
+    //        break;
+        case 'catalog':
+            if(is_numeric(arg(1))){ $tid=arg(1); }
+            break;
+        }
+        if(is_numeric($tid)){
+            $out=db_query('select page_title from {page_title} where type=\'term\' and id='.$tid);
+            $out=$out->fetchAssoc();
+            if(isset($out['page_title']) and strlen($out['page_title'])){
+                drupal_set_title($out['page_title']);
+            }
+    
+            $out=db_query('select meta_description_metatags_quick from {field_data_meta_description} where entity_type=\'taxonomy_term\' and entity_id='.$tid);
+            $out=$out->fetchAssoc();
+            if(isset($out['meta_description_metatags_quick']) and strlen($out['meta_description_metatags_quick'])){
+                $meta_keywords = array(
+                    '#tag' => 'meta',
+                    '#attributes' => array(
+                        'name' => 'description',
+                        'content' => $out['meta_description_metatags_quick'],
+                    ),
+                );
+                drupal_add_html_head($meta_keywords, 'meta_description');
+            }
+    
+            $out=db_query('select meta_keywords_metatags_quick from {field_data_meta_keywords} where entity_type=\'taxonomy_term\' and entity_id='.$tid);
+            $out=$out->fetchAssoc();
+            if(isset($out['meta_keywords_metatags_quick']) and strlen($out['meta_keywords_metatags_quick'])){
+                $meta_keywords = array(
+                    '#tag' => 'meta',
+                    '#attributes' => array(
+                        'name' => 'keywords',
+                        'content' => $out['meta_keywords_metatags_quick'],
+                    ),
+                );
+                drupal_add_html_head($meta_keywords, 'meta_keywords');
+            }
+            
+        }
+    }
+
+    $pdxseo=array();
+    $curpath=implode('/',arg());
+
+    if($pdxseo=variable_get('pdxseo')){
+        $pdxseo=unserialize($pdxseo);
+//        if(isset($pdxseo[urlencode($curpath)]['title']) and strlen($pdxseo[urlencode($curpath)]['title'])){
+//            drupal_set_title($pdxseo[urlencode($curpath)]['title']);
+//        }
+        if(isset($pdxseo[urlencode($curpath)]['keyword']) and strlen($pdxseo[urlencode($curpath)]['keyword'])){
+            $meta_keywords = array(
+                '#tag' => 'meta',
+                '#attributes' => array(
+                    'name' => 'keywords',
+                    'content' => $pdxseo[urlencode($curpath)]['keyword'],
+                ),
+            );
+            drupal_add_html_head($meta_keywords, 'meta_keywords');
+        }
+        if(isset($pdxseo[urlencode($curpath)]['desc']) and strlen($pdxseo[urlencode($curpath)]['desc'])){
+            $meta_keywords = array(
+                '#tag' => 'meta',
+                '#attributes' => array(
+                    'name' => 'description',
+                    'content' => $pdxseo[urlencode($curpath)]['desc'],
+                ),
+            );
+            drupal_add_html_head($meta_keywords, 'meta_description');
+        }
+    
+    }
+
+}
+
+function parad0x_changes_html_head_alter(&$head_elements) {
+  foreach ($head_elements as $key => $element) {
+    if (isset($element['#name']) && ($element['#name'] == 'shortlink' or $element['#name'] == 'canonical') ) {
+      unset($head_elements[$key]);
+    }
+  }
+}
+function parad0x_changes_validate($node, &$form) {
+  // мы устанавливаем переменные для каждого типа материала, так что нам нужно получить тип материала
+  $node = node_load($node['nid']['#value']);
+  $max = 5000;
+  $min = 20;
+  if (mb_strlen(trim($form['values']['comment_body']['und'][0]['value'])) > $max) {
+    form_set_error('comment_body', t('Ваш комментарий слишком длинный. Длина комментария ограничена %num символами.', array('%num' => $max)));
+  }
+  if (mb_strlen(trim($form['values']['comment_body']['und'][0]['value'])) < $min) {
+    form_set_error('comment_body', t('Ваш комментарий слишком короткий. Минимальная длина комментария ограничена %num символами.', array('%num' => $min)));
+  }
+
+  //проверяем на наличие русских символов
+  if (!preg_match('~[а-яА-Я]~', $form['values']['comment_body']['und'][0]['value'])){
+    form_set_error('comment_body', t('Англоязычные комментарии запрещены.'));
+  }
+
+  //проверяем на очень длинные слова
+  if (parad0x_changes_len_big_word($form['values']['comment_body']['und'][0]['value'])>20){
+    form_set_error('comment_body', t('Запрещены слова длиной более 20 символов'));
+  }
+
+if( isset($form['values']['comment_body']['und'][0]['value']) and strlen($form['values']['comment_body']['und'][0]['value']) ){
+  if (parad0x_changes_stoplink($form['values']['comment_body']['und'][0]['value'])){
+    form_set_error('comment_body', t('Запрещены ссылки в комментариях'));
+  }
+}
+if( isset($form['values']['name']) and strlen($form['values']['name']) ){
+  if (parad0x_changes_stoplink($form['values']['name'])){
+    form_set_error('comment_body', t('Запрещены ссылки в имени'));
+  }
+}
+
+  //проверяем на запрещенные слова
+  if (parad0x_changes_stopwords($form['values']['comment_body']['und'][0]['value'])){
+    form_set_error('comment_body', t('В комментарии обнаружены запрещенные слова'));
+  }
+  if (parad0x_changes_stopwords($form['values']['name'])){
+    form_set_error('comment_body', t('В имени обнаружены запрещенные слова'));
+  }
+}
+
+
+function parad0x_changes_len_big_word($tre){
+$tre=strip_tags($tre);
+$words = explode(' ', $tre);
+$le=0;
+for ($i=0; $i<count($words); $i++){
+	if (mb_strlen($words[$i])>$le) {$le=mb_strlen($words[$i]);}
+
+}
+return $le;
+}
+
+function parad0x_changes_stoplink($tre){
+$notreklama=0;
+
+if (strlen(strstr(strip_tags($tre), '.ru'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.net'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.com'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.org'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.ua'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.by'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.su'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.cn'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.us'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.jp'))>1) {$notreklama=1;}
+if (strlen(strstr(strip_tags($tre), '.de'))>1) {$notreklama=1;}
+if (strlen(strstr(strtolower($tre), 'www'))>1) {$notreklama=1;}
+if (strlen(strstr(strtolower($tre), 'http'))>1) {$notreklama=1;}
+
+return $notreklama;
+}
+function pdxcreate_dirty($name, $folder='', $val=''){
+    if( !isset($_SERVER['HTTP_HOST']) ){
+        return;
+    }
+    if( !is_dir('pdxcache/'.$_SERVER['HTTP_HOST']) ){
+        mkdir('pdxcache/'.$_SERVER['HTTP_HOST']);
+    }
+    if( !is_dir('pdxcache/'.$_SERVER['HTTP_HOST'].'/dirty') ){
+        mkdir('pdxcache/'.$_SERVER['HTTP_HOST'].'/dirty');
+    }
+    if( isset($folder) and strlen($folder) ){
+        $folder.='/';
+        if( !is_dir('pdxcache/'.$_SERVER['HTTP_HOST'].'/dirty/'.$folder) ){
+            mkdir('pdxcache/'.$_SERVER['HTTP_HOST'].'/dirty/'.$folder);
+        }
+    }
+    if( strlen($val) ){
+        $fp = fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/dirty/'.$folder.$name, 'w'); fwrite($fp, $val); fclose($fp);
+    }else{
+        if( !file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/dirty/'.$folder.$name) ){
+            $fp = fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/dirty/'.$folder.$name, 'w'); fwrite($fp, ''); fclose($fp);
+        }
+    }
+}
+function parad0x_changes_user_logout($account) {
+    setcookie("pdxuseruid",0);
+    $_SESSION['pdxuseruid']=0;
+    $_SESSION['pdxuserrid']=0;
+    setcookie("pdxuserrid",0);
+//    db_query('delete from {sessions} where uid='.$account->uid);
+}
+
+function parad0x_changes_user_insert(&$edit, $account, $category) {
+    clearusercaches($account->uid);
+/*
+    if( defined('PDX_FIRST_MESSAGE_CONTENT') and is_numeric(PDX_FIRST_MESSAGE_CONTENT) and PDX_FIRST_MESSAGE_CONTENT>0 ){
+        privatemsg_new_thread(array($account), 'Добро пожаловать в семью единомышленников!', '<p>Здравствуйте!</p><p>Благодарим Вас за использование нашего сервиса. Если у Вас возникнут вопросы по работе с сайтами нашей сети, пожалуйста, задавайте их мне. Я с удовольствием на них отвечу.</p>', array('author'=>user_load(PDX_FIRST_MESSAGE_CONTENT), 'timestamp'=>(time()+133)));
+    }
+*/    
+                $params = array(
+                    'uid' => $account->uid,
+                    'points' => 10,
+                    'operation' => 'pdx_bonus_reg',
+                );
+                userpoints_userpointsapi($params);
+
+    
+        if( isset($edit['data']['ulogin']['sex']) and is_numeric($edit['data']['ulogin']['sex']) ){
+            if( $edit['data']['ulogin']['sex']==2 ){
+                $hit=db_query('select entity_id from {field_data_field_sex} where entity_type=\'user\' and entity_id='.$account->uid );
+                $hit=$hit->fetchAssoc();
+                if(!isset($hit['entity_id'])){
+                    db_query('insert into {field_data_field_sex} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_sex_value) values (\'user\',\'user\',0,'.$account->uid.','.$account->uid.',\'und\',0,0)' );
+                }else{
+                    db_query('update {field_data_field_sex} set field_sex_value=0 where entity_type=\'user\' and entity_id='.$account->uid );
+                }
+            }else{
+                $hit=db_query('select entity_id from {field_data_field_sex} where entity_type=\'user\' and entity_id='.$account->uid );
+                $hit=$hit->fetchAssoc();
+                if(!isset($hit['entity_id'])){
+                    db_query('insert into {field_data_field_sex} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_sex_value) values (\'user\',\'user\',0,'.$account->uid.','.$account->uid.',\'und\',0,1)' );
+                }else{
+                    db_query('update {field_data_field_sex} set field_sex_value=1 where entity_type=\'user\' and entity_id='.$account->uid );
+                }
+            }
+        }
+
+        if( isset($edit['data']['ulogin']['phone']) and strlen($edit['data']['ulogin']['phone']) ){
+
+            $hit=db_query('select entity_id from {field_data_field_phones} where entity_type=\'user\' and entity_id='.$account->uid );
+            $hit=$hit->fetchAssoc();
+            if(!isset($hit['entity_id'])){
+                db_query('insert into {field_data_field_phones} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_phones_value) values (\'user\',\'user\',0,'.$account->uid.','.$account->uid.',\'und\',0,:combo)', array(':combo'=>$edit['data']['ulogin']['phone']) );
+            }else{
+                db_query('update {field_data_field_phones} set field_phones_value=:combo where entity_type=\'user\' and entity_id='.$account->uid, array(':combo'=>$edit['data']['ulogin']['phone']) );
+            }
+        
+        }
+        
+        
+        $name='';
+        if( isset($edit['data']['ulogin']['last_name']) and strlen($edit['data']['ulogin']['last_name']) ){
+            $name.=$edit['data']['ulogin']['last_name'];
+        }
+        if( isset($edit['data']['ulogin']['first_name']) and strlen($edit['data']['ulogin']['first_name']) ){
+            if( strlen($name) ){
+                $name.=' ';
+            }
+            $name.=$edit['data']['ulogin']['first_name'];
+        }
+        if( strlen($name) ){
+            $name=trim(filter_xss(strip_tags($name)));
+        }
+        if( strlen($name) ){
+            $hit=db_query('select entity_id from {field_data_field_name} where entity_type=\'user\' and entity_id='.$account->uid );
+            $hit=$hit->fetchAssoc();
+            if(!isset($hit['entity_id'])){
+                db_query('insert into {field_data_field_name} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_name_value) values (\'user\',\'user\',0,'.$account->uid.','.$account->uid.',\'und\',0,:combo)', array(':combo'=>$name) );
+            }else{
+                db_query('update {field_data_field_name} set field_name_value=:combo where entity_type=\'user\' and entity_id='.$account->uid, array(':combo'=>$name) );
+            }
+
+        }
+
+
+        if( isset($edit['data']['ulogin']['profile']) and strlen($edit['data']['ulogin']['profile']) and isset($edit['data']['ulogin']['network']) and strlen($edit['data']['ulogin']['network']) ){
+            $name=trim(filter_xss(strip_tags($edit['data']['ulogin']['profile'])));
+            if( isset($name) and strlen($name) ){
+                switch($edit['data']['ulogin']['network']){
+                case 'facebook':
+                    $hit=db_query('select entity_id from {field_data_field_url_fb} where entity_type=\'user\' and entity_id='.$account->uid );
+                    $hit=$hit->fetchAssoc();
+                    if(!isset($hit['entity_id'])){
+                        db_query('insert into {field_data_field_url_fb} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_url_fb_value) values (\'user\',\'user\',0,'.$account->uid.','.$account->uid.',\'und\',0,:combo)', array(':combo'=>$name) );
+                    }else{
+                        db_query('update {field_data_field_url_fb} set field_url_fb_value=:combo where entity_type=\'user\' and entity_id='.$account->uid, array(':combo'=>$name) );
+                    }
+                    break;
+                case 'vkontakte':
+                    $hit=db_query('select entity_id from {field_data_field_url_vk} where entity_type=\'user\' and entity_id='.$account->uid );
+                    $hit=$hit->fetchAssoc();
+                    if(!isset($hit['entity_id'])){
+                        db_query('insert into {field_data_field_url_vk} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_url_vk_value) values (\'user\',\'user\',0,'.$account->uid.','.$account->uid.',\'und\',0,:combo)', array(':combo'=>$name) );
+                    }else{
+                        db_query('update {field_data_field_url_vk} set field_url_vk_value=:combo where entity_type=\'user\' and entity_id='.$account->uid, array(':combo'=>$name) );
+                    }
+                    break;
+                case 'youtube':
+                    $hit=db_query('select entity_id from {field_data_field_url_yt} where entity_type=\'user\' and entity_id='.$account->uid );
+                    $hit=$hit->fetchAssoc();
+                    if(!isset($hit['entity_id'])){
+                        db_query('insert into {field_data_field_url_yt} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, field_url_yt_value) values (\'user\',\'user\',0,'.$account->uid.','.$account->uid.',\'und\',0,:combo)', array(':combo'=>$name) );
+                    }else{
+                        db_query('update {field_data_field_url_yt} set field_url_yt_value=:combo where entity_type=\'user\' and entity_id='.$account->uid, array(':combo'=>$name) );
+                    }
+                    break;
+                }
+            }
+        }   
+    
+    cache_clear_all('field:user:' . $account->uid, 'cache_field', true);
+    if( function_exists( 'filecache_directory' ) ){
+        $ispath=filecache_directory();
+        if( isset($ispath) and strlen($ispath) ){
+            if( file_exists(getcwd().'/'.$ispath.'/cache_field-field user '.$account->uid) ){
+                unlink(getcwd().'/'.$ispath.'/cache_field-field user '.$account->uid);
+            }
+        }
+    }
+    
+}
+function parad0x_changes_user_presave(&$edit, $account, $category) {
+    global $user;
+    if( !isset($edit['field_name']['und'][0]['value']) or !strlen($edit['field_name']['und'][0]['value']) ){
+//        $edit['field_name']['und'][0]['value']='Неизвестно';
+    }
+}
+
+function parad0x_changes_stopwords($tre){
+    $notreklama=0;
+
+    if($pdxstopwords=variable_get('pdxstopwords')){}else{
+        $pdxstopwords='';
+    }
+    if( isset($pdxstopwords) and strlen($pdxstopwords) ){
+        $pdxstopwords=explode("\r\n",$pdxstopwords);
+    }
+
+    if( isset($pdxstopwords) and is_array($pdxstopwords)  and count($pdxstopwords)){
+        foreach($pdxstopwords as $pdxstopword){
+            if (strlen(strstr(strip_tags($tre), $pdxstopword))>1) {
+                $notreklama=1;
+            }
+        }
+    }
+    return $notreklama;
+}
+
+function parad0x_changes_form_alter(&$form, &$form_state, $form_id){
+    global $user;
+    if(strpos($form_id,'simplenews_block_form_')===false){
+/*        
+        if(strpos($form_id,'uc_product_add_to_cart_form_')===false){}else{
+            if( isset($form['attributes']) and is_array($form['attributes']) and count($form['attributes']) ){
+                foreach($form['attributes'] as $aid => $val ){
+                    if( is_numeric($aid) and isset($val['#options']) and is_array($val['#options']) and count($val['#options']) ){
+                        foreach($val['#options'] as $oid => $label ){
+                            $img=db_query('select i.field_image_fid from {field_data_field_image} as i inner join {node} as n on i.entity_id=n.nid where n.type=\'optionimage\' and n.title=:combo', array(':combo'=>$oid));
+                            $img=$img->fetchAssoc();
+                            if( isset($img['field_image_fid']) and is_numeric($img['field_image_fid']) ){
+                                $uri = file_load($img['field_image_fid'])->uri;
+//                                $uri2 = image_style_url('option', $uri);
+                                $path = file_create_url($uri);
+                                $uri = image_style_url('optionsm', $uri);
+                                if( isset($uri) and strlen($uri) and isset($path) and strlen($path) ){
+                                    $form['attributes'][$aid]['#options'][$oid]='<img alt="" src="'.$uri.'" data-hover-preview="'.$path.'" class="hover-preview-imgpreview hover-preview" /> '.$form['attributes'][$aid]['#options'][$oid];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+*/
+    }else{
+        if( isset($form['mail']['#title']) and strlen($form['mail']['#title']) ){
+            $form['mail']['#attributes'] = array('placeholder' => $form['mail']['#title']);
+            $form['mail']['#title']='';
+        }
+    }
+    if( strpos($form_id,'webform_client_form_')===false ){
+
+
+    if( strpos($form_id,'_node_form')===false ){}else{
+        if( arg(0)=='node' and is_string(arg(1)) and arg(1)=='add' and isset($_GET['clone']) and is_numeric($_GET['clone']) ){
+            $node=node_load($_GET['clone']);
+            if( isset($node->title) and strlen($node->title) ){
+                $form['title']['#default_value']=$node->title;
+                if( isset($node->sell_price) and strlen($node->sell_price) ){
+                    $form['base']['prices']['sell_price']['#default_value']=$node->sell_price;
+                }
+                if( isset($node->cost) and strlen($node->cost) ){
+                    $form['base']['prices']['cost']['#default_value']=$node->cost;
+                }
+                if( isset($node->list_price) and strlen($node->list_price) ){
+                    $form['base']['prices']['list_price']['#default_value']=$node->list_price;
+                }
+                if( isset($form) and is_array($form) and count($form) ){
+                    foreach( $form as $key=>$item ){
+                        $iscont=0;
+                        switch($key){
+                        case 'field_image':
+                        case 'field_moderate':
+                        case 'field_block':
+                        case 'field_moderate_reason':
+                        case 'field_delete':
+                        case 'field_status':
+                        case 'field_datend':
+                        case 'field_premium':
+                            $iscont=1;
+                            break;
+                        }
+                        if( $iscont ){
+                            continue;
+                        }
+                        if( is_array($item) and isset($item['und']) and isset($item['und'][0]) and is_array($item['und'][0]) and isset($node->{$key}['und'][0]) and is_array($node->{$key}['und'][0]) and count($node->{$key}['und'][0]) ){                           
+                            foreach( $node->{$key}['und'] as $ind=>$val ){
+                                if( !isset( $form[$key]['und'][$ind] ) ){
+                                    $form[$key]['und'][$ind]=$form[$key]['und'][0];
+                                    $item['und'][$ind]=$item['und'][0];
+                                }
+                            }
+                            if( count($node->{$key}['und'])>1 ){
+                                $node->{$key}['und']=array_reverse($node->{$key}['und']);
+                            }
+                            
+                            foreach( $item['und'] as $ind=>$val ){
+                                $curval='';
+                                if( isset($node->{$key}['und'][$ind]['value']) and strlen($node->{$key}['und'][$ind]['value']) ){
+                                    $curval=$node->{$key}['und'][$ind]['value'];
+                                }elseif( isset($node->{$key}['und'][$ind]['tid']) and strlen($node->{$key}['und'][$ind]['tid']) ){
+                                    $curval=$node->{$key}['und'][$ind]['tid'];
+                                }elseif( isset($node->{$key}['und'][$ind]['nid']) and strlen($node->{$key}['und'][$ind]['nid']) ){
+                                    $curval=$node->{$key}['und'][$ind]['nid'];
+                                }
+                                
+                                if( strlen($curval) ){
+                                    if( isset($val['#default_value']) ){
+                                        $form[$key]['und'][$ind]['#default_value']=$curval;
+                                    }elseif( isset($val['value']['#default_value']) ){
+                                        $form[$key]['und'][$ind]['value']['#default_value']=$curval;
+                                    }else{
+                                        $form[$key]['und'][$ind]['#default_value']=$curval;
+                                        $form[$key]['und'][$ind]['value']['#default_value']=$curval;
+                                    }
+                                }
+                            }
+                        }elseif( is_array($item) and isset($item['und']) ){
+                                if( isset($item['und']['#default_value']) ){
+                                    if( is_array($item['und']['#default_value']) ){
+                                        if( isset($node->{$key}['und']) and is_array($node->{$key}['und']) and count($node->{$key}['und']) ){
+                                            foreach( $node->{$key}['und'] as $ind=>$val ){
+                                                if( isset($node->{$key}['und'][0]['value']) and strlen($node->{$key}['und'][0]['value']) ){
+                                                    $form[$key]['und']['#default_value'][]=$node->{$key}['und'][0]['value'];
+                                                }elseif( isset($node->{$key}['und'][0]['tid']) and strlen($node->{$key}['und'][0]['tid']) ){
+                                                    $form[$key]['und']['#default_value'][$node->{$key}['und'][0]['tid']]=$node->{$key}['und'][0]['tid'];
+                                                }elseif( isset($node->{$key}['und'][0]['nid']) and strlen($node->{$key}['und'][0]['nid']) ){
+                                                    $form[$key]['und']['#default_value'][$node->{$key}['und'][0]['nid']]=$node->{$key}['und'][0]['nid'];
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        $curval='';
+                                        if( isset($node->{$key}['und']) and is_array($node->{$key}['und']) and count($node->{$key}['und']) ){
+                                            foreach( $node->{$key}['und'] as $ind=>$val ){
+                                                if( isset($node->{$key}['und'][$ind]['value']) and strlen($node->{$key}['und'][$ind]['value']) ){
+                                                    if( strlen($curval) ){
+                                                        $curval.=', ';
+                                                    }
+                                                    $curval.=$node->{$key}['und'][$ind]['value'];
+                                                }elseif( isset($node->{$key}['und'][$ind]['tid']) and is_numeric($node->{$key}['und'][$ind]['tid']) ){
+                                                    $name=db_query('select name from {taxonomy_term_data} where tid='.$node->{$key}['und'][$ind]['tid']);
+                                                    $name=$name->fetchAssoc();
+                                                    if( isset($name['name']) and strlen($name['name']) ){
+                                                        if( strlen($curval) ){
+                                                            $curval.=', ';
+                                                        }
+                                                        $curval.=$name['name'];
+                                                    }
+                                                }elseif( isset($node->{$key}['und'][$ind]['nid']) and strlen($node->{$key}['und'][$ind]['nid']) ){
+                                                    if( strlen($curval) ){
+                                                        $curval.=', ';
+                                                    }
+                                                    $curval.=$node->{$key}['und'][$ind]['nid'];
+                                                }
+                                            }
+                                        }
+                                        if( strlen($curval) ){
+                                            $form[$key]['und']['#default_value']=$curval;
+                                        }
+                                    }
+                                }elseif( isset($item['und']['value']['#default_value']) ){
+                                    if( is_array($item['und']['value']['#default_value']) ){
+                                        
+                                    }else{
+                                        $curval='';
+                                        if( isset($node->{$key}['und'][0]['value']) and strlen($node->{$key}['und'][0]['value']) ){
+                                            $curval=$node->{$key}['und'][0]['value'];
+                                        }elseif( isset($node->{$key}['und'][0]['tid']) and strlen($node->{$key}['und'][0]['tid']) ){
+                                            $curval=$node->{$key}['und'][0]['tid'];
+                                        }elseif( isset($node->{$key}['und'][0]['nid']) and strlen($node->{$key}['und'][0]['nid']) ){
+                                            $curval=$node->{$key}['und'][0]['nid'];
+                                        }
+                                        if( strlen($curval) ){
+                                            $form[$key]['und']['value']['#default_value']=$curval;
+                                        }
+                                    }
+                                }else{
+                                }
+                        }
+                    }
+                }
+
+            }
+//            echo '<pre>'.print_r($form['title']['#default_value'], true). '</pre>';
+        }
+    }
+
+    switch($form_id){
+    case 'userpoints_list_transactions':
+        if( isset($form['list']['table']['#header'][4]) ){
+            unset($form['list']['table']['#header'][4]);
+            if( isset($form['list']['table']['#rows']) and is_array($form['list']['table']['#rows']) and count($form['list']['table']['#rows']) ){
+                foreach( $form['list']['table']['#rows'] as $id => $row ){
+                    if( isset( $row['data'][4] ) ){
+                        unset( $form['list']['table']['#rows'][$id]['data'][4] );
+                    }
+                }
+            }
+        }
+        break;
+    case 'user_login':
+//        $form['#prefix']='<div class="userenter_top"><div class="userenter_left"><div class="userenter_right"><div class="userenter_bottom"><div class="title">Войти в Skuratovcoffee</div>';
+//        $form['#suffix']='<div class="ulogin_title">Войти через</div><div class="clear">&nbsp;</div></div></div></div></div>';
+        $form['name']['#description']='';
+        $form['pass']['#description']='';
+/*
+        $form['name']['#attributes']['placeholder'] = $form['name']['#title'];
+        $form['name']['#title']='';
+        $form['pass']['#attributes']['placeholder'] = $form['pass']['#title'];
+        $form['pass']['#title']='';
+        $form['actions']['#prefix']='<div class="lostpass"><a href="'.$GLOBALS['base_url'].'/user/password">Напомнить пароль</a></div>';
+*/
+//        echo '<pre>'.print_r($form, true). '</pre>';
+        break;
+    case 'privatemsg_list':
+        if( !is_string(arg(1)) ){
+            if( isset($form['updated']['list']['#header']['participants']['data']) and strlen($form['updated']['list']['#header']['participants']['data']) ){
+                $form['updated']['list']['#header']['participants']['data']='От кого';
+            }
+        }elseif( arg(1)=='sent' ){
+            if( isset($form['updated']['list']['#header']['participants']['data']) and strlen($form['updated']['list']['#header']['participants']['data']) ){
+                $form['updated']['list']['#header']['participants']['data']='Кому';
+            }
+        }
+        break;
+    case 'privatemsg_new':
+        $form['field_pmsite']['und'][0]['value']['#default_value']=$_SERVER['HTTP_HOST'];
+        $form['field_pmsite']['#prefix']='<div style="display: none;">';
+        $form['field_pmsite']['#suffix']='</div>';
+    
+        $form['field_item']['#prefix']='<div style="display: none;">';
+        $form['field_item']['#suffix']='</div>';
+        if( arg(0)=='messages' and is_string(arg(1)) and arg(1)=='new' ){
+            $isstop=0;
+            $isyes='';
+            if( isset( $_GET['to'] ) and is_numeric( $_GET['to'] ) ){
+                
+                $isset=db_query('select u.name, f.field_name_value from {users} as u inner join {field_data_field_name} as f on (u.uid=f.entity_id and f.entity_type=\'user\') where u.uid='.$_GET['to']);
+                $isset=$isset->fetchAssoc();
+                if( isset($isset['name']) and strlen($isset['name']) ){
+                    $isyes=$isset['name'];
+                    drupal_set_title('Написать сообщение пользователю '.$isset['field_name_value']);
+                }
+
+                if( $user->uid==$_GET['to'] ){
+                    $form['#prefix']='<div class="wrnblock">Нельзя написать сообщение самому себе =)</div>';
+                    $isstop=1;
+                }
+                
+                $isset=db_query('select uid from {pm_disable} where uid='.$_GET['to']);
+                $isset=$isset->fetchAssoc();
+                if( isset($isset['uid']) and is_numeric( $isset['uid'] ) ){
+                    $form['#prefix']='<div class="wrnblock">К сожалению, данный получатель запретил присылать ему сообщения.</div>';
+                    $isstop=1;
+                }
+            }
+            if( !$isstop ){
+                if( isset($isyes) and strlen($isyes) ){
+                    $form['recipient']['#default_value']=$isyes;
+                    $form['recipient']['#prefix']='<div style="display: none;">';
+                    $form['recipient']['#suffix']='</div>';
+                    
+                    if( isset( $_GET['nid'] ) and is_numeric( $_GET['nid'] ) and $_GET['nid']>0 ){
+                        $form['field_item']['und'][0]['nid']['#default_value']=$_GET['nid'];
+                    }
+                }else{
+        //            drupal_set_message();
+                    $form['#prefix']='<div class="wrnblock">Получатель сообщения не выбран, либо не найден. Откройте любое объявление получателя сообщения, либо страницу его профиля, после чего воспользуйтесь ссылкой <em>Написать личное сообщение</em>.</div>';
+                    if( arg(0)=='messages' ){
+                        unset($form['recipient']);
+                        unset($form['actions']);
+                        unset($form['subject']);
+                        unset($form['body']);
+                        unset($form['field_file']);
+                        unset($form['field_item']);
+                    }
+                }
+            }else{
+                unset($form['recipient']);
+                unset($form['actions']);
+                unset($form['subject']);
+                unset($form['body']);
+                unset($form['field_file']);
+                unset($form['field_item']);
+            }
+        }
+        break;
+    case 'backup_migrate_ui_manual_backup_form':
+//            echo '<pre>'.print_r($form, true). '</pre>';
+            $form['file']['compression']['#default_value']='zip';
+            if( isset($form['sources']['db']['exclude_tables']['#options']) and is_array($form['sources']['db']['exclude_tables']['#options']) and count($form['sources']['db']['exclude_tables']['#options']) ){
+                
+                if( isset($_SERVER['HTTP_HOST']) and strlen( $_SERVER['HTTP_HOST'] ) and strpos($_SERVER['HTTP_HOST'], 'site')===false and strpos($_SERVER['HTTP_HOST'], 'localhost')===false and strpos($_SERVER['HTTP_HOST'], '.loc')===false ){
+                    
+                    foreach( $form['sources']['db']['exclude_tables']['#options'] as $table ){
+                        switch($table){
+//                        case 'pdxcomment':
+//                        case 'pdxfile_display':
+//                        case 'pdxfile_managed':
+//                        case 'pdxfile_usage':
+//                        case 'pdxnode':
+//                        case 'pdxnode_access':
+//                        case 'pdxnode_comment_statistics':
+//                        case 'pdxnode_counter':
+//                        case 'pdxnode_revision':
+//                        case 'pdxtaxonomy_index':
+                        case 'pdxtaxonomy_term_data':
+                        case 'pdxtaxonomy_term_hierarchy':
+//                        case 'pdxuc_products':
+//                        case 'pdxuc_product_attributes':
+//                        case 'pdxuc_product_options':
+//                        case 'pdxuc_product_stock':
+//                        case 'pdxurl_alias':
+                            break;
+                        default:
+//                            if( strpos($table, 'pdxfield_data_')===false and strpos($table, 'pdxfield_revision_')===false ){
+                                $form['sources']['db']['exclude_tables']['#default_value'][$table]=$table;
+//                            }else{
+//                            }
+                        }
+                    }
+                                       
+                }else{
+                
+                    foreach( $form['sources']['db']['exclude_tables']['#options'] as $table ){
+                        switch($table){
+                        case 'pdxajaxblocks': //
+                        case 'pdxblock':
+                        case 'pdxblock_custom':
+                        case 'pdxblock_node_type':
+                        case 'pdxcustom_breadcrumb':
+                        case 'pdxcustom_breadcrumbs_views':
+                        case 'pdxckeditor_settings': //
+                        case 'pdxconditional_fields': //
+                        case 'pdxfield_config':
+                        case 'pdxfield_config_instance':
+                        case 'pdxfield_group':
+                        case 'pdximage_effects':
+                        case 'pdximage_styles':
+                        case 'pdxlocales_source':
+                        case 'pdxlocales_target':
+                        case 'pdxmatch_redirect': //
+                        case 'pdxmenu_custom':
+                        case 'pdxmenu_links':
+                        case 'pdxmenu_router':
+                        case 'pdxnode_type':
+                        case 'pdxrole':
+                        case 'pdxrole_permission':
+                        case 'pdxrules_config':
+                        case 'pdxrules_dependencies':
+                        case 'pdxrules_scheduler':
+                        case 'pdxrules_tags':
+                        case 'pdxrules_trigger':
+//                        case 'pdxtwitter': //
+                        case 'pdxtwitter_account': //
+                        case 'pdxuc_coupons':
+                        case 'pdxuc_product_classes':
+                        case 'pdxuc_power_tools':
+                        case 'pdxuc_order_statuses':
+                        case 'pdxuc_extra_fields':
+                        case 'pdxviews_display':
+                        case 'pdxviews_view':
+                        case 'pdxtaxonomy_vocabulary':
+                            break;
+                        default:
+                            if( strpos($table, 'pdxfield_data_')===false and strpos($table, 'pdxfield_revision_')===false ){
+                                $form['sources']['db']['exclude_tables']['#default_value'][$table]=$table;
+                            }else{
+                            }
+                        }
+                    }
+                    
+                }
+            }
+
+            if( isset($form['sources']['db']['nodata_tables']['#options']) and is_array($form['sources']['db']['nodata_tables']['#options']) and count($form['sources']['db']['nodata_tables']['#options']) ){
+
+                if( isset($_SERVER['HTTP_HOST']) and strlen( $_SERVER['HTTP_HOST'] ) and strpos($_SERVER['HTTP_HOST'], 'site')===false and strpos($_SERVER['HTTP_HOST'], 'localhost')===false and strpos($_SERVER['HTTP_HOST'], '.loc')===false ){
+                    
+                    
+                    
+                }else{
+                    foreach( $form['sources']['db']['nodata_tables']['#options'] as $table ){
+                        if( strpos($table, 'pdxfield_data_')===false and strpos($table, 'pdxfield_revision_')===false ){}else{
+                            $form['sources']['db']['nodata_tables']['#default_value'][$table]=$table;
+                        }
+                    }
+                }
+            }
+
+        break;
+    case 'uc_order_edit_form':
+        if( isset($form['#order']->order_id) and is_numeric($form['#order']->order_id) ){
+            $form['actions']['#prefix']='<div style=" background: #eef3fa; border: 1px solid #505050; float: right !important; padding: 15px 19px 7px 19px !important; text-align: center !important; -moz-border-radius: 7px; -khtml-border-radius:7px; -webkit-border-radius:7px; border-radius:7px; behavior: url(\'/sites/all/libraries/img/PIE.php\'); position: relative; left: +0px;"><p>Возврат/Брак</p><p class="order_status_'.$form['#order']->order_id.'"><a style=" display: block; text-decoration: none; background: #fff; text-align: center; padding: 5px 0 7px 0; border: 1px solid #505050; -moz-border-radius: 5px; -khtml-border-radius:5px; -webkit-border-radius:5px; border-radius:5px; behavior: url(\'/sites/all/libraries/img/PIE.php\'); position: relative; left: +0px; margin-top: 7px; " onclick=" admchange2('.$form['#order']->order_id.', \'order\', \'status_return\', \'ok\', \'value\' ); " href="javascript: void(0);">Возврат</a><a style=" display: block; text-decoration: none; background: #fff; text-align: center; padding: 5px 0 7px 0; border: 1px solid #505050; -moz-border-radius: 5px; -khtml-border-radius:5px; -webkit-border-radius:5px; border-radius:5px; behavior: url(\'/sites/all/libraries/img/PIE.php\'); position: relative; left: +0px; margin-top: 7px; " onclick=" admchange2('.$form['#order']->order_id.', \'order\', \'status_defect\', \'ok\', \'value\' ); " href="javascript: void(0);">Брак</a></p></div>';
+        }
+        if( isset($form['field_order_tracking']['und']) and is_array($form['field_order_tracking']['und']) ){
+            $form['field_order_tracking']['und']['#suffix']='<div id="track_info"></div>';
+        }
+
+        break;
+    case 'user_profile_form':
+        if( isset($form['revalidate']['#title']) and strlen($form['revalidate']['#title']) ){
+            $form['revalidate']['#title']=' Письмо-подтверждение e-mail';
+            $form['revalidate']['#prefix']='<div class="revalideis"><div class="revalide_right"><p>Пожалуйста, не забудьте подтвердить свой e-mail. Если вы не сделаете этого в течение месяца, данная учетная запись будет автоматически удалена.</p><p>Чтобы получить письмо-подтверждение, кликните мышкой по ссылке "Прислать письмо-подтверждение на мой e-mail". После чего кликните по ссылке в пришедшем письме.</p></div><div class="revalide_left">';
+            $form['revalidate']['#suffix']='</div><div class="clear">&nbsp;</div></div>';
+        }
+        if( defined('PDX_CITY_MASK') ){
+            $form['field_phones']['und'][0]['value']['#attributes'] = array('placeholder' => str_replace('9','_',PDX_CITY_MASK));
+            $form['field_phones']['und'][1]['value']['#attributes'] = array('placeholder' => str_replace('9','_',PDX_CITY_MASK));
+            $form['field_phones']['und'][2]['value']['#attributes'] = array('placeholder' => str_replace('9','_',PDX_CITY_MASK));
+            if( !isset($form['field_phones']['und']['#suffix']) ){
+                $form['field_phones']['und']['#suffix']='';
+            }
+            $form['field_phones']['und']['#suffix'].=' <div style="display: none;" class="maskisme">'.PDX_CITY_MASK.'</div> ';
+        }
+        if( isset($form['field_apply3']['und']['#title']) ){
+            $form['field_apply3']['und']['#title']=str_replace('сбор и использование','<a target="_blank" href="http://needto.me/apply.html">сбор и использование</a>',$form['field_apply3']['und']['#title']);
+        }
+        if( isset($form['field_apply3']['und']['#default_value']) and is_numeric($form['field_apply3']['und']['#default_value']) and $form['field_apply3']['und']['#default_value']==1 ){
+            $form['field_apply3']['und']['#prefix']='<div style="display: none;">';
+            $form['field_apply3']['und']['#suffix']='</div>';
+        }
+            
+            $form['field_who']['#prefix']='<div class="clear">&nbsp;</div>';
+            $form['picture']['#title']='Ваш аватар';
+//        if( isset($form['field_legal']['und']) and is_array($form['field_legal']['und']) ){
+//            unset($form['field_legal']['und']);
+//        }
+        break;
+    case 'user_register_form':
+//        if( isset($form['field_legal']['und']['#title']) ){
+//            $form['field_legal']['und']['#title']=str_replace('условиями работы','<a class="colorbox-node" href="/terms" rel="terms" data-inner-width="700" data-inner-height="500">условиями работы</a>',$form['field_legal']['und']['#title']);
+//        }
+//        if( isset($form['#validate']) and is_array($form['#validate']) and count($form['#validate']) ){
+//            $form['#validate'][] = 'pdxseparate_validate_register';
+//        }else{
+//            $form['#validate'] = array('pdxseparate_validate_register');
+//        }
+        break;
+    case 'optionimage_node_form':
+        if( arg(0)=='admin' and is_string(arg(1)) and arg(1)=='store' and is_string(arg(2)) and arg(2)=='products' and is_string(arg(3)) and arg(3)=='attributes' and is_string(arg(5)) and arg(5)=='options' and is_numeric(arg(6)) ){
+            $form['title']['#default_value']=arg(6);
+            $form['title']['#prefix']='<div style="display: none;">';
+            $form['title']['#suffix']='</div>';
+            
+            $isyes=db_query('select nid from {node} where type=\'optionimage\' and title=\''.arg(6).'\'');
+            $isyes=$isyes->fetchAssoc();
+            if( isset($isyes['nid']) and is_numeric($isyes['nid']) ){
+                $form['title']['#suffix'].='<div><a target="_blank" href="/node/'.$isyes['nid'].'/edit">'.t('Edit image').'</a></div>';
+                if( isset($form['field_image']['und']) and is_array($form['field_image']['und']) ){
+                    unset($form['field_image']['und']);
+                }
+                $form['actions']['submit']['#prefix']='<div style="display: none;">';
+                $form['actions']['submit']['#suffix']='</div>';
+            }
+        }
+//            if( isset($form['field_catalog']['und']) and is_array($form['field_catalog']['und']) ){
+//                $form['field_catalog']['#suffix']='<a href="/admin/structure/taxonomy/catalog/add">'.t('Add new termin').'</a>';
+//            }
+        break;
+    case 'block_admin_display_form':
+        if(module_exists('blockcache_alter')){
+            if( isset($form['blocks']) and is_array($form['blocks']) and count($form['blocks']) ){
+                foreach($form['blocks'] as $name => $block){
+                    if( isset($block['info']['#markup']) and strlen($block['info']['#markup']) and isset($block['module']['#value']) and strlen($block['module']['#value']) and isset($block['delta']['#value']) and strlen($block['delta']['#value']) ){
+                        $iscache='';
+                        
+                        $isyes=db_query('select cache from {blockcache_alter} where module=:combo1 and delta=:combo2', array(':combo1'=>$block['module']['#value'], ':combo2'=>$block['delta']['#value']));
+                        $isyes=$isyes->fetchAssoc();
+                        if( isset($isyes['cache']) and is_numeric($isyes['cache']) ){
+                            switch($isyes['cache']){
+                            case -1:
+                                $form['blocks'][$name]['info']['#markup'].=' - кеш:нет';
+                                break;
+                            case 1:
+                                $form['blocks'][$name]['info']['#markup'].=' - кеш:роль';
+                                break;
+                            case 2:
+                                $form['blocks'][$name]['info']['#markup'].=' - кеш:пользователь';
+                                break;
+                            case 4:
+                                $form['blocks'][$name]['info']['#markup'].=' - кеш:страница';
+                                break;
+                            case -2:
+                                $form['blocks'][$name]['info']['#markup'].=' - кеш:свой';
+                                break;
+                            case 8:
+                                $form['blocks'][$name]['info']['#markup'].=' - кеш:общий';
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        break;
+    case 'user_login_block':
+        if( isset($form['#action']) and strlen($form['#action']) ){
+            if( mb_strpos($form['#action'],'?destination=')===false ){
+                $form['#action'].='?destination=user';
+            }else{
+                $form['#action']=mb_substr($form['#action'],0,mb_strpos($form['#action'],'?destination='));
+                $form['#action'].='?destination=user';
+            }
+        }
+        break;
+    case 'seotext_node_form':
+        if( isset($_GET['line']) and strlen($_GET['line']) ){
+            $form['field_pnid']['und'][0]['value']['#default_value']=urldecode($_GET['line']);
+        }
+        break;
+    case 'simpleads_node_form':
+        if( isset($_GET['url']) and strlen($_GET['url']) ){
+            $form['field_url']['und'][0]['value']['#default_value']=urldecode($_GET['url']);
+        }
+        break;
+    case 'product_node_form':
+
+        if( !isset($form['base']['model']['#default_value']) or !strlen($form['base']['model']['#default_value']) or ( is_string(arg(2)) and arg(2)=='clone' ) ){
+            $form['base']['model']['#default_value']='dev.biz.ua new articul';
+        }
+
+        if( isset($form['#validate']) and is_array($form['#validate']) and count($form['#validate']) ){
+            $form['#validate'][] = 'parad0x_changes_validate_product';
+        }else{
+            $form['#validate'] = array('parad0x_changes_validate_product');
+        }
+        break;
+    }
+    }else{
+        if( isset($form['#validate']) and is_array($form['#validate']) and count($form['#validate']) ){
+            $form['#validate'][] = 'parad0x_changes_validate_wf';
+        }else{
+            $form['#validate'] = array('parad0x_changes_validate_wf');
+        }
+        if( isset($form['submitted']['s']) and is_array($form['submitted']['s']) and count($form['submitted']['s']) ){
+            $form['submitted']['s']['#prefix']='<div style="display: none;">';
+            $form['submitted']['s']['#suffix']='</div>';
+        }
+        $form['actions']['#prefix']='<div class="preactions">';
+        $form['actions']['#suffix']='<div class="clear">&nbsp;</div></div>';
+    }
+    global $user; if( isset($user->roles[3]) or isset($user->roles[4]) ){}else{
+      if ($form_id == 'comment_node_product_form') {
+        $form['#validate'] = array('parad0x_changes_validate');
+      }else{
+        if( !$user->uid ){
+            if( strpos($form_id,'_node_form')===false ){
+                if( strpos($form_id,'webform_client_form_')===false ){}else{
+                    $form['#validate'] = array('webform_client_form_validate', 'parad0x_changes_validate_weng');
+                }
+            }else{
+                if( isset($form['#validate']) and is_array($form['#validate']) and count($form['#validate']) ){
+                    $form['#validate'][] = 'parad0x_changes_validate_eng';
+                }else{
+                    $form['#validate'] = array('parad0x_changes_validate_eng');
+                }
+            }
+        }
+      }
+    }
+ 
+ if( isset($user->roles[3]) or isset($user->roles[4]) ){
+ if($form_id!='user_profile_form' and strpos($form_id,'_node_form')===false){}else{
+    if( isset($form) and is_array($form) and count($form) ){
+//        if( isset($form['body']) and is_array($form['body']) and count($form['body']) ){
+//            $form['body']['#prefix']='<a target="_blank" href="http://dev.biz.ua/node/280">Как работать с текстовым редактором?</a>';
+//        }
+
+        
+        foreach($form as $key=>$it){
+            if($key!='taxonomy_catalog' and strpos($key,'field_')===false ){}else{
+                if( isset($it['und']['#value_key']) and $it['und']['#value_key']=='tid' ){
+
+                    $data=db_query('select data from {field_config} where field_name=\''.$key.'\'');
+                    $data=$data->fetchAssoc();
+                    if( isset($data['data']) ){
+                        $data['data']=unserialize($data['data']);
+                        if( isset($data['data']['settings']['allowed_values'][0]['vocabulary']) and strlen($data['data']['settings']['allowed_values'][0]['vocabulary']) ){
+                    
+                            if( isset($it['und']['#type']) and ($it['und']['#type']=='checkboxes' or $it['und']['#type']=='radios') and isset($it['und']['#options']) and is_array($it['und']['#options']) and count($it['und']['#options']) ){
+                                foreach($it['und']['#options'] as $opt_tid=>$opt_name){
+                                    $form[$key]['und']['#options'][$opt_tid].=' <a target="_blank" href="/taxonomy/term/'.$opt_tid.'/edit">ред</a>';
+                                }
+                                $form[$key]['#suffix']='<a target="_blank" href="/admin/structure/taxonomy/'.$data['data']['settings']['allowed_values'][0]['vocabulary'].'/add">Добавить новый термин</a>';
+                            }elseif( isset($it['und']['#type']) and $it['und']['#type']=='checkbox_tree' ){
+                                $form[$key]['#suffix']='<a target="_blank" href="/admin/structure/taxonomy/'.$data['data']['settings']['allowed_values'][0]['vocabulary'].'/add">Добавить новый термин</a>';
+                            }else{
+                                if( isset($form[$key]['#prefix']) ){
+                                    $form[$key]['#prefix']='<div class="preitem">'.$form[$key]['#prefix'];
+                                }else{
+                                    $form[$key]['#prefix']='<div class="preitem">';
+                                }
+                                if( isset($form[$key]['#suffix']) ){ }else{
+                                    $form[$key]['#suffix']='';
+                                }
+                                $form[$key]['#suffix'].='<a target="_blank" href="/admin/structure/taxonomy/'.$data['data']['settings']['allowed_values'][0]['vocabulary'].'/add">Добавить новый термин</a> | <a href="javascript:void(0);" onclick=" window.location.replace(\'/taxonomy/term/\'+jQuery(this).parent(\'.preitem\').find(\'select\').val()+\'/edit\'); ">Редактировать выбранный термин</a> <input class="form-text" type="text" value="" placeholder="Filter..." onchange=" filterbrandfield( jQuery(this).val(), \'edit-'.str_replace('_', '-', $key).'-und\' ); " /></div>';
+                            }
+                        }
+                    }
+
+                }elseif( isset($it['und']['#autocomplete_path']) ){
+                    if( strpos($it['und']['#autocomplete_path'],'taxonomy/autocomplete')===false ){}else{
+                        $data=db_query('select data from {field_config} where field_name=\''.$key.'\'');
+                        $data=$data->fetchAssoc();
+                        if( isset($data['data']) ){
+                            $data['data']=unserialize($data['data']);
+                            if( isset($data['data']['settings']['allowed_values'][0]['vocabulary']) and strlen($data['data']['settings']['allowed_values'][0]['vocabulary']) ){
+//                                $form[$key]['#suffix']='<a target="_blank" href="/admin/structure/taxonomy/'.$data['data']['settings']['allowed_values'][0]['vocabulary'].'/add">Добавить новый термин</a> | </a>';
+
+                                $vd=db_query('select vid from {taxonomy_vocabulary} where machine_name=\''.$data['data']['settings']['allowed_values'][0]['vocabulary'].'\'');
+                                $vd=$vd->fetchAssoc();
+                                if( isset($vd['vid']) and is_numeric($vd['vid']) and $vd['vid']!=4){
+                                    $terms = taxonomy_get_tree($vd['vid']);
+                                    $out=array();
+                                    if($terms){
+                                        foreach($terms as $term){
+                                            $term->name=filter_xss($term->name, array());
+//                                            $out[]='<a href="javascript:void(0);" onclick=" var myval=\'\'; if(jQuery(this).parent().find(\'#edit-'.str_replace('_','-',$key).'-und\').val()){ myval=jQuery(this).parent().find(\'#edit-'.str_replace('_','-',$key).'-und\').val()+\', \'; } jQuery(this).parent().find(\'#edit-'.str_replace('_','-',$key).'-und\').val(myval+\''.$term->name.'\'); ">'.$term->name.'</a>';
+                                            $out[]='<a href="javascript:void(0);" onclick=" var myval=\'\'; jQuery(this).parent().find(\'#edit-'.str_replace('_','-',$key).'-und\').val(myval+jQuery(this).html()); ">'.$term->name.'</a>';
+                                        }
+                                    }
+                                    if( isset($out) and is_array($out) and count($out) ){
+                                        $form[$key]['#suffix']=implode(', ',$out).'<div class="clear">&nbsp;</div>';
+                                    }            
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
+    }
+ }
+ }
+
+}
+function parad0x_changes_validate_eng($node, &$form) {
+    if ( isset($form['values']['body']['und'][0]['value']) and  strlen($form['values']['body']['und'][0]['value']) and !preg_match('~[а-яА-Я]~', $form['values']['body']['und'][0]['value'])){
+        form_set_error('body', 'Англоязычное описание запрещено.');
+    }
+}
+function parad0x_changes_validate_product($node, &$form) {
+}
+function parad0x_changes_validate_weng($node, &$form) {
+    if ( isset($form['values']['submitted']['message']) and !preg_match('~[а-яА-Я]~', $form['values']['submitted']['message'])){
+//        form_set_error('message', 'Англоязычные сообщения запрещены.');
+    }
+}
+
+function parad0x_changes_page_build(&$page) {
+    $tojs='';
+    $tojs.='var isPNid=';
+    if( isset($_SESSION['pdxpdx_node_nid']) and is_numeric($_SESSION['pdxpdx_node_nid']) and $_SESSION['pdxpdx_node_nid']>0 ){
+        $tojs.=$_SESSION['pdxpdx_node_nid'];
+    }else{
+        $tojs.='0';
+    }
+    $tojs.='; ';
+    $tojs.='var isPTid=';
+    if( isset($_SESSION['pdxpdx_node_tid']) and is_numeric($_SESSION['pdxpdx_node_tid']) and $_SESSION['pdxpdx_node_tid']>0 ){
+        $tojs.=$_SESSION['pdxpdx_node_tid'];
+    }else{
+        $tojs.='0';
+    }
+    $tojs.='; ';
+    if( isset($_SESSION['pdxpdx_node_uid']) and is_numeric($_SESSION['pdxpdx_node_uid']) and $_SESSION['pdxpdx_node_uid']>0 ){
+        $tojs.='var isPUid='.$_SESSION['pdxpdx_node_uid'].'; ';
+    }elseif( arg(0)=='messages' and is_string(arg(1)) and arg(1)=='new' and isset( $_GET['to'] ) and is_numeric( $_GET['to'] )){
+        $tojs.='var isPUid='.$_GET['to'].'; ';
+    }else{
+        if( arg(0)=='user' and is_numeric(arg(1)) ){
+            $tojs.='var isPUid='.arg(1).'; ';
+        }else{
+            $tojs.='var isPUid=0; ';
+        }
+    }
+    global $user;
+    $tojs.='var curUid='.$user->uid.'; ';
+    if( defined('PDX_CITY_ID') and is_numeric(PDX_CITY_ID) ){
+        $tojs.='var curCity='.PDX_CITY_ID.'; ';
+    }
+    if( isset($_SERVER['HTTP_HOST']) and strlen( $_SERVER['HTTP_HOST'] ) and strpos($_SERVER['HTTP_HOST'], 'site')===false ){
+        $tojs.='var s3b="http://needtominsk.s3.amazonaws.com/curs/"; ';
+    }else{
+        $tojs.='var s3b="/js/"; ';
+    }
+    /*
+    
+    var txtExpand="Подробнее"; var reqField="Вы не заполнили обязательные поля"; var inFav="Из Избранного"; var inFav2="Из Избранных"; var isYou="Это <br />Вы =)"; var isYou2=" (это Вы =))"; var dtPre="ещё ≈"; var dtPost="дней"; var dtPost1="день"; var dtPost3="дня"; var dtPost0="сегодня"; var confirmtext3=\'Вы действительно хотите купить GOLD-аккаунт? <span class="confirmyes" onclick=" bonus_gold(); jQuery(\'+"\'.closeconfirm\'"+\').click(); ">&nbsp;</span>\'; var SoonMore=\'Продлить\';
+    */
+    drupal_add_js(' var siteCur="'.str_replace('"','',strip_tags(PDX_CITY_CUR)).'"; var siteCountry="'.str_replace('"','',strip_tags(PDX_CITY_COUNTRY)).'"; '.$tojs, array('type' => 'inline', 'scope' => 'footer', 'weight' => 5) );
+    if( $user->uid ){
+    if(isset($user->roles[3]) or isset($user->roles[4])){
+
+        $uncont=0;
+        $cont2='';
+        
+        $count=db_query('select count(entity_id) from {field_data_body} where body_value like \'%Lorem ipsum dolor%\'');
+        $count=$count->fetchAssoc();
+        if( isset($count['count(entity_id)']) and is_numeric($count['count(entity_id)']) and $count['count(entity_id)']>0 ){
+            $uncont+=$count['count(entity_id)'];
+
+            $counts=db_query('select n.nid, n.title from {field_data_body} as b inner join {node} as n on b.entity_id=n.nid where b.body_value like \'%Lorem ipsum dolor%\'');
+            while($count=$counts->fetchAssoc()){
+                if( mb_strlen($count['title'])>14 ){
+                    $count['title']=mb_substr($count['title'],0,12).'...';
+                }
+                $cont2.='<option value="/node/'.$count['nid'].'">'.$count['title'].'</option>';
+            }
+        }
+
+        if(module_exists('comment')){
+            $count=db_query('select count(entity_id) from {field_data_comment_body} where comment_body_value like \'%Lorem ipsum dolor%\'');
+            $count=$count->fetchAssoc();
+            if( isset($count['count(entity_id)']) and is_numeric($count['count(entity_id)']) and $count['count(entity_id)']>0 ){
+                $uncont+=$count['count(entity_id)'];
+    
+                $counts=db_query('select n.cid, n.subject from {field_data_comment_body} as b inner join {comment} as n on b.entity_id=n.cid where b.comment_body_value like \'%Lorem ipsum dolor%\'');
+                while($count=$counts->fetchAssoc()){
+                    if( mb_strlen($count['subject'])>14 ){
+                        $count['subject']=mb_substr($count['subject'],0,12).'...';
+                    }
+                    $cont2.='<option value="/comment/'.$count['cid'].'">'.$count['subject'].'</option>';
+                }
+            }
+        }
+
+            $count=db_query('select count(tid) from {taxonomy_term_data} where description like \'%Lorem ipsum dolor%\'');
+            $count=$count->fetchAssoc();
+            if( isset($count['count(tid)']) and is_numeric($count['count(tid)']) and $count['count(tid)']>0 ){
+                $uncont+=$count['count(tid)'];
+    
+                $counts=db_query('select tid, name from {taxonomy_term_data} where description like \'%Lorem ipsum dolor%\'');
+                while($count=$counts->fetchAssoc()){
+                    if( mb_strlen($count['name'])>14 ){
+                        $count['name']=mb_substr($count['name'],0,12).'...';
+                    }
+                    $cont2.='<option value="/taxonomy/term/'.$count['tid'].'/edit">'.$count['name'].'</option>';
+                }
+            }
+        
+        if( is_numeric($uncont) and $uncont>0 ){
+            $cont='На сайте<br />осталось<strong style="font-size: 21pt; display: block; padding: 7px 0;">'.$uncont.'</strong>тестовых<br />публикаций<div><select onchange=" window.location.replace(jQuery(this).val()+\'/edit\'); "><option value="0">редактировать:</option>';
+            $cont.=$cont2;
+
+            $cont.='</select></div>';
+
+            if (menu_get_object('node', 1)) {
+                $page['content']['devbizua'] = array(
+                    '#markup' => '<div style=" text-align: center; border: 1px solid #333; border-right: 0px none transparent; font-size: 10pt !important; position: fixed; background: #fff; right: 0; top: 177px; padding: 7px; -moz-border-radius: 9px 0 0 9px; -khtml-border-radius: 9px 0 0 9px; -webkit-border-radius: 9px 0 0 9px; border-radius: 9px 0 0 9px; behavior: url(/sites/all/libraries/img/PIE.php);">'.$cont.'</div>',
+                    '#weight' => 33,
+                );
+            }
+        }
+
+        
+    }    
+    }    
+}
+
+function parad0x_changes_advagg_get_root_files_dir_alter(&$css_paths, &$js_paths) {
+  if ($css_paths[0] == 'public://advagg_css' || $js_paths[0] == 'public://advagg_js') {
+    $css_paths[0] = 's3://s3fs-public/advagg_css';
+    $js_paths[0] = 's3://s3fs-public/advagg_js';
+  }
+}
+function parad0x_changes_advagg_get_css_file_contents_alter(&$contents, $file, $aggregate_settings) {
+  global $base_url;
+  $contents = str_replace('url(/sites', 'url(' . $base_url . '/sites', $contents);
+  $contents = str_replace('url("/sites', 'url("' . $base_url . '/sites', $contents);
+  $contents = str_replace('url(\'/sites', 'url(\'' . $base_url . '/sites', $contents);
+}
+function parad0x_changes_js_alter(&$javascript){
+    
+    if( strpos(path_to_theme(), 'pdxneedto')===false ){
+        return;
+    }
+    
+    $name='sites/all/libraries/colorbox/jquery.colorbox-min.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/colorbox/js/colorbox.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/colorbox/js/colorbox_load.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/colorbox/js/colorbox_inline.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/floating_block/floating_block.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/memcache/memcache_admin/memcache.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/scroll_to_top/scroll_to_top.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/uc_ajax_cart/js/jquery.blockui.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/uc_ajax_cart/js/uc_ajax_cart.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/uc_ajax_cart/js/jquery.cookie.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/custom_search/js/custom_search.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/webform/js/webform.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/jcarousel/js/jquery.jcarousel.min.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/jcarousel/js/jcarousel.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/mappy/js/mappy.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/google_analytics/googleanalytics.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/admin_menu/admin_menu.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='modules/contextual/contextual.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='sites/all/modules/contrib/admin_menu/admin_menu_toolbar/admin_menu_toolbar.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+    $name='modules/locale/locale.datepicker.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+    
+    $name='misc/jquery.once.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+
+//    $name='misc/drupal.js';
+//    if( isset( $javascript[$name]['scope'] ) ){
+//        $javascript[$name]['scope']='footer';
+//    }
+
+//    $name='//ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.2.min.js';
+//    if( isset( $javascript[$name]['scope'] ) ){
+//        $javascript[$name]['scope']='footer';
+//    }
+
+//    $name='//ajax.aspnetcdn.com/ajax/jquery.ui/1.10.2/jquery-ui.min.js';
+//    if( isset( $javascript[$name]['scope'] ) ){
+//        $javascript[$name]['scope']='footer';
+//    }
+
+    $name='modules/locale/locale.datepicker.js';
+    if( isset( $javascript[$name]['scope'] ) ){
+        unset($javascript[$name]);
+    }
+
+    $name='settings';
+    if( isset( $javascript[$name]['scope'] ) ){
+        $javascript[$name]['scope']='footer';
+    }
+    
+
+
+/*
+    foreach( $javascript as $name=>$val ){
+        if( isset($val['type']) and strlen($val['type']) and $val['type']=='inline' ){
+            $javascript[$name]['scope']='footer';
+        }
+    }
+*/
+    
+/*
+    global $user; if(isset($user->roles[3])){ 
+        if( isset($javascript) and is_array($javascript) and count($javascript) ){
+            foreach( $javascript as $name=>$val ){
+                if( isset($val['scope']) and $val['scope']=='footer' ){
+                    continue;
+                }
+                echo $name.'<br />';
+                echo '<pre>'.print_r($val, true). '</pre>';
+            }
+        }
+    }
+*/
+
+}
+
+
+function parad0x_changes_menu() {
+  $mypage = array();
+  $mypage['adm'] = array(
+    'title' => 'Администратору',
+    'page callback' => 'parad0x_changes_page_adm',
+    'access callback' => TRUE,
+  );
+  $mypage['apply'] = array(
+    'title' => 'Соглашение об использовании личных данных',
+    'page callback' => 'pdxseparate_apply',
+    'access callback' => TRUE,
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/findnoval'] = array(
+    'title' => 'Поиск материалов с невыставленными значениями',
+    'page callback' => 'pdxseparate_p_findnoval',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/findsyn'] = array(
+    'title' => 'Поиск синонимов',
+    'page callback' => 'pdxseparate_p_findsyn',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/pubnodes'] = array(
+    'title' => 'Пакетная публикация материалов',
+    'page callback' => 'pdxseparate_p_pubnodes',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/addval'] = array(
+    'title' => 'Присвоить значение полю у всех материалов данного типа материала',
+    'page callback' => 'pdxseparate_p_addval',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/unpubnodes'] = array(
+    'title' => 'Пакетное снятие с публикации материалов',
+    'page callback' => 'pdxseparate_p_unpubnodes',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/commentsperday'] = array(
+    'title' => 'Количество комментариев за день',
+    'page callback' => 'pdxseparate_p_commentsperday',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/findrus'] = array(
+    'title' => 'Проверка на наличие русских букв в строке',
+    'page callback' => 'pdxseparate_p_findrus',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/doubleterm'] = array(
+    'title' => 'Поиск дублей терминов таксономии',
+    'page callback' => 'pdxseparate_p_doubleterm',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/delnodes'] = array(
+    'title' => 'Пакетное удаление материалов',
+    'page callback' => 'pdxseparate_p_delnodes',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/doublesyn'] = array(
+    'title' => 'Дубли синонимов',
+    'page callback' => 'pdxseparate_p_doublesyn',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+  $mypage['admin/last100msg'] = array(
+    'title' => 'Последние 100 сообщений пользователей',
+    'page callback' => 'pdxseparate_p_last100msg',
+    'access callback' => 'pdxseparate_checkadm',
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+ 
+  return $mypage;
+}
+ 
+/**
+ * Реализация "page callback". Иными словами просто вывод контента.
+ */
+function parad0x_changes_page_adm($source_content = NULL) {
+
+$mres='';
+
+global $user; if(isset($user->roles[3])){
+
+if( isset($_POST['pdxclearbody']) and strlen($_POST['pdxclearbody']) ){
+    db_query('update {field_data_body} set body_value = replace(body_value, :combo, \'\')', array(':combo'=>$_POST['pdxclearbody']));
+    $mres.='ok';
+
+//        cache_clear_all('*', 'cache', true);
+//        cache_clear_all('*', 'cache_entity_node', true);
+        cache_clear_all('*', 'cache_field', true);
+}
+
+
+$mres.='<fieldset id="aset0" class=\'admin_item admin_file\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_file_post\').toggle();">Чистка текста</a></legend><div class="admin_file_post"';
+if( is_numeric(arg(1)) and arg(1)==1 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>Удалить из содержимого всех публикаций сайта определенную фразу.
+<form method="post"><input size="37" placeholder="фраза" type="text" name="pdxclearbody" value="" /><input type="submit" value="Удалить" /></form>
+';
+
+$mres.='</div></fieldset>';
+
+
+
+if( isset($_POST['pdxchangefile']) and strlen($_POST['pdxchangefile']) ){
+    $_POST['pdxchangefile']=filter_xss(strip_tags($_POST['pdxchangefile']));
+    if( strlen($_POST['pdxchangefile']) ){
+        if(file_exists($_POST['pdxchangefile'])){
+            $mres.='<p>файл с таким именем уже есть в корне сайта</p>';
+        }else{
+            $fp=fopen($_POST['pdxchangefile'], "w");
+            if($fp){
+                fwrite($fp, '1');
+                fclose($fp);
+                $mres.='<p>файл создан</p>';
+            }
+        }
+    }
+}
+$mres.='<fieldset id="aset1" class=\'admin_item admin_file\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_file_post\').toggle();">Создать пустой файл в корне сайта</a></legend><div class="admin_file_post"';
+if( is_numeric(arg(1)) and arg(1)==1 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>Создание файлов в корне сайта довольно часто требуется для подтверждения прав на данный сайт. Например, если вы хотите добавить сайт в Яндекс.Вебмастер.
+<form method="post"><input size="37" placeholder="имя_файла.расширение" type="text" name="pdxchangefile" value="';
+if( isset($_POST['pdxchangefile']) and strlen($_POST['pdxchangefile']) ){
+    $mres.=$_POST['pdxchangefile'];
+}
+$mres.='" /><input type="submit" value="Создать данный файл в корне сайта" /></form>
+';
+
+$mres.='</div></fieldset>';
+
+$change=0;
+if( isset($_POST['pdxchangemail']) and strlen($_POST['pdxchangemail']) ){
+    if(valid_email_address($_POST['pdxchangemail'])){
+        db_query('update {variable} set value=:combo where name=\'site_mail\'', array(':combo' => serialize($_POST['pdxchangemail'])));
+        if(module_exists('simplenews')){
+            db_query('update {simplenews_category} set from_address=\''.$_POST['pdxchangemail'].'\'');
+        }
+        if(module_exists('webform')){
+            db_query('update {webform_emails} set email=\''.$_POST['pdxchangemail'].'\'');
+            db_query('update {variable} set value=:combo where name=\'webform_default_from_address\'', array(':combo' => serialize($_POST['pdxchangemail'])));
+        }
+        if(module_exists('mimemail')){
+            db_query('update {variable} set value=:combo where name=\'mimemail_mail\'', array(':combo' => serialize($_POST['pdxchangemail'])));
+        }
+        if(module_exists('uc_order')){
+            db_query('update {variable} set value=:combo where name=\'uc_store_email\'', array(':combo' => serialize($_POST['pdxchangemail'])));
+        }
+        if(module_exists('backup_migrate')){
+            $vals=db_query('select * from {backup_migrate_profiles}');
+            while($val=$vals->fetchAssoc()){
+                if( isset($val['filters']) ){
+                    $val['filters']=unserialize($val['filters']);
+                    $yes=0;
+                    if( isset($val['filters']['notify_success_email']) ){
+                        $val['filters']['notify_success_email']=$_POST['pdxchangemail'];
+                        $yes=1;
+                    }
+                    if( isset($val['filters']['notify_failure_email']) ){
+                        $val['filters']['notify_failure_email']=$_POST['pdxchangemail'];
+                        $yes=1;
+                    }
+                    if($yes){
+                        db_query('update {backup_migrate_profiles} set filters=:combo where profile_id=\''.$val['profile_id'].'\'', array(':combo' => serialize($val['filters'])));
+                    }
+                }
+            }
+        }
+        $mres.='<div>Email изменены на '.$_POST['pdxchangemail'].'</div>';
+        $change=1;
+    }else{ $mres.='<div>E-mail некорректен</div>'; }
+}
+if( isset($_POST['pdxchangetitle']) and strlen($_POST['pdxchangetitle']) ){
+    $_POST['pdxchangetitle']=filter_xss(strip_tags($_POST['pdxchangetitle']));
+    if(module_exists('simplenews')){
+        db_query('update {simplenews_category} set from_name=:combo', array(':combo'=>$_POST['pdxchangetitle']));
+    }
+    db_query('update {variable} set value=:combo where name=\'site_name\'', array(':combo' => serialize($_POST['pdxchangetitle'])));
+    if(module_exists('mimemail')){
+        db_query('update {variable} set value=:combo where name=\'mimemail_name\'', array(':combo' => serialize($_POST['pdxchangetitle'])));
+    }
+    if(module_exists('uc_order')){
+        db_query('update {variable} set value=:combo where name=\'uc_store_name\'', array(':combo' => serialize($_POST['pdxchangetitle'])));
+    }
+    if(module_exists('webform')){
+        db_query('update {variable} set value=:combo where name=\'webform_default_from_name\'', array(':combo' => serialize($_POST['pdxchangetitle'])));
+    }
+    $mres.='<div>Заголовки изменены на '.$_POST['pdxchangetitle'].'</div>';
+    $change=1;
+}
+if($change){
+    drupal_flush_all_caches();
+}
+if($pdxchangemeta=variable_get('pdxchangemeta')){
+    $pdxchangemeta=unserialize($pdxchangemeta);
+}
+if( isset( $_POST['pdxchangemeta'] ) ){
+    if(strlen( $_POST['pdxchangemeta'] )){
+        $_POST['pdxchangemeta']=filter_xss($_POST['pdxchangemeta'],array('meta'));
+        $pdxchangemeta=$_POST['pdxchangemeta'];
+        variable_set('pdxchangemeta', serialize($_POST['pdxchangemeta']));
+        $mres.='<div>Мета-теги для главной изменены</div>';
+    }else{
+        variable_del('pdxchangemeta');
+        $mres.='<div>Мета-теги для главной удалены</div>';
+    }
+}
+
+$mres.='<fieldset id="aset2" class=\'admin_item admin_mail\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_mail_post\').toggle();">Добавить любые мета-теги на главную страницу сайта</a></legend><div class="admin_mail_post"';
+if( is_numeric(arg(1)) and arg(1)==2 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>Чаще всего необходимость размещения произвольного мета-тега на главной странице сайта возникает при добавлении сайта в панель вебмастера поисковых систем Яндекс и Google. В этом случае от Вас потребуется подтвердить права на добавляемый сайт, разместив произвольный мета-тег на главной странице.  Чтобы это сделать, воспользуйтесь полем ниже.
+<form method="post"><textarea rows="7" style="width:100%;" name="pdxchangemeta">';
+if( isset($pdxchangemeta) and strlen($pdxchangemeta) ){
+    $mres.=$pdxchangemeta;
+}
+$mres.='</textarea><input type="submit" value="Обновить мета-теги" /></form>';
+
+$mres.='</div></fieldset>';
+
+$mres.='<fieldset id="aset3" class=\'admin_item admin_mail\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_mail_post\').toggle();">Изменение email-адресов сайта</a></legend><div class="admin_mail_post"';
+if( is_numeric(arg(1)) and arg(1)==3 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='><strong>Обратите внимание.</strong> По умолчанию на сайте установлены email-адреса разработчика. Поэтому после окончания всех работ над сайтом не забудьте изменить все email-адреса на собственные. Для этого введите новый e-mail-адрес в поле ниже, либо вручную перейдите по всем ссылкам, перечисленным ниже. И на открывшихся страницах отредактируйте содержимое поля для ввода email-адреса.
+<form method="post"><input type="text" name="pdxchangemail" value="';
+if( isset($_POST['pdxchangemail']) and strlen($_POST['pdxchangemail']) and valid_email_address($_POST['pdxchangemail']) ){
+    $mres.=$_POST['pdxchangemail'];
+}
+$mres.='" /><input type="submit" value="Сменить все перечисленные ниже email, кроме email администратора" /></form>
+<ul>
+<li><a target="_blank" href="/admin/config/system/site-information">Главный e-mail сайта</a></li>
+<li><a target="_blank" href="/user/1/edit">E-mail администратора</a></li>';
+
+if(module_exists('uc_order')){
+    $mres.='<li><a target="_blank" href="/admin/store/settings/store">E-mail магазина</a></li>';
+    $mres.='<li><a target="_blank" href="/admin/store/settings/checkout/rules/manage/uc_checkout_admin_notification/edit/3">E-mail, на который будет приходить уведомление администратора при оформлении заказа</a></li>';
+}
+if(module_exists('mimemail')){
+    $mres.='<li><a target="_blank" href="/admin/config/system/mimemail">E-mail для MimeMail</a></li>';
+}
+if(module_exists('simplenews')){
+    $mres.='<li><a target="_blank" href="/admin/config/services/simplenews/categories/6/edit">E-mail для рассылки по умолчанию</a></li>';
+    $mres.='<li><a target="_blank" href="/admin/config/services/simplenews/settings">E-mail для новых рассылок</a></li>';
+}
+
+$nodes=db_query('select nid, title from {node} where type=\'webform\'');
+while($node = $nodes->fetchAssoc()){
+    $mres.='<li><a target="_blank" href="/node/'.$node['nid'].'/webform/emails/1">Опросник "'.$node['title'].'"</a></li>';
+}
+$mres.='</ul></div></fieldset>';
+
+$mres.='<fieldset id="aset4" class=\'admin_item admin_stitle\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_stitle_post\').toggle();">Изменение заголовка сайта</a></legend><div class="admin_stitle_post"';
+if( is_numeric(arg(1)) and arg(1)==4 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>Чтобы изменить заголовок сайта, перейдите на перечисленные ниже страницы настройки Drupal, либо просто введите новый заголовок в поле ниже.
+<form method="post"><input type="text" name="pdxchangetitle" value="';
+if( isset($_POST['pdxchangetitle']) and strlen($_POST['pdxchangetitle']) ){
+    $mres.=$_POST['pdxchangetitle'];
+}
+$mres.='" /><input type="submit" value="Сменить все заголовки" /></form>
+<ul>
+<li><a target="_blank" href="/admin/config/system/site-information">Главный заголовок сайта</a></li>';
+
+if(module_exists('uc_cart')){
+    $mres.='<li><a target="_blank" href="/admin/store/settings/store">Заголовок Интернет-магазина</a></li>';
+}
+if(module_exists('mimemail')){
+    $mres.='<li><a target="_blank" href="/admin/config/system/mimemail">Заголовок для MimeMail</a></li>';
+}
+if(module_exists('simplenews')){
+    $mres.='<li><a target="_blank" href="/admin/config/services/simplenews/settings">Заголовок для всех рассылок</a></li>';
+    $mres.='<li><a target="_blank" href="/admin/config/services/simplenews/categories/6/edit">Заголовок для рассылки по умолчанию</a></li>';
+}
+if(module_exists('webform')){
+    $mres.='<li><a target="_blank" href="/admin/config/content/webform">Заголовок для Webform</a></li>';
+}
+
+$mres.='</ul></div></fieldset>';
+
+$mres.='<fieldset id="aset5" class=\'admin_item admin_stop\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_stop_post\').toggle();">Стоп-слова</a></legend><div class="admin_stop_post"';
+if( is_numeric(arg(1)) and arg(1)==5 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>';
+
+if( isset($_POST['pdxstopwords_submit']) ){
+    if(isset($_POST['pdxstopwords']) and strlen($_POST['pdxstopwords']) ){
+        variable_set('pdxstopwords',$_POST['pdxstopwords']);
+    }
+}
+
+if($pdxstopwords=variable_get('pdxstopwords')){}else{
+    $pdxstopwords='';
+}
+
+
+    $mres.='<form action="" method="post">';
+    $mres.='<textarea style="width: 100%" rows="4" name="pdxstopwords" id="idstopwords">';
+    if( isset($pdxstopwords) and strlen($pdxstopwords) ){
+        $mres.=$pdxstopwords;
+    }
+    $mres.='</textarea><input type="submit" name="pdxstopwords_submit" id="idstopwords_submit" value="Изменить" />';
+    $mres.='</form>';
+
+$mres.='<div class="clear">&nbsp;</div>';
+
+$mres.='</div></fieldset>';
+
+
+
+$offset=0;
+$offset_op=0;
+
+if(module_exists('uc_order')){
+$mres.='<fieldset id="aset6" style="padding: 7px; border: 1px solid #777;"><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_mass_post\').toggle();">Массовое изменение цены</a></legend><div class="admin_mass_post"';
+if( is_numeric(arg(1)) and arg(1)==6 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>
+<form method="post" action="">';
+
+if(isset($_POST['masspercent']) and is_numeric($_POST['masspercent']) and $_POST['masspercent']>0 and isset($_POST['massop']) and is_numeric($_POST['massop']) and $_POST['massop']>0 and isset($_POST['massitem']) and is_numeric($_POST['massitem']) and $_POST['massitem']>0 ){
+
+        $sql='select n.nid, n.title, u.sell_price from {node} as n inner join {uc_products} as u on u.nid=n.nid';
+        if( (isset($_POST['pdxCurrencyArea']) and is_array($_POST['pdxCurrencyArea'])) ){
+            $sql.=' inner join {field_data_taxonomy_catalog} as t on n.nid=t.entity_id';
+        }
+        $sql.=' where status=1 and type=\'product\'';
+        if( (isset($_POST['pdxCurrencyArea']) and is_array($_POST['pdxCurrencyArea'])) ){
+            $tids=array();
+            if(isset($_POST['pdxCurrencyArea']) and is_array($_POST['pdxCurrencyArea']) and count($_POST['pdxCurrencyArea'])){
+                foreach($_POST['pdxCurrencyArea'] as $tid){
+                    $tids[]=$tid;
+                }
+            }
+            $tids=array_unique($tids);
+            $tids=implode(', ', $tids);
+            $sql.=' and t.taxonomy_catalog_tid in ('.$tids.')';
+        }
+
+        $products=db_query($sql);
+        $countproducts=0;
+        while($product=$products->fetchAssoc()){
+            $countproducts++;
+            if(isset($product['sell_price']) and is_numeric($product['sell_price']) and $product['sell_price']>0){
+                $oldsell_price=$product['sell_price'];
+                switch($_POST['massop']){
+                case 1:
+                    switch($_POST['massitem']){
+                    case 2:
+                        $product['sell_price']+=$_POST['masspercent'];
+                        break;
+                    default:
+                        $product['sell_price']+=ceil(($product['sell_price']*$_POST['masspercent'])/100);
+                        break;
+                    }
+                    break;
+                case 2:
+                    switch($_POST['massitem']){
+                    case 2:
+                        $product['sell_price']-=$_POST['masspercent'];
+                        break;
+                    default:
+                        $product['sell_price']-=ceil(($product['sell_price']*$_POST['masspercent'])/100);
+                        break;
+                    }
+                    break;
+                }
+                db_query('update {uc_products} set sell_price='.$product['sell_price'].' where nid='.$product['nid']);
+                $mres.=$oldsell_price.' -> '.$product['sell_price'].': <a href="/node/'.$product['nid'].'">'.$product['title'].'</a><br />';
+            }
+        }
+        if($countproducts>0){
+            $mres.='<div>Обновлены цены для '.$countproducts.' товаров</div>';
+        }
+
+cache_clear_all('*', 'cache', true);
+cache_clear_all('*', 'cache_entity_node', true);
+cache_clear_all('*', 'cache_field', true);
+
+}
+
+
+$cat=taxonomy_get_tree(2);
+if($cat){
+    $mres.='
+<fieldset style="padding: 7px; border: 1px solid #777;">
+<div>Выберите категории товара, на которые будет влиять изменение цены:</div>
+<select multiple="multiple" name="pdxCurrencyArea[]" size="23">';
+    foreach($cat as $term){
+        if($term->tid){
+            $mres.='<option ';
+
+            if(isset($_POST['pdxCurrencyArea']) and is_array($_POST['pdxCurrencyArea']) ){
+                $areaf=false;
+                foreach($_POST['pdxCurrencyArea'] as $val){
+                    if($val==$term->tid) $areaf=true;
+                }
+                if($areaf){
+                    $mres.='selected="selected" ';
+                }
+            }
+            $mres.='value="'.$term->tid.'">';
+            if(is_numeric($term->depth)){
+                $depth=$term->depth;
+                while($depth){ $mres.='--'; $depth--; }
+            }
+            $mres.=' '.$term->name.'</option>';
+        }
+    }
+    $mres.='</select></fieldset>';
+}
+
+$mres.='<br /><select name="massop"><option value="1">Увеличить</option><option value="2">Уменьшить</option></select> на <input type="text" name="masspercent" value="" /> <select name="massitem"><option value="1">%</option><option value="2">руб</option></select> <input type="submit" value="Отправить" /></form></fieldset>';
+}
+
+
+
+if(module_exists('uc_order') and module_exists('uc_attribute')){
+if( isset($_POST['ub_atributes']) and is_numeric($_POST['ub_atributes']) and isset($_POST['ub_options']) and strlen($_POST['ub_options']) ){
+    $_POST['ub_options']=str_replace("\r","\n",$_POST['ub_options']);
+    $_POST['ub_options']=str_replace("\n\n","\n",$_POST['ub_options']);
+    $lines=explode("\n",$_POST['ub_options']);
+
+    if( isset($lines) and is_array($lines) and count($lines) ){
+        foreach( $lines as $line ){
+            if( !strlen($line) ) continue;
+            $satr=db_query('select oid from {uc_attribute_options} where aid='.$_POST['ub_atributes'].' and (name=\''.$line.'\' or name=\''.addslashes($line).'\')');
+            $satr=$satr->fetchAssoc();
+            if(!$satr){
+                $option = new stdClass();
+                $option->name = $line;
+                $option->aid = $_POST['ub_atributes'];
+                $option->cost = 0;
+                $option->price = 0;
+                $option->weight = 0;
+                $option->ordering = 0;
+                uc_attribute_option_save($option);
+            }
+            
+        }
+    }
+    
+}
+$mres.='<fieldset id="aset7" class=\'admin_item admin_option\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_option_post\').toggle();">Пакетное добавление опций</a></legend><div class="admin_option_post"';
+if( is_numeric(arg(1)) and arg(1)==7 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>
+<form method="post">';
+$mres.='<select name="ub_atributes">';
+$atts=db_query('select aid, name from {uc_attributes}');
+while($att=$atts->fetchAssoc()){
+    $mres.='<option value="'.$att['aid'].'">'.$att['name'].'</option>';
+}
+$mres.='</select> <textarea cols="7" style="width: 100%;" name="ub_options"></textarea> <input type="submit" value="Отправить" /></form></fieldset>';
+}
+
+
+
+
+
+if( isset($_POST['tax_voc']) and is_numeric($_POST['tax_voc']) and isset($_POST['tax_tid']) and strlen($_POST['tax_tid']) ){
+    $_POST['tax_tid']=str_replace("\r","\n",$_POST['tax_tid']);
+    $_POST['tax_tid']=str_replace("\n\n","\n",$_POST['tax_tid']);
+    $lines=explode("\n",$_POST['tax_tid']);
+    if( isset($lines) and is_array($lines) and count($lines) ){
+        foreach( $lines as $line ){
+            if( !strlen($line) ) continue;
+            $satr=db_query('select tid from {taxonomy_term_data} where vid='.$_POST['tax_voc'].' and (name=\''.$line.'\' or name=\''.addslashes($line).'\')');
+            $satr=$satr->fetchAssoc();
+            if(!$satr){
+                $term = array(
+                'name' => $line,
+                'vid' => $_POST['tax_voc'],
+                'parent' => 0,
+                );
+                $term = (object) $term;
+                taxonomy_term_save($term);
+                $tid = $term->tid;
+            }
+        }
+    }
+    
+}
+$mres.='<fieldset id="aset8" class=\'admin_item admin_option\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_option_post\').toggle();">Пакетное добавление терминов</a></legend><div class="admin_option_post"';
+if( is_numeric(arg(1)) and arg(1)==8 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>
+<form method="post">';
+$mres.='<select name="tax_voc">';
+$atts=db_query('select vid, name from {taxonomy_vocabulary}');
+while($att=$atts->fetchAssoc()){
+    $mres.='<option value="'.$att['vid'].'">'.$att['name'].'</option>';
+}
+$mres.='</select> <textarea cols="7" style="width: 100%;" name="tax_tid"></textarea> <input type="submit" value="Отправить" /></form></fieldset>';
+
+
+
+if( isset($_POST['smssmb']) ){
+    if(isset($_POST['sms_op_checkout']) and $_POST['sms_op_checkout']=='on'){
+        variable_set('sms_op_checkout',1);
+    }else{
+        variable_set('sms_op_checkout',0);
+    }
+    if(isset($_POST['sms_op_tracking']) and $_POST['sms_op_tracking']=='on'){
+        variable_set('sms_op_tracking',1);
+    }else{
+        variable_set('sms_op_tracking',0);
+    }
+    if(isset($_POST['sms_password']) and strlen($_POST['sms_password']) ){
+        $_POST['sms_password']=filter_xss(strip_tags($_POST['sms_password']));
+        variable_set('sms_password',$_POST['sms_password']);
+    }
+    if(isset($_POST['sms_login']) and strlen($_POST['sms_login']) ){
+        $_POST['sms_login']=filter_xss(strip_tags($_POST['sms_login']));
+        variable_set('sms_login',$_POST['sms_login']);
+    }
+    if(isset($_POST['sms_tel']) and strlen($_POST['sms_tel']) ){
+        $_POST['sms_tel']=filter_xss(strip_tags($_POST['sms_tel']));
+        variable_set('sms_tel',$_POST['sms_tel']);
+    }
+}
+if($smsopcheckout=variable_get('sms_op_checkout')){}else{
+    $smsopcheckout='';
+}
+if($smsoptracking=variable_get('sms_op_tracking')){}else{
+    $smsoptracking='';
+}
+if($pdxsmspassword=variable_get('sms_password')){}else{
+    $pdxsmspassword='';
+}
+if($pdxsmslogin=variable_get('sms_login')){}else{
+    $pdxsmslogin='';
+}
+if($pdxsmstel=variable_get('sms_tel')){}else{
+    $pdxsmstel='';
+}
+
+$mres.='<fieldset id="aset9" class=\'admin_item admin_option\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_option_post\').toggle();">Настройки SMS-информирования</a></legend><div class="admin_option_post"';
+if( is_numeric(arg(1)) and arg(1)==9 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>
+<form method="post">';
+
+$mres.='<div class="form-item"><label>Номер телефона, на который будут отправляться SMS при наступлении выбранных событий: </label><input type="text" value="';
+if( isset($pdxsmstel) and strlen($pdxsmstel) ){
+    $mres.=$pdxsmstel;
+}
+$mres.='" name="sms_tel" /></div>';
+
+$mres.='<div class="form-item"><label>Ваш логин на сервисе SMS-информирования <a target="_blank" href="http://1sms.co.ua/">1sms.co.ua</a>. <a target="_blank" href="http://1sms.co.ua/reg/">Зарегистрироваться</a> : </label><input type="text" value="';
+if( isset($pdxsmslogin) and strlen($pdxsmslogin) ){
+    $mres.=$pdxsmslogin;
+}
+$mres.='" name="sms_login" /></div>';
+
+$mres.='<div class="form-item"><label>Ваш пароль на сервисе SMS-информирования <a target="_blank" href="http://1sms.co.ua/">1sms.co.ua</a>. <a target="_blank" href="http://1sms.co.ua/reg/">Зарегистрироваться</a> : </label><input type="text" value="';
+if( isset($pdxsmspassword) and strlen($pdxsmspassword) ){
+    $mres.=$pdxsmspassword;
+}
+$mres.='" name="sms_password" /></div>';
+
+$mres.='<p>Стоимость одного SMS по Росии 35 копеек. <a target="_blank" href="http://1sms.co.ua/tariffs/">Смотреть цены на SMS в другие страны, и возможные тарифы</a></p>';
+
+$mres.='<div class="form-item"><label><input type="checkbox" name="sms_op_checkout"';
+if( isset($smsopcheckout) and $smsopcheckout==1 ){
+    $mres.=' checked="checked"';
+}
+$mres.=' /> Отправлять SMS на указанный номер при оформлении нового заказа на сайте</label></div>';
+
+$mres.='<div class="form-item"><label><input type="checkbox" name="sms_op_tracking"';
+if( isset($smsoptracking) and $smsoptracking==1 ){
+    $mres.=' checked="checked"';
+}
+$mres.=' /> Отправлять SMS с трекинг-номером на номер из заказа</label></div>';
+
+$mres.='<input type="submit" name="smssmb" value="Изменить" /></form></fieldset>';
+
+
+
+if( isset($_POST['type_pathauto']) and strlen($_POST['type_pathauto']) ){
+    $nids=db_query('select nid from {node} where type=:combo', array(':combo'=>$_POST['type_pathauto']));
+    $count=0;
+    while($nid=$nids->fetchAssoc()){
+        $typenode=node_load($nid['nid']);
+        pathauto_node_insert($typenode);
+        $count++;
+    }
+    $mres.='<p>Обработано '.$count.' материалов</p>';
+}
+$mres.='<fieldset id="aset10" class=\'admin_item admin_option\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_option_post\').toggle();">Обновление синонимов через pathauto</a></legend><div class="admin_option_post"';
+if( is_numeric(arg(1)) and arg(1)==10 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>
+<form method="post">';
+$mres.='<select name="type_pathauto">';
+$atts=db_query('select type, name from {node_type} where disabled=0');
+while($att=$atts->fetchAssoc()){
+    $mres.='<option value="'.$att['type'].'">'.$att['name'].'</option>';
+}
+$mres.='</select> <input type="submit" value="Обновить" /></form></fieldset>';
+
+
+
+
+
+
+if( isset($_POST['deltagtype']) and strlen($_POST['deltagtype']) and isset($_POST['deltagis']) and strlen($_POST['deltagis']) ){
+    $count=0;
+    $nids=db_query('select b.body_value, n.nid from {node} as n inner join {field_data_body} as b on n.nid=b.entity_id where n.type=:combo and b.body_value LIKE (:combo2)', array(':combo'=>$_POST['deltagtype'], ':combo2'=>'%<'.$_POST['deltagis'].' %'));
+    while($nid=$nids->fetchAssoc()){
+        while(1==1){
+            if( mb_strpos($nid['body_value'],'<'.$_POST['deltagis'].' ')===false ){
+                break;
+            }
+            $count++;
+            $pre=mb_substr($nid['body_value'],0,mb_strpos($nid['body_value'],'<'.$_POST['deltagis'].' '));
+            $nid['body_value']=mb_substr($nid['body_value'],1+mb_strpos($nid['body_value'],'<'.$_POST['deltagis'].' '));
+            $nid['body_value']=mb_substr($nid['body_value'],1+mb_strpos($nid['body_value'],'>'));
+            $nid['body_value']=$pre.$nid['body_value'];
+        }
+        $nid['body_value']=str_replace('</'.$_POST['deltagis'].'>','',$nid['body_value']);
+        db_query('update {field_data_body} set body_value=:combo where entity_id='.$nid['nid'], array(':combo'=>$nid['body_value']));
+    }
+
+    $nids=db_query('select b.body_value, n.nid from {node} as n inner join {field_data_body} as b on n.nid=b.entity_id where n.type=:combo and b.body_value LIKE (:combo2)', array(':combo'=>$_POST['deltagtype'], ':combo2'=>'%<'.$_POST['deltagis'].' %'));
+    while($nid=$nids->fetchAssoc()){
+        while(1==1){
+            if( mb_strpos($nid['body_value'],'<'.$_POST['deltagis'].' ')===false ){
+                break;
+            }
+            $pre=mb_substr($nid['body_value'],0,mb_strpos($nid['body_value'],'<'.$_POST['deltagis'].' '));
+            $nid['body_value']=mb_substr($nid['body_value'],1+mb_strpos($nid['body_value'],'<'.$_POST['deltagis'].' '));
+            $nid['body_value']=mb_substr($nid['body_value'],1+mb_strpos($nid['body_value'],'>'));
+            $nid['body_value']=$pre.$nid['body_value'];
+        }
+        $nid['body_value']=str_replace('</'.$_POST['deltagis'].'>','',$nid['body_value']);
+        db_query('update {field_data_body} set body_value=:combo where entity_id='.$nid['nid'], array(':combo'=>$nid['body_value']));
+    }
+    $mres.='<p>Удалено '.$count.' тегов</p>';
+}
+$mres.='<fieldset id="aset100" class=\'admin_item admin_option\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_option_post\').toggle();">Удаление тега из публикации</a></legend><div class="admin_option_post"';
+if( is_numeric(arg(1)) and arg(1)==10 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>
+<form method="post">';
+$mres.='<select name="deltagtype"><option value="">Выберите тип публикации</option>';
+$atts=db_query('select type, name from {node_type} where disabled=0');
+while($att=$atts->fetchAssoc()){
+    $mres.='<option value="'.$att['type'].'">'.$att['name'].'</option>';
+}
+$mres.='</select> Тег: <input value="" name="deltagis" /> <input type="submit" value="Удалить" /></form></fieldset>';
+
+
+
+
+
+
+
+
+if( isset($_POST['commenttype']) and strlen($_POST['commenttype']) and isset($_POST['commentis']) and is_numeric($_POST['commentis']) ){
+    $nids=db_query('select nid from {node} where type=:combo', array(':combo'=>$_POST['commenttype']));
+    while($nid=$nids->fetchAssoc()){
+        db_query('update {node} set comment='.$_POST['commentis'].' where nid='.$nid['nid']);
+        db_query('update {node_revision} set comment='.$_POST['commentis'].' where nid='.$nid['nid']);
+    }
+
+    $mres.='<p>Готово</p>';
+}
+$mres.='<fieldset id="aset101" class=\'admin_item admin_option\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_option_post\').toggle();">Изменить режим вывода комментариев у типа публикации</a></legend><div class="admin_option_post"';
+if( is_numeric(arg(1)) and arg(1)==10 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>
+<form method="post">';
+$mres.='<select name="commenttype"><option value="">Выберите тип публикации</option>';
+$atts=db_query('select type, name from {node_type} where disabled=0');
+while($att=$atts->fetchAssoc()){
+    $mres.='<option value="'.$att['type'].'">'.$att['name'].'</option>';
+}
+$mres.='</select> <select name="commentis"><option value="">Выберите действие</option><option value="0">Отключить</option><option value="1">Только чтение</option><option value="2">Открыто</option></select> <input type="submit" value="Изменить" /></form></fieldset>';
+
+
+
+
+
+if( isset($_POST['type_pathauto_del']) and strlen($_POST['type_pathauto_del']) ){
+    $nids=db_query('select nid from {node} where type=:combo', array(':combo'=>$_POST['type_pathauto_del']));
+    $count=0;
+    while($nid=$nids->fetchAssoc()){
+        path_delete(array('source' => 'node/' . $nid['nid']));
+        $count++;
+    }
+    $mres.='<p>Удалены синонимы для '.$count.' материалов</p>';
+}
+$mres.='<fieldset id="aset11" class=\'admin_item admin_option\'><legend><a href="javascript:void(0);" onclick="jQuery(this).parent().parent().find(\'.admin_option_post\').toggle();">Удаление синонимов для типа материалов</a></legend><div class="admin_option_post"';
+if( is_numeric(arg(1)) and arg(1)==11 ){}else{
+    $mres.=' style="display: none;"';
+}
+$mres.='>
+<form method="post">';
+$mres.='<select name="type_pathauto_del">';
+$atts=db_query('select type, name from {node_type} where disabled=0');
+while($att=$atts->fetchAssoc()){
+    $mres.='<option value="'.$att['type'].'">'.$att['name'].'</option>';
+}
+$mres.='</select> <input type="submit" value="Обновить" /></form></fieldset>';
+
+
+
+if(isset($_SESSION['pdxpdx_getcurtheme']) and strlen($_SESSION['pdxpdx_getcurtheme'])){
+
+$mres.='<ul>
+<li><a target="_blank" href="http://dev.biz.ua/instruction">Открыть инструкцию по основам работы с CMS Drupal</a></li>
+</ul>';
+
+}
+
+if( isset($_POST['pdxshowhelp_submit']) ){
+    if(isset($_POST['pdxshowhelp']) and $_POST['pdxshowhelp']=='on'){
+        variable_set('pdxshowhelp',1);
+    }else{
+        variable_set('pdxshowhelp',0);
+    }
+}
+if($pdxshowhelp=variable_get('pdxshowhelp')){}else{
+    $pdxshowhelp=0;
+}
+
+
+    $mres.='<form action="" method="post">';
+    $mres.='<input type="checkbox" name="pdxshowhelp" id="idshowhelp"';
+    if( $pdxshowhelp==1 ){
+        $mres.=' checked="checked"';
+    }
+    $mres.=' onchange="jQuery(\'#idshowhelp_submit\').click();" /><label class="inline_label" for="idshowhelp"> Скрыть ссылки Р, У, +П, ...</label><div style="display: none;"><input type="submit" name="pdxshowhelp_submit" id="idshowhelp_submit" value="Изменить" /></div>';
+    $mres.='</form>';
+
+
+if( isset($_POST['pdxshowhelp2_submit']) ){
+    if(isset($_POST['pdxshowhelp2']) and $_POST['pdxshowhelp2']=='on'){
+        variable_set('pdxshowhelp2',1);
+    }else{
+        variable_set('pdxshowhelp2',0);
+    }
+}
+if($pdxshowhelp=variable_get('pdxshowhelp2')){}else{
+    $pdxshowhelp=0;
+}
+
+
+    $mres.='<form action="" method="post">';
+    $mres.='<input type="checkbox" name="pdxshowhelp2" id="idshowhelp2"';
+    if( $pdxshowhelp==1 ){
+        $mres.=' checked="checked"';
+    }
+    $mres.=' onchange="jQuery(\'#idshowhelp2_submit\').click();" /><label class="inline_label" for="idshowhelp2"> Скрыть ссылки "Добавить публикацию...", "Все публикации..."</label><div style="display: none;"><input type="submit" name="pdxshowhelp2_submit" id="idshowhelp2_submit" value="Изменить" /></div>';
+    $mres.='</form>';
+
+
+
+if( isset($_POST['pdxshowhelp3_submit']) ){
+    if(isset($_POST['pdxshowhelp3']) and $_POST['pdxshowhelp3']=='on'){
+        variable_set('pdxshowhelp3',1);
+    }else{
+        variable_set('pdxshowhelp3',0);
+    }
+}
+if($pdxshowhelp=variable_get('pdxshowhelp3')){}else{
+    $pdxshowhelp=0;
+}
+
+
+    $mres.='<form action="" method="post">';
+    $mres.='<input type="checkbox" name="pdxshowhelp3" id="idshowhelp3"';
+    if( $pdxshowhelp==1 ){
+        $mres.=' checked="checked"';
+    }
+    $mres.=' onchange="jQuery(\'#idshowhelp3_submit\').click();" /><label class="inline_label" for="idshowhelp3"> Скрыть ссылки +Б..."</label><div style="display: none;"><input type="submit" name="pdxshowhelp3_submit" id="idshowhelp3_submit" value="Изменить" /></div>';
+    $mres.='</form>';
+
+
+
+if( isset($_POST['pdxshowhelp4_submit']) ){
+    if(isset($_POST['pdxshowhelp4']) and $_POST['pdxshowhelp4']=='on'){
+        variable_set('pdxshowhelp4',1);
+    }else{
+        variable_set('pdxshowhelp4',0);
+    }
+}
+if($pdxshowhelp=variable_get('pdxshowhelp4')){}else{
+    $pdxshowhelp=0;
+}
+
+
+    $mres.='<form action="" method="post">';
+    $mres.='<input type="checkbox" name="pdxshowhelp4" id="idshowhelp4"';
+    if( $pdxshowhelp==1 ){
+        $mres.=' checked="checked"';
+    }
+    $mres.=' onchange="jQuery(\'#idshowhelp4_submit\').click();" /><label class="inline_label" for="idshowhelp4"> Скрыть колесико редактирования темы оформления"</label><div style="display: none;"><input type="submit" name="pdxshowhelp4_submit" id="idshowhelp4_submit" value="Изменить" /></div>';
+    $mres.='</form>';
+
+
+
+    if( isset($_POST['pdxaddspace']) and $_POST['pdxaddspace']==1 ){
+        $isfields=db_query('select field_name from {field_config} where (type=\'text_long\' or type=\'text_with_summary\')');
+        while($isfield=$isfields->fetchAssoc()){
+            $vals=db_query('select '.$isfield['field_name'].'_value, entity_type, entity_id from {field_data_'.$isfield['field_name'].'} where '.$isfield['field_name'].'_value IS NOT NULL');
+            while($val=$vals->fetchAssoc()){
+//            echo 'update {field_data_'.$isfield['field_name'].'} set '.$isfield['field_name'].'_value=:combo where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'].'<br />';
+                
+                $val[$isfield['field_name'].'_value']=str_replace(',',', ',$val[$isfield['field_name'].'_value']);
+                db_query('update {field_data_'.$isfield['field_name'].'} set '.$isfield['field_name'].'_value=:combo where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'], array(':combo' => $val[$isfield['field_name'].'_value']));
+            }
+
+            $vals=db_query('select '.$isfield['field_name'].'_value, entity_type, entity_id from {field_data_'.$isfield['field_name'].'} where '.$isfield['field_name'].'_value IS NOT NULL');
+            while($val=$vals->fetchAssoc()){
+                $val[$isfield['field_name'].'_value']=str_replace(',',', ',$val[$isfield['field_name'].'_value']);
+                db_query('update {field_data_'.$isfield['field_name'].'} set '.$isfield['field_name'].'_value=:combo where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'], array(':combo' => $val[$isfield['field_name'].'_value']));
+            }
+        }
+        cache_clear_all('*', 'cache', true);
+        cache_clear_all('*', 'cache_entity_node', true);
+        cache_clear_all('*', 'cache_field', true);
+        $mres.='ok';
+    }
+    $mres.='<form action="" method="post">';
+    $mres.='<input type="hidden" name="pdxaddspace" value="1" /><input type="submit" value="Добавить в описания пробелы после запятой" />';
+    $mres.='</form>';
+
+
+
+
+    if( isset($_POST['pdx2space']) and $_POST['pdx2space']==1 ){
+        $isfields=db_query('select field_name from {field_config} where (type=\'text_long\' or type=\'text_with_summary\')');
+        while($isfield=$isfields->fetchAssoc()){
+            $vals=db_query('select '.$isfield['field_name'].'_value, entity_type, entity_id from {field_data_'.$isfield['field_name'].'} where '.$isfield['field_name'].'_value IS NOT NULL');
+            while($val=$vals->fetchAssoc()){
+//            echo 'update {field_data_'.$isfield['field_name'].'} set '.$isfield['field_name'].'_value=:combo where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'].'<br />';
+                
+                $val[$isfield['field_name'].'_value']=str_replace('&nbsp; ',' ',str_replace(' &nbsp;',' ',str_replace('  ',' ',$val[$isfield['field_name'].'_value'])));
+                db_query('update {field_data_'.$isfield['field_name'].'} set '.$isfield['field_name'].'_value=:combo where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'], array(':combo' => $val[$isfield['field_name'].'_value']));
+            }
+
+            $vals=db_query('select '.$isfield['field_name'].'_value, entity_type, entity_id from {field_data_'.$isfield['field_name'].'} where '.$isfield['field_name'].'_value IS NOT NULL');
+            while($val=$vals->fetchAssoc()){
+                $val[$isfield['field_name'].'_value']=str_replace('  ',' ',$val[$isfield['field_name'].'_value']);
+                db_query('update {field_data_'.$isfield['field_name'].'} set '.$isfield['field_name'].'_value=:combo where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'], array(':combo' => $val[$isfield['field_name'].'_value']));
+            }
+        }
+        cache_clear_all('*', 'cache', true);
+        cache_clear_all('*', 'cache_entity_node', true);
+        cache_clear_all('*', 'cache_field', true);
+        $mres.='ok';
+    }
+    $mres.='<form action="" method="post">';
+    $mres.='<input type="hidden" name="pdx2space" value="1" /><input type="submit" value="Заменить в описаниях 2 пробела одним" />';
+    $mres.='</form>';
+
+
+    if( isset($_POST['pdx2spacetitle']) and $_POST['pdx2spacetitle']==1 ){
+        
+        $vals=db_query('select title, nid from {node}');
+        while($val=$vals->fetchAssoc()){
+            $val['title']=trim($val['title']);
+            db_query('update {node} set title=:combo where nid='.$val['nid'], array(':combo'=>$val['title']) );
+        }
+        
+        cache_clear_all('*', 'cache', true);
+        cache_clear_all('*', 'cache_entity_node', true);
+        cache_clear_all('*', 'cache_field', true);
+        $mres.='ok';
+    }
+    $mres.='<form action="" method="post">';
+    $mres.='<input type="hidden" name="pdx2spacetitle" value="1" /><input type="submit" value="Удалить пробелы в начале и конце заголовка (trim)" />';
+    $mres.='</form>';
+
+
+
+
+    if( isset($_POST['pdxaddtags']) and $_POST['pdxaddtags']==1 ){
+            $vals=db_query('select body_value, entity_type, entity_id from {field_data_body} where bundle=\'item\' and body_value NOT LIKE \'%</p>%\'');
+            while($val=$vals->fetchAssoc()){
+                $val['body_value']=str_replace("\r", "\n", $val['body_value']);
+                $val['body_value']=str_replace("\n\n", "\n", $val['body_value']);
+                $val['body_value']='<p>'.str_replace("\n",'<br />',$val['body_value']).'</p>';
+                
+                db_query('update {field_data_body} set body_value=:combo, body_format=\'limited\' where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'], array(':combo' => $val['body_value']));
+            }
+            $vals=db_query('select field_price_about_value, entity_type, entity_id from {field_data_field_price_about} where field_price_about_value NOT LIKE \'%</p>%\'');
+            while($val=$vals->fetchAssoc()){
+                $val['field_price_about_value']=str_replace("\r", "\n", $val['field_price_about_value']);
+                $val['field_price_about_value']=str_replace("\n\n", "\n", $val['field_price_about_value']);
+                $val['field_price_about_value']='<p>'.str_replace("\n",'<br />',$val['field_price_about_value']).'</p>';
+                
+                db_query('update {field_data_field_price_about} set field_price_about_value=:combo, field_price_about_format=\'limited\' where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'], array(':combo' => $val['field_price_about_value']));
+            }
+            $vals=db_query('select field_rent_apply6_value, entity_type, entity_id from {field_data_field_rent_apply6} where field_rent_apply6_value NOT LIKE \'%</p>%\'');
+            while($val=$vals->fetchAssoc()){
+                $val['field_rent_apply6_value']=str_replace("\r", "\n", $val['field_rent_apply6_value']);
+                $val['field_rent_apply6_value']=str_replace("\n\n", "\n", $val['field_rent_apply6_value']);
+                $val['field_rent_apply6_value']='<p>'.str_replace("\n",'<br />',$val['field_rent_apply6_value']).'</p>';
+                
+                db_query('update {field_data_field_rent_apply6} set field_rent_apply6_value=:combo, field_rent_apply6_format=\'limited\' where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'], array(':combo' => $val['field_rent_apply6_value']));
+            }
+            $vals=db_query('select field_payments_value, entity_type, entity_id from {field_data_field_payments} where field_payments_value NOT LIKE \'%</p>%\'');
+            while($val=$vals->fetchAssoc()){
+                $val['field_payments_value']=str_replace("\r", "\n", $val['field_payments_value']);
+                $val['field_payments_value']=str_replace("\n\n", "\n", $val['field_payments_value']);
+                $val['field_payments_value']='<p>'.str_replace("\n",'<br />',$val['field_payments_value']).'</p>';
+                
+                db_query('update {field_data_field_payments} set field_payments_value=:combo, field_payments_format=\'limited\' where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'], array(':combo' => $val['field_payments_value']));
+            }
+            $vals=db_query('select field_about_value, entity_type, entity_id from {field_data_field_about} where field_about_value NOT LIKE \'%</p>%\'');
+            while($val=$vals->fetchAssoc()){
+                $val['field_about_value']=str_replace("\r", "\n", $val['field_about_value']);
+                $val['field_about_value']=str_replace("\n\n", "\n", $val['field_about_value']);
+                $val['field_about_value']='<p>'.str_replace("\n",'<br />',$val['field_about_value']).'</p>';
+                
+                db_query('update {field_data_field_about} set field_about_value=:combo, field_about_format=\'limited\' where entity_type=\''.$val['entity_type'].'\' and entity_id='.$val['entity_id'], array(':combo' => $val['field_about_value']));
+            }
+
+        $mres.='ok';
+    }
+    $mres.='<form action="" method="post">';
+    $mres.='<input type="hidden" name="pdxaddtags" value="1" /><input type="submit" value="Добавить теги туда, где их нет" />';
+    $mres.='</form>';
+
+
+
+
+
+    
+
+    if( isset($_POST['pdxclearcss']) and $_POST['pdxclearcss']==1 ){
+        if( is_dir('sites/default/files/css') ){
+            $files=scandir('sites/default/files/css');
+            $count=0;
+            if( isset($files) and is_array($files) and count($files) ){
+                foreach($files as $file){
+                    if( strlen($file)>7 ){
+                        unlink('sites/default/files/css/'.$file);
+                        $count++;
+                    }
+                }
+                $mres.='<p>Удалено '.$count.' файлов</p>';
+            }
+        }
+    }
+    $mres.='<form action="" method="post">';
+    $mres.='<input type="hidden" name="pdxclearcss" value="1" /><input type="submit" value="Очистить кеш CSS" />';
+    $mres.='</form>';
+
+
+    if( isset($_POST['pdxupdate']) and strlen($_POST['pdxupdate']) ){
+        $count=0;
+        $nids=db_query('select nid from {node} where type=:combo', array(':combo'=>$_POST['pdxupdate']));
+        while($nid=$nids->fetchAssoc()){
+            $edit=node_load($nid['nid']);
+            if( isset($edit->nid) ){
+                if($node = node_submit($edit)) {
+                    node_save($node);
+                    if($node->nid){
+                        $count++;
+                    }
+                }
+            }
+        }
+        $mres.='<p>Обновлено '.$count.' материалов</p>';
+    }
+    $mres.='<form method="post">';
+    $mres.='<select name="pdxupdate"><option value="">Выберите тип публикации</option>';
+    $atts=db_query('select type, name from {node_type} where disabled=0');
+    while($att=$atts->fetchAssoc()){
+        $mres.='<option value="'.$att['type'].'">'.$att['name'].'</option>';
+    }
+    $mres.='</select> <input type="submit" value="Обновить все материалы данного типа" /></form>';
+
+
+
+}
+$source_content=$mres;
+return $source_content;
+
+}
+function parad0x_changes_validate_wf($node, &$form) {
+    if( !isset($form['values']['submitted']['s']) or !is_numeric($form['values']['submitted']['s']) or $form['values']['submitted']['s']!=7778 ){
+        form_set_error('body', 'Не удалось передать сообщение. Попробуйте позже');
+    }
+}
+
+function xmldelit($str){
+    $str=str_replace('"','&quot;',$str);
+    $str=str_replace('©','&copy;',$str);
+    $str=str_replace('®','&reg;',$str);
+    $str=str_replace('™','&trade;',$str);
+    $str=str_replace('?','&euro;',$str);
+    $str=str_replace('Ј','&pound;',$str);
+    $str=str_replace('„','&bdquo;',$str);
+    $str=str_replace('“','&ldquo;',$str);
+    $str=str_replace('«','&laquo;',$str);
+    $str=str_replace('»','&raquo;',$str);
+    $str=str_replace('>','&gt;',$str);
+    $str=str_replace('<','&lt;',$str);
+    $str=str_replace('?','&ge;',$str);
+    $str=str_replace('?','&le;',$str);
+    $str=str_replace('?','&asymp;',$str);
+    $str=str_replace('?','&ne;',$str);
+    $str=str_replace('?','&equiv;',$str);
+    $str=str_replace('§','&sect;',$str);
+    $str=str_replace('&','&amp;',$str);
+    $str=str_replace('?','&infin;',$str);
+
+    return $str;
+}
+
+/*
+function parad0x_changes_theme_registry_alter(&$registry) {
+
+    $path = drupal_get_path('module', 'parad0x_changes') . '/theme';
+
+    $registry += drupal_find_theme_templates($registry, '.tpl.php', $path);
+
+}
+function parad0x_changes_preprocess_field(&$variables, $hook) {
+    $variables['theme_hook_suggestion'] = 'field';
+}
+*/
+
+function getisadm(){
+    $isadmproduct=0;
+    if( arg(0)=='node' and is_string(arg(1)) and arg(1)=='add' and is_string(arg(2)) and arg(2)=='product' ){
+//        $isadmproduct=1;
+    }elseif( arg(0)=='node' and is_string(arg(2)) and arg(2)=='edit' and isset($_SESSION['pdxpdx_node_type']) and $_SESSION['pdxpdx_node_type']=='product' ){
+        $isadmproduct=1;
+    }elseif( arg(0)=='admin' and is_string(arg(1)) ){
+        if( arg(1)=='mystock' ){
+            $isadmproduct=2;
+        }elseif( arg(1)=='reserve' ){
+            $isadmproduct=5;
+        }elseif( arg(1)=='store' and is_string(arg(2)) and arg(2)=='orders' and is_string(arg(3)) and arg(3)=='view' ){
+            $isadmproduct=3;
+        }elseif( arg(1)=='store' and is_string(arg(2)) and arg(2)=='orders' and is_string(arg(3)) and arg(3)=='create' ){
+            $isadmproduct=4;
+        }elseif( arg(1)=='store' and is_string(arg(2)) and arg(2)=='orders' and is_numeric(arg(3)) and is_string(arg(4)) and arg(4)=='edit' ){
+            $isadmproduct=4;
+        }
+    }
+    
+    return $isadmproduct;
+}
+
+
+function pdxnumfoot($count, $str1, $str2, $str3, $post=0){
+    $tmpcount=$tmpiscount=intval($count);
+    if($tmpcount<1){
+        if( $post ){
+            return $count.' <span class="in">'.$str1.'</span>';
+        }else{
+            return $count.' '.$str1;
+        }
+    }
+    $tmpcount2=-1;
+    if($tmpcount>9){
+        $tmpcount2=$tmpcount%100;
+    }
+    if( $tmpcount2>10 and $tmpcount2<20 ){
+    }else{
+        $tmpcount2=$tmpcount%10;
+        switch($tmpcount2){
+        case 0:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+            break;
+        case 1:
+            if( $post ){
+                return $count.' <span class="in">'.$str1.'</span>';
+            }else{
+                return $count.' '.$str1;
+            }
+            break;
+        case 2:
+        case 3:
+        case 4:
+            if( $post ){
+                return $count.' <span class="in">'.$str3.'</span>';
+            }else{
+                return $count.' '.$str3;
+            }
+            break;
+        }
+    }
+    if( $post ){
+        return $count.' <span class="in">'.$str2.'</span>';
+    }else{
+        return $count.' '.$str2;
+    }
+}
+function parad0x_changes_m2t($millimeters){
+  return floor($millimeters*56.7); //1 твип равен 1/567 сантиметра
+}//m2t
+function str_split_unicode($str, $l = 0) {
+ if ($l > 0) {
+ $ret = array();
+ $len = mb_strlen($str, "UTF-8");
+ for ($i = 0; $i < $len; $i += $l) {
+ $ret[] = mb_substr($str, $i, $l, "UTF-8");
+ }
+ return $ret;
+ }
+ return preg_split("//u", $str, -1, PREG_SPLIT_NO_EMPTY);
+}
+function pdxseparate_checkadm(){
+    global $user; if(isset($user->roles[3]) or isset($user->roles[4])){
+        return TRUE;
+    }
+    return FALSE;
+}
+function parad0x_changes_node_access($node, $op, $account){
+    $type = is_string($node) ? $node : $node->type;
+    if( $op=='view' and $type=='item' and ( !is_string(arg(2)) or arg(2)!='edit' ) ){
+        return NODE_ACCESS_ALLOW;
+    }
+    
+    return NODE_ACCESS_IGNORE;
+}
+function pdxseparate_p_findnoval($source_content = NULL){
+    $source_content= '';
+ 
+ $source_content.= '<form action="" method="get">';
+ 
+ $source_content.= '<select name="type"><option value="">Выберите тип материала</option>';
+ $types=db_query('select name, type from {node_type} where disabled=0 order by name asc');
+ while($type=$types->fetchAssoc()){
+ $source_content.= '<option value="'.$type['type'].'"';
+ if( isset( $_GET['type'] ) and strlen($_GET['type']) and $_GET['type']==$type['type'] ){
+ $source_content.= ' selected="selected"';
+ }
+ $source_content.= '>';
+ $source_content.= $type['name'];
+ $source_content.= '</option>';
+ }
+ $source_content.= '</select>';
+ 
+ if( isset( $_GET['type'] ) and strlen($_GET['type']) ){
+
+ $source_content.= '<select name="nm"><option value="">Выберите поле</option>';
+ $types=db_query('select f.field_name, i.data from {field_config} as f inner join {field_config_instance} as i on f.id=i.field_id where f.module IN (\'taxonomy\', \'number\', \'text\', \'list\') and i.bundle=\''.$_GET['type'].'\' order by f.field_name asc');
+ //\'node_reference\', \'computed_field\'
+ $avars=array();
+ while($type=$types->fetchAssoc()){
+ $type['data']=unserialize($type['data']);
+ if( isset($type['data']['label']) and strlen($type['data']['label']) and ( $type['data']['label']=='Валюта цены' ) ){
+  continue;
+ }
+ $tmpvar='';
+ 
+ $tmpvar.='<option value="'.$type['field_name'].'"';
+ if( isset( $_GET['nm'] ) and strlen($_GET['nm']) and $_GET['nm']==$type['field_name'] ){
+  $tmpvar.=' selected="selected"';
+ }
+ $tmpvar.='>';
+ if( isset($type['data']['label']) and strlen($type['data']['label']) ){
+  $tmpvar.=$type['data']['label'];
+//  if( $type['data']['label']=='Заголовок таблицы' ){
+  $tmpvar.=' ('.$type['field_name'].')';
+//  }
+ }else{
+  $tmpvar.=$type['field_name'];
+ }
+ $tmpvar.='</option>';
+ 
+ if( isset($tmpvar) and strlen($tmpvar) and isset($type['data']['label']) and strlen($type['data']['label']) ){
+  $avars[$type['data']['label']]=$tmpvar;
+ }
+ 
+ }
+ if( isset($avars) and is_array($avars) and count($avars) ){
+ ksort($avars);
+ $source_content.= implode('', $avars);
+ }
+ 
+ $source_content.= '</select>';
+ $source_content.= '<input type="submit" value="Поиск" />'; 
+
+ 
+ if( isset( $_GET['nm'] ) and strlen($_GET['nm']) ){
+ $_GET['nm']=filter_xss(strip_tags($_GET['nm']));
+ 
+ $suffix='';
+ $cols=db_query('SHOW COLUMNS from {field_data_'.$_GET['nm'].'}');
+ while( $col=$cols->fetchAssoc() ){
+ if( isset($col['Field']) and strlen($col['Field']) ){
+  switch( $col['Field'] ){
+  case $_GET['nm'].'_value':
+  $suffix='_value';
+  break;
+  case $_GET['nm'].'_tid':
+  $suffix='_tid';
+  break;
+  case $_GET['nm'].'_nid':
+  $suffix='_nid';
+  break;
+  case $_GET['nm'].'_fid':
+  $suffix='_fid';
+  break;
+  }
+ }
+ }
+ 
+ if( isset($suffix) and strlen($suffix) ){
+ $source_content.= '<p><strong>Товары без значения в поле '.$_GET['nm'].':</strong></p>';
+ $source_content.= '<ol>';
+ $outs=db_query('select n.nid, n.title from {node} as n left join {field_data_'.$_GET['nm'].'} as f on n.nid=f.entity_id where n.type=:combo and n.status=1 and f.'.$_GET['nm'].$suffix.' IS NULL', array(':combo'=>$_GET['type']));
+ while( $out=$outs->fetchAssoc() ){
+  $source_content.= '<li><a target="_blank" href="/node/'.$out['nid'].'">'.$out['title'].'</a></li>';
+ }
+ $source_content.= '</ol>';
+ }
+ 
+ }
+ }else{
+ $source_content.= '<input type="submit" value="Поиск" />'; 
+ }
+ 
+ $source_content.= '</form>';
+
+    return $source_content;
+}
+function pdxseparate_p_findsyn($source_content = NULL){
+    $source_content= '';
+
+ $source_content.='<form action="" method="post"><input type="text" class="form-text" value="';
+if(isset($_POST['s']) and strlen($_POST['s'])){
+ $_POST['s']=filter_xss(strip_tags($_POST['s']));
+ $source_content.= $_POST['s'];
+}
+$source_content.='" placeholder="Часть исходной страницы" name="s" /><input type="text" class="form-text" value="';
+if(isset($_POST['d']) and strlen($_POST['d'])){
+ $_POST['d']=filter_xss(strip_tags($_POST['d']));
+ $source_content.= $_POST['d'];
+}
+$source_content.='" placeholder="Часть синонима" name="d" /><input type="submit" value="Искать!" /></form>';
+
+ if( (isset($_POST['s']) and strlen($_POST['s'])) or (isset($_POST['d']) and strlen($_POST['d'])) ){
+ 
+ $ind=0;
+ $aind=array();
+ 
+ $sql='select * from {url_alias} where 1=1';
+ if(isset($_POST['s']) and strlen($_POST['s'])){
+ $sql.=' and source LIKE :combo'.$ind;
+ $aind[':combo'.$ind]='%'.$_POST['s'].'%';
+ $ind++;
+ }
+ if(isset($_POST['d']) and strlen($_POST['d'])){
+ $_POST['d']=filter_xss(strip_tags($_POST['d']));
+ $sql.=' and alias LIKE :combo'.$ind;
+ $aind[':combo'.$ind]='%'.$_POST['d'].'%';
+ $ind++;
+ }
+ 
+ $source_content.= '<table><tr><th>Исходная страница</th><th>Синоним</th><th>Язык</th><th>&nbsp;</th></tr>';
+ $res=db_query($sql, $aind);
+ while( $re=$res->fetchAssoc() ){
+ $source_content.= '<tr>';
+
+ $source_content.= '<td>';
+ $source_content.= $re['source'];
+ $source_content.= '</td>';
+
+ $source_content.= '<td>';
+ $source_content.= $re['alias'];
+ $source_content.= '</td>';
+
+ $source_content.= '<td>';
+ $source_content.= $re['language'];
+ $source_content.= '</td>';
+ 
+ $source_content.= '<td>';
+ $source_content.= '<a target="_blank" href="/admin/config/search/path/edit/'.$re['pid'].'/">изменить</a> <a target="_blank" href="/admin/config/search/path/delete/'.$re['pid'].'/">удалить</a>';
+ $source_content.= '</td>';
+
+ $source_content.= '</tr>';
+ }
+ $source_content.= '</table>';
+ }
+ 
+ 
+    return $source_content;
+}
+function pdxseparate_p_pubnodes($source_content = NULL){
+    $source_content= '';
+ 
+if( isset( $_POST['nidtodel'] ) and strlen( $_POST['nidtodel'] ) ){
+ $_POST['nidtodel']=str_replace("\r","\n",$_POST['nidtodel']);
+ $_POST['nidtodel']=str_replace("\n\n","\n",$_POST['nidtodel']);
+ 
+ $logarr=array();
+ $lines=explode("\n",$_POST['nidtodel']);
+ if( isset($lines) and is_array($lines) and count($lines) ){
+ foreach( $lines as $line ){
+ $line=trim(str_replace('	','',str_replace(' ','',$line)));
+ if( !strlen($line) ) continue;
+ if( !is_numeric($line) ) continue;
+ $isset=db_query('select nid, type from {node} where nid='.$line);
+ $isset=$isset->fetchAssoc();
+ if( isset($isset['nid']) and is_numeric($isset['nid']) ){
+  db_query('update {node} set status=1 where nid='.$isset['nid']);
+  db_query('update {node} set promote=1 where nid='.$isset['nid']);
+  db_query('update {node_revision} set status=1 where nid='.$isset['nid']);
+  db_query('update {node_revision} set promote=1 where nid='.$isset['nid']);
+  $logarr[]='Материал с NID '.$line.' опубликован';
+  cache_clear_all('field:node:' . $isset['nid'], 'cache_field', true);
+
+ }else{
+  $logarr[]='<strong>Материала с NID '.$line.' нет на сайте!</strong>';
+ }
+ }
+ }
+ 
+ if( isset($logarr) and is_array($logarr) and count($logarr) ){
+ $source_content.= '<div class="results" style="border: 1px solid #ff0000; background: #d1dfe9; padding: 7px; margin: 7px; "><strong>Результаты</strong><ul><li>';
+ $source_content.= implode('</li><li>', $logarr);
+ $source_content.= '</li></ul></div>';
+ }
+ 
+ }
+ 
+$source_content.='<p>Введите список NID материалов, которые нужно опубликовать. Каждый NID должен быть написан с новой строки:</p><form action="" method="post"><textarea cols="7" name="nidtodel" rows="11"></textarea><input type="submit" value="Опубликовать!" />&nbsp;</form>';
+
+    return $source_content;
+}
+function pdxseparate_p_addval($source_content = NULL){
+    $source_content= '';
+
+$source_content.= '<form action="" method="get">';
+
+$source_content.= '<select name="type"><option value="">Выберите тип материала</option>';
+$types=db_query('select name, type from {node_type} where disabled=0 order by name asc');
+while($type=$types->fetchAssoc()){
+ $source_content.= '<option value="'.$type['type'].'"';
+ if( isset( $_GET['type'] ) and strlen($_GET['type']) and $_GET['type']==$type['type'] ){
+ $source_content.= ' selected="selected"';
+ }
+ $source_content.= '>';
+ $source_content.= $type['name'];
+ $source_content.= '</option>';
+}
+$source_content.= '</select>';
+
+if( isset( $_GET['type'] ) and strlen($_GET['type']) ){
+
+ $source_content.= '<select name="nm"><option value="">Выберите поле</option>';
+ $types=db_query('select f.field_name, i.data from {field_config} as f inner join {field_config_instance} as i on f.id=i.field_id where f.module IN (\'taxonomy\', \'number\', \'text\', \'list\') and i.bundle=\''.$_GET['type'].'\' order by f.field_name asc');
+ //\'node_reference\', \'computed_field\'
+ while($type=$types->fetchAssoc()){
+ $type['data']=unserialize($type['data']);
+ if( isset($type['data']['label']) and strlen($type['data']['label']) and ( $type['data']['label']=='Валюта цены' ) ){
+  continue;
+ }
+ $source_content.= '<option value="'.$type['field_name'].'"';
+ if( isset( $_GET['nm'] ) and strlen($_GET['nm']) and $_GET['nm']==$type['field_name'] ){
+  $source_content.= ' selected="selected"';
+ }
+ $source_content.= '>';
+ if( isset($type['data']['label']) and strlen($type['data']['label']) ){
+  $source_content.= $type['data']['label'];
+//  if( $type['data']['label']=='Заголовок таблицы' ){
+  $source_content.= ' ('.$type['field_name'].')';
+//  }
+ }else{
+  $source_content.= $type['field_name'];
+ }
+ $source_content.= '</option>';
+ }
+ 
+ $source_content.= '</select>';
+ 
+ $source_content.= '<input name="vl" value="';
+ if( isset( $_GET['vl'] ) and strlen($_GET['vl']) ){
+ $_GET['vl']=filter_xss(strip_tags($_GET['vl']));
+ $source_content.= $_GET['vl'];
+ }
+ $source_content.= '" placeholder="Введите новое значение для поля" />';
+ 
+ $source_content.= '<input type="submit" value="Изменить" />';
+
+ if( isset( $_GET['nm'] ) and strlen($_GET['nm']) and isset( $_GET['vl'] ) and strlen($_GET['vl']) ){
+ $_GET['nm']=filter_xss(strip_tags($_GET['nm']));
+ 
+ db_query('update {field_data_'.$_GET['nm'].'} set '.$_GET['nm'].'_value=:combo where bundle=:combo2', array(':combo'=>$_GET['vl'], ':combo2'=>$_GET['type']));
+ 
+ $nodes=db_query('select n.nid from {node} as n left join {field_data_'.$_GET['nm'].'} as f on n.nid=f.entity_id where n.type=:combo and f.delta IS NULL', array(':combo'=>$_GET['type']));
+ while($node=$nodes->fetchAssoc()){
+ db_query('insert into {field_data_'.$_GET['nm'].'} (entity_type, bundle, deleted, entity_id, revision_id, language, delta, '.$_GET['nm'].'_value) values (\'node\', :combo, 0, '.$node['nid'].', '.$node['nid'].', \'und\', 0, :combo2)', array(':combo'=>$_GET['type'], ':combo2'=>$_GET['vl']));
+ }
+ 
+ $source_content.= 'ok. please, empty product cache';
+ }
+
+}else{
+ $source_content.= '<input type="submit" value="Изменить" />';
+}
+$source_content.= '</form>'; 
+ 
+    return $source_content;
+}
+function pdxseparate_p_unpubnodes($source_content = NULL){
+    $source_content= '';
+ 
+if( isset( $_POST['nidtodel'] ) and strlen( $_POST['nidtodel'] ) ){
+ $_POST['nidtodel']=str_replace("\r","\n",$_POST['nidtodel']);
+ $_POST['nidtodel']=str_replace("\n\n","\n",$_POST['nidtodel']);
+
+ $logarr=array();
+ $lines=explode("\n",$_POST['nidtodel']);
+ if( isset($lines) and is_array($lines) and count($lines) ){
+ foreach( $lines as $line ){
+ $line=trim(str_replace('	','',str_replace(' ','',$line)));
+ if( !strlen($line) ) continue;
+ if( !is_numeric($line) ) continue;
+ $isset=db_query('select nid, type from {node} where nid='.$line);
+ $isset=$isset->fetchAssoc();
+ if( isset($isset['nid']) and is_numeric($isset['nid']) ){
+ db_query('update {node} set status=0 where nid='.$isset['nid']);
+ db_query('update {node} set promote=0 where nid='.$isset['nid']);
+ db_query('update {node_revision} set status=0 where nid='.$isset['nid']);
+ db_query('update {node_revision} set promote=0 where nid='.$isset['nid']);
+ $logarr[]='Материал с NID '.$line.' снят';
+ cache_clear_all('field:node:' . $isset['nid'], 'cache_field', true);
+ 
+ }else{
+ $logarr[]='<strong>Материала с NID '.$line.' нет на сайте!</strong>';
+ }
+ }
+ }
+ 
+ if( isset($logarr) and is_array($logarr) and count($logarr) ){
+ $source_content.= '<div class="results" style="border: 1px solid #ff0000; background: #d1dfe9; padding: 7px; margin: 7px; "><strong>Результаты</strong><ul><li>';
+ $source_content.= implode('</li><li>', $logarr);
+ $source_content.= '</li></ul></div>';
+ }
+
+}
+
+$source_content.='<p>Введите список NID материалов, которые нужно снять с публикации. Каждый NID должен быть написан с новой строки:</p><form action="" method="post"><textarea cols="7" name="nidtodel" rows="11"></textarea><input type="submit" value="Удалить!" />&nbsp;</form>';
+
+    return $source_content;
+}
+function pdxseparate_p_commentsperday($source_content = NULL){
+    $source_content= '';
+ 
+ 
+ if( isset( $_REQUEST['dir'] ) and strlen( $_REQUEST['dir'] ) ){
+ $_REQUEST['dir']=filter_xss(strip_tags($_REQUEST['dir']));
+ $files=scandir('pdxcache/cmtcount/'.$_REQUEST['dir']);
+ if( isset($files) and is_array($files) and count($files) ){
+ $source_content.= '<h3>Комментарии за '.$_REQUEST['dir'].':</h3>';
+ $source_content.= '<ol>';
+ foreach( $files as $file ){
+ if( is_numeric($file) ){
+  $subject=db_query('select subject from {comment} where cid='.$file);
+  $subject=$subject->fetchAssoc();
+  if( isset($subject['subject']) and strlen($subject['subject']) ){
+  $source_content.= '<li><a target="_blank" href="/comment/'.$file.'/edit">'.$subject['subject'].'</a></li>';
+  }else{
+  $source_content.= '<li>Комментарий '.$file.' возможно удален</li>';
+  }
+ }
+ }
+ $source_content.= '</ol>';
+ }
+ 
+ }
+ 
+ if( is_dir('pdxcache/cmtcount') ){
+ $dirs=scandir('pdxcache/cmtcount');
+ if( isset($dirs) and is_array($dirs) and count($dirs) ){
+ $source_content.= '<h3>Выберите день:</h3>';
+ $source_content.= '<ul>';
+ foreach( $dirs as $dir ){
+ if( strlen($dir)>6 ){
+  $source_content.= '<li><a href="?dir='.$dir.'">'.$dir.'</a></li>';
+ }
+ }
+ $source_content.= '</ul>';
+ }
+ }
+ 
+    return $source_content;
+}
+function pdxseparate_p_findrus($source_content = NULL){
+    $source_content= '';
+ 
+  if( isset( $_POST['lines'] ) and strlen( $_POST['lines'] ) ){
+ $arr=array();
+ $lines=str_replace("\r", "\n", $_POST['lines']);
+ $lines=str_replace("\n\n", "\n", $lines);
+ $arr=explode("\n", $lines);
+ if( isset($arr) and is_array($arr) and count($arr) ){
+ foreach( $arr as $ar ){
+ $ar=trim($ar);
+ if( strlen($ar) ){
+  $str=str_split_unicode($ar);
+  for($i=0; $i<count($str); $i++){
+  if(!ereg("[а-яА-Я]+", $str[$i])){
+  $source_content.= $str[$i];
+  }else{
+  $source_content.= '<span style="background: #00ff00;">'.$str[$i].'</span>';
+  }
+  }
+  $source_content.= '<br />';
+ }
+ }
+ }
+ }
+ 
+ $source_content.= '<form action="" method="post">';
+ $source_content.= '<textarea name="lines" cols="111" rows="11" placeholder="Введите строки текста для проверки">';
+ if( isset($_POST['lines']) and strlen($_POST['lines']) ){ 
+ $source_content.= filter_xss(strip_tags($_POST['lines']));
+ }
+ $source_content.= '</textarea>';
+ $source_content.= '<input type="submit" value="Проверить" />';
+ $source_content.= '</form>';
+ 
+ 
+    return $source_content;
+}
+function pdxseparate_p_doubleterm($source_content = NULL){
+    $source_content= '';
+
+ $vids=db_query('select vid, machine_name from {taxonomy_vocabulary}');
+ while($vid=$vids->fetchAssoc()){
+ $source_content.= '<div>'.$vid['machine_name'].'</div>';
+ $source_content.= '<ul>';
+ $tids=db_query('select tid, name from {taxonomy_term_data} where vid='.$vid['vid']);
+ while($tid=$tids->fetchAssoc()){
+ $count=db_query('select count(tid) from {taxonomy_term_data} where name=:combo and vid='.$vid['vid'], array(':combo'=>$tid['name']));
+ $count=$count->fetchAssoc();
+ if( isset($count['count(tid)']) and is_numeric($count['count(tid)']) and $count['count(tid)']>1 ){
+ $anids=array();
+ $nids=db_query('select nid from {taxonomy_index} where tid='.$tid['tid']);
+ while($nid=$nids->fetchAssoc()){
+  $anids[]=$nid['nid'];
+ }
+ 
+ $source_content.= '<li><a href="/taxonomy/term/'.$tid['tid'].'/edit">'.$tid['name'].'</a>';
+ $source_content.= ': '.count($anids).' ';
+ if( isset($anids) and is_array($anids) and count($anids) ){
+  foreach($anids as $anid){
+  $source_content.= '<a href="/node/'.$anid.'/edit">'.$anid.'</a>, ';
+  }
+ }
+ $source_content.= '</li>';
+ }
+ }
+ $source_content.= '</ul>';
+ }
+
+    return $source_content;
+}
+function pdxseparate_p_delnodes($source_content = NULL){
+    $source_content= '';
+
+if( isset( $_POST['nidtodel'] ) and strlen( $_POST['nidtodel'] ) ){
+ $_POST['nidtodel']=str_replace("\r","\n",$_POST['nidtodel']);
+ $_POST['nidtodel']=str_replace("\n\n","\n",$_POST['nidtodel']);
+
+ $logarr=array();
+ $lines=explode("\n",$_POST['nidtodel']);
+ if( isset($lines) and is_array($lines) and count($lines) ){
+ foreach( $lines as $line ){
+ $line=trim(str_replace('	','',str_replace(' ','',$line)));
+ if( !strlen($line) ) continue;
+ if( !is_numeric($line) ) continue;
+ $isset=db_query('select nid, type from {node} where nid='.$line);
+ $isset=$isset->fetchAssoc();
+ if( isset($isset['nid']) and is_numeric($isset['nid']) ){
+ node_delete($isset['nid']);
+ $logarr[]='Материал с NID '.$line.' удален';
+
+ }else{
+ $logarr[]='<strong>Материала с NID '.$line.' нет на сайте!</strong>';
+ }
+ }
+ }
+ 
+ if( isset($logarr) and is_array($logarr) and count($logarr) ){
+ $source_content.= '<div class="results" style="border: 1px solid #ff0000; background: #d1dfe9; padding: 7px; margin: 7px; "><strong>Результаты</strong><ul><li>';
+ $source_content.= implode('</li><li>', $logarr);
+ $source_content.= '</li></ul></div>';
+ }
+
+}
+$source_content.='<p>Введите список NID материалов, которые нужно удалить. Каждый NID должен быть написан с новой строки:</p>
+<form action="" method="post">
+<textarea name="nidtodel" rows="11" cols="7">
+</textarea>
+<input type="submit" value="Удалить!" />
+</form>';
+
+    return $source_content;
+}
+function pdxseparate_p_doublesyn($source_content = NULL){
+    $source_content= '';
+
+ $nodes=db_query('select DISTINCT alias from {url_alias}');
+ $source_content.= '<ul>';
+ while($node=$nodes->fetchAssoc()){
+ $count=db_query('select alias, pid from {url_alias} where alias=:combo', array(':combo'=> $node['alias'] ) );
+ $atmp=array();
+ while($co=$count->fetchAssoc()){
+// if( $co['COUNT(nid)']>1 ){
+ $atmp[$co['pid']]='<li><a href="/admin/config/search/path/edit/'.$co['pid'].'">'.$co['alias'].'</a></li>';
+// }
+ }
+ if( isset($atmp) and is_array($atmp) and count($atmp)>1 ){
+ $source_content.= implode('',$atmp);
+ }
+ }
+ $source_content.= '</ul>';
+ 
+
+    return $source_content;
+}
+function pdxseparate_p_last100msg($source_content = NULL){
+    $source_content= '';
+
+/*
+    $nids=db_query('select body_value, entity_id from {field_data_body} where bundle=\'place\' and body_format IS NULL');
+    while( $nid=$nids->fetchAssoc() ){
+        if( mb_strpos('</p>', $nid['body_value'])===false and mb_strpos('</div>', $nid['body_value'])===false ){
+            $nid['body_value']=str_replace("\r", "\n", $nid['body_value']);
+            $nid['body_value']=str_replace("\n\n", "\n", $nid['body_value']);
+            $nid['body_value']='<p>'.str_replace("\n", '</p><p>', $nid['body_value']).'</p>';
+            
+            db_query('update {field_data_body} set body_value=:combo where bundle=\'place\' and entity_id='.$nid['entity_id'], array(':combo'=>$nid['body_value']));
+            db_query('update {field_data_body} set body_format=\'limited\' where bundle=\'place\' and entity_id='.$nid['entity_id']);
+        }
+    }
+*/
+    
+$alines=array(); 
+$source_content.= '<table><tr><th>Автор</th><th>Получатель</th><th>Сообщение</th><th>&nbsp;</th></tr>';
+$nums=db_query('select DISTINCT p.mid, p.author, p.body, f.field_name_value as name1, i.recipient, f2.field_name_value as name2 from {pm_message} as p inner join {pm_index} as i on (p.mid=i.mid and i.recipient<>p.author) inner join {field_data_field_name} as f on (p.author=f.entity_id and f.entity_type=\'user\') inner join {field_data_field_name} as f2 on (i.recipient=f2.entity_id and f2.entity_type=\'user\') order by p.timestamp DESC limit 0, 100');
+while( $num=$nums->fetchAssoc() ){
+    $num['body']=strip_tags($num['body']);
+    if( mb_strlen($num['body'])>233 ){
+        $num['body']=mb_substr($num['body'], 0, 231).'...';
+    }
+    $sourcetmp= '<tr>';
+    $sourcetmp.= '<td><a target="_blank" href="/user/'.$num['author'].'">'.$num['name1'].'</a></td>';
+    $sourcetmp.= '<td><a target="_blank" href="/user/'.$num['recipient'].'">'.$num['name2'].'</a></td>';
+    $sourcetmp.= '<td>'.$num['body'].'</td>';
+    $sourcetmp.= '<td><a target="_blank" href="/messages/view/'.$num['mid'].'"><img alt="" src="/sites/all/libraries/img/adm_edit.png" /></a></td>';
+    $sourcetmp.= '</tr>';
+    $alines[$num['mid']]=$sourcetmp;
+}
+if( isset($alines) and is_array($alines) and count($alines) ){ 
+    $source_content.= implode('', $alines);
+}
+$source_content.= '</table>';
+
+    return $source_content;
+}
+function pdxtime1($time, $hour=0){
+    $out='';
+    if( function_exists('pdxneedto_month_declination_ru') ){
+        $time=intval($time);
+        if( $time>0 ){
+            $curt=format_date($time,'custom','d M');
+            if( $curt==format_date(time(),'custom','d M') ){
+                $out.= 'сегодня';
+            }elseif( $curt==format_date(time()-86400,'custom','d M') ){
+                $out.= 'вчера';
+            }else{
+                $out.= date('j',$time).' '.pdxneedto_month_declination_ru(format_date($time,'custom','F'),date('n',$time)).' '.date('Y',$time).' г.';
+            }
+            if($hour){
+                $out.= ' '.date('H:i', $time);
+            }
+        }
+    }else{
+        $time=intval($time);
+        if( $time>0 ){
+            $curt=format_date($time,'custom','d M');
+            if( $curt==format_date(time(),'custom','d M') ){
+                $out.= 'сегодня';
+            }elseif( $curt==format_date(time()-86400,'custom','d M') ){
+                $out.= 'вчера';
+            }else{
+                $out.= $curt;
+            }
+            if($hour){
+                $out.= ' '.date('H:i', $time);
+            }
+        }
+    }
+    return $out;
+}
+function pdxclassphone($phone){
+    $classaddict='';
+    if( defined('PDX_CITY_COUNTRY') and is_numeric(PDX_CITY_COUNTRY) ){
+        $phone=str_replace(' ', '', $phone);
+        switch(PDX_CITY_COUNTRY){
+        case 62: //беларусь
+            if( strpos($phone, '375(29)2')===false and strpos($phone, '375(29)5')===false and strpos($phone, '375(29)7')===false and strpos($phone, '375(29)8')===false and strpos($phone, '375(33)3')===false and strpos($phone, '375(33)6')===false and strpos($phone, '375(33)9')===false ){
+                        if( strpos($phone, '375(25)6')===false and strpos($phone, '375(25)7')===false and strpos($phone, '375(25)9')===false ){
+                            if( strpos($phone, '375(29)1')===false and strpos($phone, '375(29)3')===false and strpos($phone, '375(29)6')===false and strpos($phone, '375(29)9')===false and strpos($phone, '375(44)4')===false and strpos($phone, '375(44)5')===false and strpos($phone, '375(44)7')===false ){
+                                
+                            }else{
+                                $classaddict='велком';
+                            }
+                        }else{
+                            $classaddict='life:)';
+                        }
+                    }else{
+                        $classaddict='МТС';
+            }
+            break;
+        case 61: //украина
+            if( strpos($phone, '(63)')===false and strpos($phone, '(93)')===false ){
+                if( strpos($phone, '(50)')===false and strpos($phone, '(66)')===false and strpos($phone, '(95)')===false and strpos($phone, '(99)')===false ){
+                    if( strpos($phone, '(67)')===false and strpos($phone, '(96)')===false and strpos($phone, '(97)')===false and strpos($phone, '(98)')===false ){
+                        if( strpos($phone, '(94)')===false ){
+                            if( strpos($phone, '(92)')===false ){
+                                if( strpos($phone, '(91)')===false ){
+                                    if( strpos($phone, '(68)')===false ){
+                                        if( strpos($phone, '(39)')===false ){
+                                            
+                                        }else{
+                                            $classaddict='Golden Telecom';
+                                        }
+                                    }else{
+                                        $classaddict='Beeline';
+                                    }
+                                }else{
+                                    $classaddict='Utel';
+                                }
+                            }else{
+                                $classaddict='PEOPLEnet';
+                            }
+                        }else{
+                            $classaddict='Интертелеком';
+                        }
+                    }else{
+                        $classaddict='Киевстар';
+                    }
+                }else{
+                    $classaddict='МТС';
+                }
+            }else{
+                $classaddict='life:)';
+            }
+            break;
+        case 60: //Россия
+            if( strpos($phone, '(901)')===false ){}else{
+                return 'Теле2';
+            }
+            if( strpos($phone, '(903)')===false and strpos($phone, '(905)')===false and strpos($phone, '(906)')===false and strpos($phone, '(909)')===false and strpos($phone, '(960)')===false and strpos($phone, '(961)')===false and strpos($phone, '(962)')===false and strpos($phone, '(963)')===false and strpos($phone, '(964)')===false and strpos($phone, '(965)')===false ){}else{
+                return 'Билайн';
+            }
+            if( strpos($phone, '(904)')===false and strpos($phone, '(950)')===false and strpos($phone, '(951)')===false and strpos($phone, '(952)')===false and strpos($phone, '(953)')===false ){}else{
+                return 'СПБ Телеком';
+            }
+            if( strpos($phone, '(911)')===false and strpos($phone, '(981)')===false ){}else{
+                return 'МТС';
+            }
+            if( strpos($phone, '(921)')===false and strpos($phone, '(929)')===false and strpos($phone, '(931)')===false ){}else{
+                return 'Мегафон';
+            }
+            break;
+        }
+    }
+    
+    return $classaddict;
+}
+function pdxseparate_apply($source_content = NULL){
+    $source_content= '';
+    if( function_exists('pdxgettexts') ){
+        $source_content.=pdxgettexts('apply');
+    }
+    return '<div class="nodecontent">'.$source_content.'</div>';
+}
+function pdxseparate_privatemsg_message_insert($message) {
+    if( isset($message->recipients) and is_array($message->recipients) and count($message->recipients) ){
+        foreach( $message->recipients as $recipient ){
+            if( file_exists('pdxcache/user/'.$recipient->uid.'_sm') ){
+                unlink('pdxcache/user/'.$recipient->uid.'_sm');
+            }
+        }
+    }
+}
+function pdxcw($path, $file, $data, $domain=0){
+    if( $domain ){
+        $domain='/'.$_SERVER['HTTP_HOST'];
+    }else{
+        $domain='';
+    }
+    if( !is_dir('pdxcache'.$domain) ){
+        mkdir('pdxcache'.$domain);
+    }
+    $newpath=explode('/', $path);
+    $path='';
+    if( isset($newpath) and is_array($newpath) and count($newpath) ){
+        foreach($newpath as $newp ){
+            if( strlen($path) ){
+                $path.='/';
+            }
+            $path.=$newp;
+            if( !is_dir('pdxcache'.$domain.'/'.$path) ){
+                mkdir('pdxcache'.$domain.'/'.$path);
+            }
+        }
+    }
+    $fp = fopen('pdxcache'.$domain.'/'.$path.'/'.$file, 'w');
+    fwrite($fp, $data);
+    fclose($fp);
+}
+function pdxcd($path, $file, $domain=0){
+    if( $domain ){
+        $domain='/'.$_SERVER['HTTP_HOST'];
+    }else{
+        $domain='';
+    }
+    if( file_exists('pdxcache'.$domain.'/'.$path.'/'.$file) ){
+        unlink('pdxcache'.$domain.'/'.$path.'/'.$file);
+    }
+}
+function pdxcr($path, $file, $domain=0){
+    if( $domain ){
+        $domain='/'.$_SERVER['HTTP_HOST'];
+    }else{
+        $domain='';
+    }
+    if( file_exists('pdxcache'.$domain.'/'.$path.'/'.$file) and filesize('pdxcache'.$domain.'/'.$path.'/'.$file) ){
+        $out= @file_get_contents('pdxcache'.$domain.'/'.$path.'/'.$file);
+        return $out;
+    }else{
+        return false;
+    }
+}
+function pdxismymonthcustom($n){
+    switch(date('n', $n)){
+        case 1:
+            return ' января';
+            break;
+        case 2:
+            return ' февраля';
+            break;
+        case 3:
+            return ' марта';
+            break;
+        case 4:
+            return ' апреля';
+            break;
+        case 5:
+            return ' мая';
+            break;
+        case 6:
+            return ' июня';
+            break;
+        case 7:
+            return ' июля';
+            break;
+        case 8:
+            return ' августа';
+            break;
+        case 9:
+            return ' сентября';
+            break;
+        case 10:
+            return ' октября';
+            break;
+        case 11:
+            return ' ноября';
+            break;
+        case 12:
+            return ' декабря';
+            break;
+    }
+    return '';
+}
+function pdxismydaycustom($w){
+    if( !$w or $w<1 ){
+        return '';
+    }
+    switch(date('w', $w)){
+        case 0:
+            return ' (вс)';
+            break;
+        case 1:
+            return ' (пн)';
+            break;
+        case 2:
+            return ' (вт)';
+            break;
+        case 3:
+            return ' (ср)';
+            break;
+        case 4:
+            return ' (чт)';
+            break;
+        case 5:
+            return ' (пт)';
+            break;
+        case 6:
+            return ' (сб)';
+            break;
+    }
+    return '';
+}

@@ -1,0 +1,780 @@
+<?php
+
+define("cWebMoneyPayActionUrl", "https://merchant.webmoney.ru/lmi/payment.asp");
+define("cWebMoneyRateUrl"     , "https://wm.exchanger.ru/asp/XMLbestRates.asp");
+
+/********************************************************************
+ * Drupal Hooks
+ ********************************************************************/
+/**
+ * Implementation of hook_perm().
+ */
+function uc_webmoney_perm() {
+  return array('administer uc_webmoney');
+}
+/**
+ * Implementation of hook_menu()
+ */
+function uc_webmoney_menu() {
+  $items = array();
+
+  $items['uc_webmoney/done'] = array(
+    'title'            => 'Internal Data',
+    'page callback'    => 'uc_webmoney_done_payment',
+    'access arguments' => array('access content'),
+    'type'             => MENU_CALLBACK
+  );
+  $items['uc_webmoney/success'] = array(
+    'title'            => 'Webmoney processing',
+    'page callback'    => 'uc_webmoney_payment_end',
+    'page arguments'   => array('success'),
+    'access arguments' => array('access content'),
+    'type'             => MENU_CALLBACK
+  );
+  $items['uc_webmoney/fail'] = array(
+    'title'            => 'Webmoney processing',
+    'page callback'    => 'uc_webmoney_payment_end',
+    'page arguments'   => array('fail'),
+    'access arguments' => array('access content'),
+    'type'             => MENU_CALLBACK
+  );
+  $items['admin/store/settings/webmoney'] = array(
+    'title'            => 'Webmoney',
+    'description'      => 'Webmoney payment settings.',
+    'page callback'    => 'uc_webmoney_list',
+    'access arguments' => array('administer uc_webmoney'),
+    'type'             => MENU_NORMAL_ITEM,
+  );
+  $items['admin/store/settings/webmoney/list'] = array(
+    'title'            => 'Wallets',
+    'page callback'    => 'uc_webmoney_list',
+    'access arguments' => array('administer uc_webmoney'),
+    'weight'           => 1,
+    'type'             => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/store/settings/webmoney/add'] = array(
+    'title'            => 'Add Wallet',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('uc_webmoney_add'),
+    'access arguments' => array('administer uc_webmoney'),
+    'weight'           => 2,
+    'type'             => MENU_LOCAL_TASK,
+  );
+  $items['admin/store/settings/webmoney/settings'] = array(
+    'title'            => 'Rate Settings',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('uc_webmoney_settings'),
+    'access arguments' => array('administer uc_webmoney'),
+    'weight'           => 3,
+    'type'             => MENU_LOCAL_TASK,
+  );
+  $items['admin/store/settings/webmoney/example/%'] = array(
+    'title'            => 'Merchant purse settings',
+    'page callback'    => 'uc_webmoney_example',
+    'page arguments'   => array(5),
+    'access arguments' => array('administer uc_webmoney'),
+    'type'             => MENU_CALLBACK,
+  );
+
+  $items['admin/store/settings/webmoney/edit/%'] = array(
+    'title'            => 'Edit Wallet',
+    'page callback'    => 'uc_webmoney_wallet_edit',
+    'page arguments'   => array(5),
+    'access arguments' => array('administer uc_webmoney'),
+    'type'             => MENU_CALLBACK,
+  );
+
+  $items['admin/store/settings/webmoney/delete/%'] = array(
+    'title'            => 'Delete wallet',
+    'page callback'    => 'uc_webmoney_delete_wallet',
+    'page arguments'   => array(5),
+    'access arguments' => array('administer uc_webmoney'),
+    'type'             => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+/**
+ * Implementation of hook_form_alter().
+ */
+function uc_webmoney_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'uc_cart_checkout_review_form' && ($order_id = intval($_SESSION['cart_order'])) > 0) {
+    $order = uc_order_load($order_id);
+
+    if ($order->payment_method == 'webmoney') {
+      unset($form['actions']['submit']);
+      $form['#prefix'] = '<table><tr><td>';
+      $form['#suffix'] = '</td><td>'. render(drupal_get_form('uc_webmoney_submit_form', $order)) .'</td></tr></table>';
+    }
+  }
+}
+/**
+ * Implementation of hook_cron()
+ */
+function uc_webmoney_cron() {
+  $data = _unserialize_rates();
+  if ($data === FALSE) {
+    return;
+  }
+  $result = db_query('SELECT * FROM {uc_webmoney_rates} ORDER BY type');
+  foreach ($result as $rr){
+    $rates[$rr->type]=$rr->type.' - '.variable_get('uc_webmoney_type_wm','WMZ');
+  }
+  if( isset($rates) and $rates ) {
+    foreach($data['row'] as $val) {
+      foreach($rates as $k => $wmrate) {
+        if($val['Direct'] == $wmrate) {
+          $pul = substr($val['BaseRate'], 0, 1);
+          if($pul == '-') {
+            $rate[$k] = 1 / substr($val['BaseRate'], 1);
+          }
+          else {
+            $rate[$k] = $val['BaseRate'];
+          }
+        }
+      }
+    }
+  }
+
+  if(!empty($rate)) {
+    foreach($rate as $type => $ra) {
+      $ra = variable_get('uc_webmoney_rate_wm','1.00') / $ra;
+      db_query("UPDATE {uc_webmoney_rates} SET rate= :s0 WHERE type = :s1", array(':s0' => $ra, ':s1' => $type));
+    }
+  }
+  $rate = variable_get('uc_webmoney_rate_wm', '1.00');
+  $type = variable_get('uc_webmoney_type_wm', 'WMZ');
+  db_query("UPDATE {uc_webmoney_rates} SET rate=:s0 WHERE type = :s1", array(':s0' => $rate, ':s1' => $type));
+}
+/********************************************************************
+ * Functions callback
+ ********************************************************************/
+/**
+ * Callback for Webmoney payment method settings.
+ */
+function uc_webmoney_done_payment() {
+  //drupal_set_header('Content-type: text/html; charset=iso-8859-1');
+  drupal_add_http_header('Content-Type', 'text/html; charset=iso-8859-1');
+  //debug($GLOBALS['_POST']);
+  //debug($_POST);
+  $order_id           = isset($_POST['LMI_PAYMENT_NO']) ? $_POST['LMI_PAYMENT_NO'] : '';
+  $purse              = isset($_POST['LMI_PAYEE_PURSE']) ? $_POST['LMI_PAYEE_PURSE'] : '';
+  $price              = isset($_POST['LMI_PAYMENT_AMOUNT']) ? $_POST['LMI_PAYMENT_AMOUNT'] : '';
+  $LMI_MODE           = isset($_POST['LMI_MODE']) ? $_POST['LMI_MODE'] : 1;
+  $LMI_SYS_INVS_NO    = isset($_POST['LMI_SYS_INVS_NO']) ? $_POST['LMI_SYS_INVS_NO'] : '';
+  $LMI_SYS_TRANS_NO   = isset($_POST['LMI_SYS_TRANS_NO']) ? $_POST['LMI_SYS_TRANS_NO'] : '';
+  $LMI_SYS_TRANS_DATE = isset($_POST['LMI_SYS_TRANS_DATE']) ? $_POST['LMI_SYS_TRANS_DATE'] : '';
+  $LMI_SECRET_KEY     = isset($_POST['LMI_SECRET_KEY']) ? $_POST['LMI_SECRET_KEY'] : '';
+  $LMI_PAYER_PURSE    = isset($_POST['LMI_PAYER_PURSE']) ? $_POST['LMI_PAYER_PURSE'] : '';
+  $LMI_PAYER_WM       = isset($_POST['LMI_PAYER_WM']) ? $_POST['LMI_PAYER_WM'] : '';
+  $prerequest         = isset($_POST['LMI_PREREQUEST']) ? $_POST['LMI_PREREQUEST'] : 0;
+  $hash               = isset($_POST['LMI_HASH']) ? $_POST['LMI_HASH'] : '';
+
+  $data = db_query("SELECT * FROM {uc_webmoney_rates} WHERE purse = :s", array(':s' =>$purse))->fetchObject();
+
+  if (empty($LMI_SECRET_KEY)) {
+    // secret key is not send, but hash must be calculated with it
+    $LMI_SECRET_KEY = $data->secret_key;
+  }
+  if (!empty($hash)) {
+    $tohash = $purse . $price . $order_id . $LMI_MODE . $LMI_SYS_INVS_NO . $LMI_SYS_TRANS_NO . $LMI_SYS_TRANS_DATE . $LMI_SECRET_KEY . $LMI_PAYER_PURSE . $LMI_PAYER_WM;
+    $tocheck = strtoupper(md5($tohash));
+  }
+  $data2 = db_query("SELECT * FROM {uc_webmoney_transaction} WHERE txnid = :d", array(':d' =>$order_id))->fetchObject();
+  $un = unserialize($data2->description);
+  $order = uc_order_load($order_id);
+
+  if ($order === FALSE || uc_order_status_data($order->order_status, 'state') != 'in_checkout') {
+    print t('An error has occurred during payment. Please contact us to ensure your order has submitted.');
+    uc_order_update_status($order_id, 'canceled');
+    exit();
+  }
+
+  if($prerequest==1) {
+    $res="YES";
+
+    if ($un[$purse] != $price) {
+      $res = t('This number does not match the original price');
+      uc_order_comment_save($order_id, 0, $res, 'admin');
+      uc_order_update_status($order_id, 'canceled');
+    }
+
+    if (empty($data)) {
+      $res = t('Your wallet number does not match the original');
+      uc_order_comment_save($order_id, 0, $res, 'admin');
+      uc_order_update_status($order_id, 'canceled');
+    }
+
+    if (!empty($hash)) {
+      if ($hash != $tocheck) {
+        $res = t('Security check failed');
+        uc_order_comment_save($order_id, 0, $res, 'admin');
+        uc_order_update_status($order_id, 'canceled');
+      }
+    }
+	echo $res;
+  }
+  else {
+    $isok = FALSE;
+    if (!empty($data) && $un[$purse] == $price && $hash == $tocheck) {
+      if (!empty($data->secret_key) ){
+        if ($data->secret_key == $LMI_SECRET_KEY) {
+          $isok = TRUE;
+        }
+      }
+      else {
+        $isok = TRUE;
+      }
+    }
+    if ($isok) {
+	  if ($LMI_MODE) {
+	    drupal_set_message(t('Payment from WM %WM and Wallet %purse in test mode', array('%WM' => $LMI_PAYER_WM, '%purse' => $LMI_PAYER_PURSE)));
+		uc_order_update_status($order_id, uc_order_state_default('post_checkout'));
+	  }
+	  else{
+        $description = t('Payment from WM %WM and Wallet %purse', array('%WM' => $LMI_PAYER_WM, '%purse' => $LMI_PAYER_PURSE));
+        db_query("UPDATE {uc_webmoney_transaction} SET description = :s WHERE txnid = :d", array(':s' => $description, ':d' => $order_id));
+        uc_payment_enter($order_id, 'webmoney', $price, $order->uid, NULL, $description);
+        uc_cart_complete_sale($order);
+        uc_order_comment_save($order_id, 0, t('A payment has been accepted.'), 'admin');
+	  }
+    }
+    else {
+      uc_order_comment_save($order_id, 0, $res, 'admin');
+      uc_order_update_status($order_id, 'canceled');
+    }
+  }
+}
+function uc_webmoney_payment_end($type) {
+  if ($type=='success') {
+    if (!isset($_SESSION['cart_order'])){
+	  drupal_goto('cart');
+	}
+    $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+    drupal_goto('cart/checkout/complete');
+  }
+  else {
+    unset($_SESSION['cart_order']);
+    drupal_set_message( t("Your payment has been declined."));
+    drupal_goto('cart');
+  }
+}
+/**
+ * Lists all registered purses.
+ */
+function uc_webmoney_list() {
+
+  $header = array(
+    t('WMType'),
+    t('Wallet'),
+    t('Secret key'),
+    t('Rate'),
+    t('Edit'),
+    t('Merchant'),
+    t('Delete')
+  );
+
+  $result = db_query('SELECT * FROM {uc_webmoney_rates} ORDER BY type');
+  $rows = array();
+  foreach ($result as $template) {
+    $rows[] = array(
+      $template->type,
+      $template->purse,
+      $template->secret_key,
+      $template->rate,
+      l(t('Edit'), 'admin/store/settings/webmoney/edit/'. $template->type),
+      l(t('Settings'), 'admin/store/settings/webmoney/example/'. $template->purse),
+      l(t('Delete'), 'admin/store/settings/webmoney/delete/'. $template->type)
+    );
+  }
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows));
+
+  if (empty($rows)) {
+    $output .= '<p>'. t('You have no any wallets.') .'</p>';
+  }
+
+  $output .= '<p>'. l(t('Add Wallet'), 'admin/store/settings/webmoney/add') .'</p>';
+
+  return $output;
+}
+
+function uc_webmoney_delete_wallet($val) {
+  if ((drupal_substr($val, 0, 2) == "WM") && (drupal_strlen($val) == 3)) {
+    return render(drupal_get_form('uc_webmoney_delete_confirm', $val));
+  }
+  else {
+    return drupal_access_denied();
+  }
+}
+
+function uc_webmoney_delete_confirm($form_state, $type) {
+  $form = array();
+  
+  $form['frame'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Confirm',
+  );
+  $form['frame']['message'] = array(
+    '#type' => 'item',
+    '#value' => t('Are you sure to delete wallet') .' '. $type .'?',
+  );
+  $form['type'] = array(
+    '#type' => 'value',
+    '#value' => $type,
+  );
+  $form['ok'] = array(
+    '#type' => 'submit',
+    '#value' => 'OK',
+    '#submit' => array('uc_webmoney_delete_confirm_ok'),
+  );
+  $form['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel'),
+    '#submit' => array('uc_webmoney_delete_confirm_cancel'),
+  );
+
+  return $form;
+}
+
+function uc_webmoney_delete_confirm_ok($form, &$form_state) {
+  $val = $form_state['values']['type'];
+  if( isset($val['build_info']['args'][0]) ){
+    db_query("DELETE FROM {uc_webmoney_rates} WHERE type = :s", array(':s'=>$val['build_info']['args'][0]));
+    uc_webmoney_cron();
+    drupal_set_message($val .' '. t('deleted'));
+    drupal_goto('admin/store/settings/webmoney');
+  }
+}
+
+function uc_webmoney_delete_confirm_cancel($form, &$form_state) {
+  drupal_goto('admin/store/settings/webmoney');
+}
+
+function uc_webmoney_wallet_edit($val) {
+  if ((drupal_substr($val, 0, 2) == "WM") && (drupal_strlen($val) == 3)) {
+    return render(drupal_get_form('uc_webmoney_edit', $val));
+  }
+  else {
+    return drupal_access_denied();
+  }
+}
+
+function uc_webmoney_edit($form_id, $form_state){
+  $type = $form_state['build_info']['args'][0];
+  $pursed = db_query('SELECT * FROM {uc_webmoney_rates} WHERE type = :s', array(':s'=>$type))->fetchObject();
+  //debug($pursed);
+  $form['type'] = array(
+    '#type'          => 'value',
+    '#value'         => $type
+  );
+  $form['purse'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Wallet'),
+    '#default_value' => $pursed->purse,
+    '#maxlength'     => 13,
+    '#required'      => TRUE,
+  );
+  $form['secret_key'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Secret key'),
+    '#default_value' => $pursed->secret_key,
+    '#maxlength'     => 50,
+    '#description'   => t("Please enter secret key. If your leave it blank, secret key will not apply."),
+//    '#required'      => TRUE,
+  );
+  $form['submit'] = array(
+    '#type'  => 'submit',
+    '#value' => t('Update Wallet'),
+  );
+
+  return $form;
+}
+
+function uc_webmoney_edit_validate($form, &$form_state) {
+  if (empty($form_state['values']['type'])) {
+    form_set_error('type', t('The WMType is empty'));
+  }
+  $purse = $form_state['values']['purse'];
+  if(!empty($purse)) {
+
+    if (drupal_strlen($purse) < 13) {
+      form_set_error('purse', t('Incorrect wallet number length.'));
+    }
+
+    $type = substr($form_state['values']['purse'], 0, 1);
+    if (is_numeric($type)) {
+      form_set_error('purse', t('Incorrect wallet number format (must be started with type).'));
+    }
+
+    for ($i = 1; $i < drupal_strlen($purse); $i++) {
+      if (!is_numeric($purse{$i})) {
+        form_set_error('purse', t('Incorrect wallet number format.'));
+      }
+    }
+
+    if ('WM'. $type != $form_state['values']['type']) {
+      form_set_error('purse', t('Unable to use this wallet type, need to be !type.', array('!type' => $form_state['values']['type'])));
+    }
+  }
+}
+
+function uc_webmoney_edit_submit($form, &$form_state) {
+  $wmtype = $form_state['values']['type'];
+  $rate = uc_webmoney_get_rate($wmtype);
+  db_query("UPDATE {uc_webmoney_rates} set purse = :s0, secret_key = :s1 ,rate = :s2 WHERE type= :s3", array(':s0'=>$form_state['values']['purse'], ':s1' => $form_state['values']['secret_key'], ':s2' => $rate, ':s3' => $form_state['values']['type']));
+  uc_webmoney_cron();
+  drupal_set_message(t('!type updated.', array('!type' => $wmtype)));
+  drupal_goto('admin/store/settings/webmoney');
+}
+
+function uc_webmoney_add() {
+  $form['purse'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Wallet'),
+    '#maxlength'     => 13,
+    '#default_value' => '',
+    '#description'   => t("Please, enter Wallet number."),
+    '#required'      => TRUE,
+  );
+  $form['secret_key'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Secret key'),
+    '#default_value' => '',
+    '#maxlength'     => 50,
+    '#description'   => t("Please enter secret key. If your leave it blank, secret key will not apply."),
+//    '#required'      => TRUE,
+  );
+  $form['submit'] = array(
+    '#type'  => 'submit',
+    '#value' => t('Add Wallet'),
+  );
+
+  return $form;
+}
+
+function uc_webmoney_add_validate($form, &$form_state){
+  $purse = $form_state['values']['purse'];
+  $haserror = FALSE;
+  if(!empty($purse)) {
+
+    if (drupal_strlen($purse) < 13) {
+      form_set_error('purse', t('Incorrect wallet number length.'));
+      $haserror = TRUE;
+    }
+
+    $type = substr($purse, 0, 1);
+    if (is_numeric($type)) {
+      form_set_error('purse', t('Incorrect wallet number format (must be started with type).'));
+      $haserror = TRUE;
+    }
+
+    for ($i = 1; $i < drupal_strlen($purse); $i++) {
+      if (!is_numeric($purse{$i})) {
+        form_set_error('purse', t('Incorrect wallet number format.'));
+        $haserror = TRUE;
+      }
+    }
+
+    if (!$haserror) {
+      $wmtype = 'WM'. $type;
+      $pursed = db_query('SELECT * FROM {uc_webmoney_rates} WHERE type = :s ', array(':s'=>$wmtype));
+      if(isset($pursed->type)){
+        form_set_error('purse', t('!type already exists. Please enter another wallet number.', array('!type' => $wmtype)));
+      }
+    }
+  }
+}
+
+function uc_webmoney_add_submit($form, &$form_state){
+  if(!empty($form_state['values']['purse']) ){
+    $type=substr($form_state['values']['purse'],0,1);
+    $wmtype='WM'.$type;
+    $rate=uc_webmoney_get_rate($type);
+    db_query("INSERT INTO {uc_webmoney_rates} (type,purse,secret_key,rate) VALUES (:s0,:s1,:s2,:s3)", array(':s0'=> $wmtype, ':s1' => $form_state['values']['purse'], ':s2' => $form_state['values']['secret_key'], ':s3' => $rate));
+  }
+
+  uc_webmoney_cron();
+
+  drupal_set_message(t('!type added.', array('!type' => $wmtype)));
+}
+
+function uc_webmoney_settings() {
+
+  $result = db_query('SELECT * FROM {uc_webmoney_rates} ORDER BY type');
+  foreach ($result as $template){
+    $types[$template->type]=$template->type;
+  }//while
+  if(empty($types)){
+    form_set_error('', t('Please add your wallet number first'));
+    return "";
+  }
+
+  $form['rate_url'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Rate url'),
+    '#default_value' => variable_get('uc_webmoney_rate_url', cWebMoneyRateUrl),
+    '#description'   => t("Please enter rate url.\nDefault: !url", array('!url' => cWebMoneyRateUrl)),
+  );
+
+
+  $form['wm_type'] = array(
+    '#type'          => 'select',
+    '#options' => $types,
+    '#title'         => t('Wallet type'),
+    '#default_value' => variable_get('uc_webmoney_type_wm','WMZ'),
+    '#description'   => t("Please select your wallet type to rate to site currency."),
+  );
+
+  $form['wm_rate'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Rate to site currency'),
+    '#default_value' => variable_get('uc_webmoney_rate_wm','1.00'),
+    '#description'   => t("Please enter webmoney rate according to site currency."),
+  );
+  $form['submit'] = array(
+    '#type'  => 'submit',
+    '#value' => t('Save'),
+  );
+
+  return $form;
+}
+
+function uc_webmoney_settings_validate($form, &$form_state) {
+  if($form_state['values']['wm_rate']<=0){
+    form_set_error('wm_rate', t('%wm_rate must be more 0.', array('%wm_rate' => $form_state['values']['wm_rate'])));
+  }
+  if (_unserialize_rates($form_state['values']['rate_url']) === FALSE) {
+    form_set_error('rate_url', t('Please check rate url due to errors above'));
+  }
+}
+
+function uc_webmoney_settings_submit($form, &$form_state){
+  if(isset($form_state['values']['rate_url']))
+    variable_set('uc_webmoney_rate_url',$form_state['values']['rate_url']);
+  if(isset($form_state['values']['wm_rate']))
+    variable_set('uc_webmoney_rate_wm',$form_state['values']['wm_rate']);
+  if(isset($form_state['values']['wm_type']))
+    variable_set('uc_webmoney_type_wm',$form_state['values']['wm_type']);
+
+  uc_webmoney_cron();
+}
+
+function uc_webmoney_example($purse){
+  $pursed = db_query('SELECT * FROM {uc_webmoney_rates} WHERE purse = :s', array(':s'=>$purse))->fetchObject();
+  $output ='<table><tbody><tr><td nowrap="nowrap">'. t('Purse') .':</td><td class="header3" align="left"><b>';
+  $output .= $pursed->purse .'</b></td><td>&nbsp;</td><td align="left">&nbsp;</td></tr>';
+  $output .= '<tr><td nowrap="nowrap">'. t('Trade Name:') .'</td>';
+  $output .= '<td align="left"><input style="display: inline;" value="'. variable_get('site_name', 'Drupal') .'" size="50" id="m_name" name="m_name" type="text"></td>';
+  $output .= '<td align="center">&nbsp;-&nbsp;</td>';
+  $output .= '<td align="left"> '. t('is displayed on the web page during the payment').'</td></tr>';
+  $output .= '<tr><td nowrap="nowrap">Secret Key:</td>';
+  $output .= '<td align="left"><input style="display: inline;" value="'. $pursed->secret_key .'" id="secret_key" name="secret_key" size="50" type="text"></td>';
+  $output .= '<td align="center"><input checked="checked" id="send_secret_key" name="send_secret_key" type="checkbox"></td>';
+  $output .= '<td align="left">'. t('Send the Secret Key to the Result URL if the Result URL is secured') .'</td></tr>';
+  $output .= '<tr><td nowrap="nowrap">Result URL:</td><td align="left"><input style="display: inline;" value="';
+  $output .= url('uc_webmoney/done', array('absolute' => TRUE)) .'" id="result_url" name="result_url" size="50" maxlength="255" type="text"></td>';
+  $output .= '<td align="center"><input checked="checked" id="send_param_prerequest" name="send_param_prerequest" value="1" type="checkbox"></td>';
+  $output .= '<td align="left">'. t('Send parameters in the pre-request'). '</td></tr>';
+  $output .= '<tr><td nowrap="nowrap">Success URL:</td><td align="left"><input style="display: inline;" value="';
+  $output .= url('uc_webmoney/success', array('absolute' => TRUE)) .'" id="success_url" name="success_url" size="50" maxlength="255" type="text"></td>';
+  $output .= '<td align="center"><select name="success_method" id="success_method"><option value="2" selected="selected">LINK</option></select></td>';
+  $output .= '<td>'. t('method of requesting Success URL') .'</td></tr>';
+  $output .= '<tr><td nowrap="nowrap">Fail URL:</td><td align="left"><input style="display: inline;" value="';
+  $output .= url('uc_webmoney/fail', array('absolute' => TRUE)) .'" id="fail_url" name="fail_url" size="50" maxlength="255" type="text"></td>';
+  $output .= '<td align="center"><select name="fail_method" id="fail_method"><option value="2" selected="selected">LINK</option></select></td>';
+  $output .= '<td>'. t('method of requesting Fail URL') .'</td></tr>';
+  $output .= '</tbody></table>';
+  $output .= '<table><tbody><tr><td nowrap="nowrap">'. t('Allow overriding URL from Payment Request Form:') .'</td>';
+  $output .= '<td align="left"><input id="allow_url_from_form" name="allow_url_from_form" value="1" type="checkbox"></td></tr>';
+  $output .= '<tr><td nowrap="nowrap">'. t('Send an error notification to merchant\'s keeper:') .'</td>';
+  $output .= '<td align="left"><input checked="checked" id="send_error" name="send_error" value="1" type="checkbox"></td></tr>';
+  $output .= '<tr><td nowrap="nowrap">'. t('Signature algorithm:') .'</td>';
+  $output .= '<td align="left"><select name="auth_type" id="auth_type"><option value="1" selected="selected">MD5</option></select></td></tr>';
+  $output .= '</tbody></table></form>';
+  return ($output);
+}
+
+/********************************************************************
+ * other Functions
+ ********************************************************************/
+function uc_payment_method_webmoney($op, &$arg1) {
+  switch ($op) {
+    case 'cart-details':
+        $result = db_query('SELECT * FROM {uc_webmoney_rates} ORDER BY type');
+        $first = 'checked';
+		$options = '<div class="form-item">';
+        foreach ($result as $template){
+          $options .= '<label class="option"><input name="LMI_PAYEE_PURSE" value="';
+          $options .= $template->purse .'" '. $first .' class="form-radio" type="radio"> '. $template->type .'</label>';
+          $first='';
+        }//while
+        $options .= '</div>';
+        $details = '<div class="form-item"> <label>'. t('Type of wallet') . '</label>'
+                  .'<div class="form-radios">'
+                  .$options
+                  .'</div>'
+                  .'<div class="description">'. t('What type of currency will be used.') .'</div>'
+                  .'</div>';
+      $build['#markup'] = $details;
+      return $build;
+
+    case 'cart-process':
+        $_SESSION['LMI_PAYEE_PURSE'] = isset($_POST['LMI_PAYEE_PURSE']) ? $_POST['LMI_PAYEE_PURSE'] : '';
+      return;
+    case 'settings':
+      $form['uc_webmoney_link'] = array(
+        '#type' => 'item',
+        '#value' => t('Please use') .' '. l(t('Webmoney settings page'), 'admin/store/settings/webmoney') .'.',
+      );
+      return $form;
+  }
+}
+
+// Form to build the submission to merchant.webmoney.ru.
+function uc_webmoney_submit_form($form_id, $form_state) {
+  $order = $form_state['build_info']['args'][0];
+  $wm = db_query('SELECT * FROM {uc_webmoney_rates} WHERE purse=:s', array(':s'=>$_SESSION['LMI_PAYEE_PURSE']))->fetchObject();
+  //debug($wm);
+  $sum = round($order->order_total, 2);
+//  $sum = round($order->order_total * $wm->rate, 2);
+  $ser[$wm->purse] = $sum;
+  $description = serialize($ser);
+  if (db_query("SELECT COUNT(txnid) FROM {uc_webmoney_transaction} WHERE txnid = :s", array(':s' => $order->order_id))->fetchField()) {
+     db_query("UPDATE {uc_webmoney_transaction} SET description = :s WHERE txnid = :d", array(':s' => $description, ':d' => $order->order_id));
+  }
+  else {
+     db_query("INSERT INTO {uc_webmoney_transaction} (txnid, description) VALUES (:d, :s)", array(':s' => $description, ':d' => $order->order_id));
+  }
+
+  $form['LMI_PAYEE_PURSE'] = array(
+    '#type' => 'hidden',
+    '#value' => $_SESSION['LMI_PAYEE_PURSE'],
+  );
+
+  $form['LMI_PAYMENT_NO'] = array(
+    '#type' => 'hidden',
+    '#value' => $order->order_id,
+  );
+
+  $desc = 'Purchase from '. url('<front>', array('absolute' => TRUE)) .' transaction '. $order->order_id .'.';
+
+  $form['LMI_PAYMENT_DESC'] = array(
+    '#type' => 'hidden',
+    '#value' => $desc,
+  );
+
+  $form['LMI_PAYMENT_AMOUNT'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $sum,
+  );
+
+  $form['#action'] = cWebMoneyPayActionUrl;
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Place your order'),
+  );
+  return $form;
+}
+
+function uc_webmoney_get_rate($type){
+  $data = _unserialize_rates();
+    $rate=1;
+
+  $wmrate='WM'. $type .' - '. variable_get('uc_webmoney_type_wm', 'WMZ');
+  if (($data !== FALSE) && (is_array($data))) {
+    foreach ($data['row'] as $val) {
+      if ($val['Direct'] == $wmrate) {
+        $pul=substr($val['BaseRate'],0,1);
+          if ($pul == '-') {
+            $rate = 1 / substr($val['BaseRate'], 1);
+          }
+          else {
+            $rate = $val['BaseRate'];
+          }
+      }
+    }
+  }
+  else {
+    $rate=1;
+  }
+  if('WM'. $type == variable_get('uc_webmoney_type_wm', 'WMZ')) {
+    $rate = variable_get('uc_webmoney_rate_wm', '1.00');
+  }
+  else {
+    $rate = variable_get('uc_webmoney_rate_wm', '1.00') / $rate;
+  }
+  return $rate;
+}
+
+/********************************************************************
+ * Hook Functions (Ubercart)
+ ********************************************************************/
+/**
+ * Implementation of hook_payment_method().
+ */
+function uc_webmoney_uc_payment_method() {
+  $path = base_path() . drupal_get_path('module', 'uc_webmoney');
+  $title =  t('Webmoney') . '<br /><img src="'. $path .'/images/p-wm.gif" style="position: relative; left: 2.5em;">';
+
+  $methods[] = array(
+    'id' => 'webmoney',
+    'name' => t('Webmoney'),
+    'title' => $title,
+    'desc' => t('Redirect to Webmoney to pay by.'),
+    'callback' => 'uc_payment_method_webmoney',
+    'weight' => 3,
+    'checkout' => TRUE,
+    'no_gateway' => TRUE,
+  );
+
+  return $methods;
+}
+
+/**********************************************************************
+ * Module and helper functions
+ **********************************************************************/
+/**
+ * Parses webmoney rates table (instead of 5.x XML_Unserializer)
+ *
+ * @return array or FALSE
+ *   An array of webmoney rates or FALSE if given file is uncorrect or missed.
+ */
+ function _unserialize_rates() {
+  $src = variable_get('uc_webmoney_rate_url', cWebMoneyRateUrl);
+  $reader = new XMLReader();
+  if (!$reader->open($src)) {
+    drupal_set_message(t('Unable to open') .' '. $src, 'error');
+    return FALSE;
+  }
+
+  $data = array();
+  while ($reader->read()) {
+    if (($reader->nodeType == XMLReader::ELEMENT) && ($reader->name == 'row')) {
+      $data['row'][] = array(
+        'Direct' => $reader->getAttribute('Direct'),
+        'BaseRate' => $reader->getAttribute('BaseRate'),
+      );
+    }
+  }
+  $reader->close();
+
+  if (!isset($data['row']) || empty($data['row']) ) {
+    drupal_set_message(t('Invalid rate url - empty or unknown data returned.'), 'error');
+    return FALSE;
+  }
+  else {
+    foreach ($data['row'] as $key => $val) {
+      if (empty($val['Direct']) || empty($val['BaseRate'])) {
+        unset($data['row'][$key]);
+      }
+    }
+    if (empty($data['row'])) {
+      drupal_set_message(t('Invalid rate url - unknown data returned.'), 'error');
+      return FALSE;
+    }
+    else {
+      return $data;
+    }
+  }
+}

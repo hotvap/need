@@ -1,0 +1,32 @@
+name = pdxneedto
+description = Theme designed for the site pdxneedto.
+core = 7.x
+engine = phptemplate
+screenshot = screenshot.png
+
+//stylesheets[all][] = css/other.css
+
+//scripts[] = tb/js/respond.min.js
+
+regions[overcontent] = Over Content
+regions[content] = Content
+regions[sidebar_first] = First Sidebar
+regions[sidebar_second] = Second Sidebar
+regions[undercontent] = Under Content
+
+settings[breadcrumb_title] = 1
+settings[breadcrumb_title_length] = 50
+settings[blocks] = 2
+settings[outside_tags] = 0
+settings[title_tags] = 0
+settings[menu_type] = 2
+settings[menu_element] = main-menu
+settings[menu_alt_class] = 0
+settings[menu_headings] = 1
+
+; Information added by drupal.org packaging script on 2011-06-08
+version = "7.x-3.0-beta11"
+core = "7.x"
+project = "pdxneedto"
+datestamp = "1307567519"
+

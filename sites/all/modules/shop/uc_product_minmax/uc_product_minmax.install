@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * @file Ubercart Product Minimum & Maximum - Installation file.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function uc_product_minmax_schema() {
+  $schema['uc_product_minmax'] = array(
+    'fields' => array(
+      'pfid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'product_min' => array(
+        'type' => 'int',
+        'size' => 'medium',
+        'not null' => TRUE,
+      ),
+      'pmin_multiple' => array(
+        'type' => 'int',
+        'size' => 'medium',
+        'not null' => TRUE,
+      ),
+      'product_max' => array(
+        'type' => 'int',
+        'size' => 'medium',
+        'not null' => TRUE,
+      ),
+      'display_min' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+      ),
+      'display_multiple' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+      ),
+      'display_max' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+      ),
+      'display_weight' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+
+  return $schema;
+}
+
+function uc_product_minmax_install() {
+
+}
+
+function uc_product_minmax_uninstall() {
+  variable_del('uc_product_minmax_weight');
+}

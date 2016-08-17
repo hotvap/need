@@ -1,0 +1,112 @@
+<?php
+
+function pdxadmbuttons_form_alter(&$form, &$form_state, $form_id){
+    
+    global $user; 
+  $addons='';
+    if( !isset($form['#prefix']) ){
+        $form['#prefix']='';
+    }
+  switch($form_id){
+  case 'item_node_form':
+    if(isset($user->roles[3]) or isset($user->roles[4])){
+        $addons='<div><label style=" padding-top: 7px; font-size: 9pt; "><input type="checkbox" value="1" onchange=" if( jQuery(this).attr(\'checked\')==\'checked\' ){ jQuery(\'#edit-status\').attr(\'checked\', \'checked\'); }else{ jQuery(\'#edit-status\').removeAttr(\'checked\'); }  jQuery(\'#edit-status\').change(); "  /> Опубликовать</label></div>';
+    }
+  case 'user_profile_form':
+
+    $form['#prefix'].='<div class="savebutton"><a href="javascript:void(0);" onclick=" stpr(event || window.event); if( jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-submit\').length ){ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-submit\').click(); }else{ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input.form-submit\').click(); } ">Сохранить</a>'.$addons.'</div>';
+
+    return;
+    break;
+  case 'group_node_form':
+    if( arg(0)=='node' and is_string(arg(1)) and arg(1)=='add' and is_string(arg(2)) ){
+        $form['#prefix'].='<div class="savebutton"><a href="javascript:void(0);" onclick=" stpr(event || window.event); if( jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-submit\').length ){ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-submit\').click(); }else{ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input.form-submit\').click(); } ">Создать</a></div>';
+    }else{
+        $form['#prefix'].='<div class="savebutton"><a href="javascript:void(0);" onclick=" stpr(event || window.event); if( jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-submit\').length ){ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-submit\').click(); }else{ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input.form-submit\').click(); } ">Изменить</a></div>';
+    }
+
+    return;
+    break;
+  }
+
+
+if(isset($user->roles[3])){  }else{
+    return;
+}
+  $isyes=0;
+  $topanel=array();
+  if(strpos($form_id,'_node_form')===false){}else{
+    $isyes=1;
+
+    if(module_exists('field_group')){
+        $groups=db_query('select data, group_name from {field_group} where bundle=\''.str_replace('_node_form','',$form_id).'\'');
+        while($group=$groups->fetchAssoc()){
+            $group['data']=unserialize($group['data']);
+            if( isset($group['data']['label']) ){
+                $topanel[]='<a style="display: inline-block; padding: 3px 7px; font-weight: bold; border-right: 1px dotted #ddd; " href="#node_'.str_replace('_node_form','',$form_id).'_form_'.$group['group_name'].'">'.$group['data']['label'].'</a>';        
+                if( !isset($form['#groups'][$group['group_name']]->format_settings['instance_settings']['description']) ){
+                    $form['#groups'][$group['group_name']]->format_settings['instance_settings']['description']='';
+                }
+                $form['#groups'][$group['group_name']]->format_settings['instance_settings']['description'].='<span id="node_'.str_replace('_node_form','',$form_id).'_form_'.$group['group_name'].'">&nbsp;</span>';
+            }
+    //        if( isset($group['data']['children']) and is_array($group['data']['children']) and count($group['data']['children']) ){
+    //            foreach($group['data']['children'] as $fld){
+    //            }
+    //        }
+        }
+    }
+
+  }
+  switch($form_id){
+  case 'block_admin_display_form':
+  case 'system_modules':
+  case 'user_admin_permissions':
+  case 'block_admin_configure':
+  case 'taxonomy_form_term':
+  case 'system_theme_settings':
+  case 'field_ui_field_edit_form':
+  case 'field_ui_field_overview_form':
+  case 'user_profile_form':
+  case 'block_add_block_form':
+  case 'node_type_form':
+  case 'field_ui_display_overview_form':
+  case 'menu_edit_item':
+  case 'menu_overview_form':
+    $isyes=1;
+    break;
+  }
+  
+  if( $isyes ){
+    $topanel[]='<a class="save" style="display: inline-block; padding: 3px 7px; font-weight: bold; border-right: 1px dotted #ddd; " href="javascript:void(0);" onclick=" if( jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-submit\').length ){ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-submit\').click(); }else{ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input.form-submit\').click(); } ">Сохранить изменения</a>';
+
+
+
+    switch($form_id){
+    case 'node_type_form':
+        $topanel[]='<a class="save" style="display: inline-block; padding: 3px 7px; font-weight: bold; border-right: 1px dotted #ddd; " href="javascript:void(0);" onclick=" if( jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-save-continue\').length ){ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input#edit-save-continue\').click(); }else{ jQuery(\'form#'.str_replace('_','-',$form_id).' .form-actions input.form-submit\').click(); } ">Сохранить и добавить поля</a>';
+        break;
+    }
+
+
+    
+    $form['#prefix']='<div style=" position: fixed; width: 100%; border-top: 1px dotted #666; left: 0; bottom: 0; background: #fff; z-index: 777; ">';
+/*
+    $groups=db_query('select data, group_name from {field_group} where bundle=\''.str_replace('_node_form','',$form_id).'\'');
+    while($group=$groups->fetchAssoc()){
+        $group['data']=unserialize($group['data']);
+        if( isset($group['data']['label']) ){
+            $form['#prefix'].='<a style="display: inline-block; padding: 3px 7px; font-weight: bold; border-right: 1px dotted #ddd; " href="#node_'.str_replace('_node_form','',$form_id).'_form_'.$group['group_name'].'">'.$group['data']['label'].'</a>';        
+        }
+//        if( isset($group['data']['children']) and is_array($group['data']['children']) and count($group['data']['children']) ){
+//            foreach($group['data']['children'] as $fld){
+//            }
+//        }
+    }
+*/
+    $form['#prefix'].=implode(' ',$topanel);
+    $form['#prefix'].='</div>';
+  }
+
+}
+
+

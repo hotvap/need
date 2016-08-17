@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * @file
+ * Install file for module uc_liqpay
+ */
+
+/**
+ * Implements hook_shema().
+ */
+function uc_liqpay_schema() {
+  $scheme = array();
+  $schema['uc_liqpay_transaction'] = array(
+    'description' => 'Completed Transactions',
+    'fields' => array(
+      'txnid' => array(
+        'type' => 'int',
+        'size' => 'normal',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The transactions id.',
+      ),
+      'amount' => array(
+        'type' => 'numeric',
+        'unsigned' => TRUE,
+        'precision' => 6,
+        'scale' => 2,
+        'default' => 0.00,
+        'description' => 'The transactions amount.',
+      ),
+      'description' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => 'Info about transactions.',
+      ),
+    ),
+    'primary key' => array('txnid'),
+    'indexes' => array('txnid' => array('txnid')),
+  );
+  $schema['uc_liqpay_rates'] = array(
+    'description' => 'Info about',
+    'fields' => array(
+      'currency' => array(
+        'type' => 'varchar',
+        'length' => 3,
+        'not null' => TRUE,
+        'default' => 'UAH',
+        'description' => 'Type of currency.',
+      ),
+      'merchant_id' => array(
+        'type' => 'varchar',
+        'length' => 13,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The merchant identificator.',
+      ),
+      'secret_key' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The secret key called signature.',
+      ),
+      'rate' => array(
+        'type' => 'numeric',
+        'unsigned' => TRUE,
+        'precision' => 6,
+        'scale' => 2,
+        'default' => 0.00,
+        'description' => 'The rate.',
+      ),
+    ),
+    'primary key' => array('currency'),
+  );
+  return $schema;
+}

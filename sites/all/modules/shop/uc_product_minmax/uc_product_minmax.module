@@ -1,0 +1,499 @@
+<?php
+
+/**
+ * @file
+ * This module adds a product feature for you to enter a minimum, maximum
+ * and order in mulitples quantity of the product that must be in the cart
+ * for it to be checked out.
+ *
+ * Product Min & Product Max modules originally coded by Ryan of Ubercart.org.
+ * Combined and converted to product feature by fred0.
+ *
+ * Original development by Ryan sponsored by Plum Drama - http://www.plumdrama.com
+ */
+
+/*******************************************************************************
+ * Product Feature API (Ubercart)
+ ******************************************************************************/
+
+/**
+ * Implementation of hook_uc_product_feature().
+ */
+function uc_product_minmax_uc_product_feature() {
+  $features[] = array(
+    'id' => 'minmax',
+    'title' => t('Product Minimum & Maximum'),
+    'callback' => 'uc_product_minmax_feature_form',
+    'delete' => 'uc_product_minmax_feature_delete',
+    'settings' => 'uc_product_minmax_feature_settings',
+  );
+  return $features;
+}
+
+/**
+ * This function gets called when an administrator browses to the product
+ * features settings form.  It should return an array of form elements to add to
+ * this feature's fieldset in the form if necessary.
+ */
+
+function uc_product_minmax_feature_settings($form, &$form_state) {
+  $form['uc_product_minmax_position'] = array(
+    '#type' => 'radios',
+    '#title' => t('Display Position'),
+    '#description' => t('Set the default position of the minimum and maximum on the product page.<br />This can be overridden on individual products..'),
+    '#default_value' => variable_get('uc_product_minmax_position', 0),
+    '#options' => array(t('As node item'), t('As description below Quantity field')),
+  );
+  $form['uc_product_minmax_weight'] = array(
+    '#type' => 'weight',
+    '#title' => t('Node item page weight'),
+    '#description' => t('Only has an effect if the above setting is <b>As node item</b>.<br />Set the default position of the minimum and maximum on the product page.<br />This can be overridden on individual products.<br />Refer to the <a href="/admin/store/settings/products/edit/fields">Product Field settings</a> for other element weights.'),
+    '#default_value' => variable_get('uc_product_minmax_weight', 9),
+    '#delta' => 100,
+  );
+  return $form;
+}
+
+/**
+ * This form gets displayed when a product feature is added or edited for this
+ * product feature type.
+ */
+function uc_product_minmax_feature_form($form, &$form_state, $node, $feature) {
+    
+    // Use the feature's values to fill the form, if they exist.
+    if (!empty($feature)) {
+      $minmax		       		= uc_product_minmax_values_load($feature['pfid']);
+      $default_feature			= $feature['pfid'];
+      $default_product_min		= $minmax->product_min;
+      $default_display_min		= $minmax->display_min;
+      $default_pmin_multiple	= $minmax->pmin_multiple;
+      $default_display_multiple	= $minmax->display_multiple;
+      $default_product_max		= $minmax->product_max;
+      $default_display_max		= $minmax->display_max;
+      //print (print_r($minmax));
+    }
+    else {
+      $minmax		       		= FALSE;
+      $default_feature			= NULL;
+      $default_product_min		= 1;
+      $default_display_min		= TRUE;
+      $default_pmin_multiple	= 1;
+      $default_display_multiple	= TRUE;
+      $default_product_max		= 0;
+      $default_display_max		= TRUE;
+    }
+    
+    $form['nid'] = array(
+      '#type' => 'hidden',
+      '#value' => $node->nid,
+    );
+    $form['pfid'] =array(
+      '#type' => 'hidden',
+      '#value' => $default_feature,
+    );
+    $form['min_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Minimum'),
+    );
+    $form['min_fieldset']['product_min'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Minimum quantity to checkout'),
+      '#description' => t('Enter the minimum quantity of this product needed to checkout.'),
+      '#default_value' => $default_product_min,
+      '#size' => 10,
+    );
+    $form['min_fieldset']['display_min'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display the Minimum text on product page'),
+      '#default_value' => $default_display_min,
+      '#description' => t('Only has effect when Minimum is greater than 1 or multiples is checked.'),
+    );
+    $form['min_fieldset']['pmin_multiple'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Products must be purchased in multiples of'),
+      '#default_value' => $default_pmin_multiple,
+      '#size' => 10,
+    );
+    $form['min_fieldset']['display_multiple'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display the Multiple text on product page'),
+      '#default_value' => $default_display_multiple,
+      '#description' => t('Only has effect when Multiple is greater than 1.'),
+    );
+    $form['max_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Maxmimum'),
+    );
+    $form['max_fieldset']['product_max'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Maximum quantity allowed to checkout'),
+      '#description' => t('Enter the maximum quantity of this product allowed to checkout. Set 0 for no limit.'),
+      '#default_value' => $default_product_max,
+      '#size' => 10,
+    );
+    $form['max_fieldset']['display_max'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display the Maximum text on product page'),
+      '#default_value' => $default_display_max,
+      '#description' => t('Only has effect when Maximum is greater than 0.'),
+    );
+    $form['display_weight'] = array(
+      '#type' => 'weight',
+      '#title' => t('Product Page weight'),
+      '#description' => t('Set the position of the minimum and maximum on the product page.<br ?> This overrides the default setting.<br />Refer to the <a href="/admin/store/settings/products/edit/fields">Product Field settings</a> for other element weights.'),
+      '#default_value' => variable_get('uc_product_minmax_weight', 9),
+      '#delta' => 100,
+    );
+    return $form;
+}
+
+function uc_product_minmax_feature_form_validate($form, &$form_state) {
+  $minmax = uc_product_minmax_feature_load($form_state['values']['nid']);
+  if (!empty($minmax)) { 
+    if ($minmax->pfid != $form_state['values']['pfid']) {
+      form_set_error('minmax_exists', t('Product Minimum & Maximum feature already exists for this product.'));
+    }
+  }
+  if (!ctype_digit($form_state['values']['product_min'])) {
+    form_set_error('product_min', t('The value for Minimum must be zero or a positive integer.'));
+  }
+  if (empty($form_state['values']['pmin_multiple']) || !ctype_digit($form_state['values']['pmin_multiple'])) {
+    form_set_error('pmin_multiple', t('The value for Multiple must be an integer greater than zero'));
+  }
+  if (!ctype_digit($form_state['values']['product_max'])) {
+    form_set_error('product_max', t('The value for Maximum must be zero or a positive integer.'));
+  }
+}
+
+function uc_product_minmax_feature_form_submit($form, &$form_state) {
+ $minmax = array(
+   'pfid'				=> $form_state['values']['pfid'],
+   'nid'				=> $form_state['values']['nid'],
+   'product_min'		=> intval($form_state['values']['product_min']),
+   'pmin_multiple'		=> intval($form_state['values']['pmin_multiple']),
+   'product_max'		=> intval($form_state['values']['product_max']),
+   'display_min'		=> $form_state['values']['display_min'],
+   'display_multiple'	=> $form_state['values']['display_multiple'],
+   'display_max'		=> $form_state['values']['display_max'],
+   'display_weight'		=> $form_state['values']['display_weight'],
+ );
+ 
+ $description =array(
+    '@min' => $minmax['pmin_multiple'] > 1 ? t('Requires item to be purchased in multiples of @multiple.', array('@multiple' => $minmax['pmin_multiple'])) 
+              : t('Requires a minimum of @minimum to checkout.', array('@minimum' => $minmax['product_min'])),
+    '@max' => $minmax['product_max'] >= 1 ? t('Limits checkout to a maximum of @maximum.', array('@maximum' => $minmax['product_max'])) : '',
+  );
+  
+  $data = array(
+    'pfid' => $minmax['pfid'],
+    'nid' => $form_state['values']['nid'],
+    'fid' => 'minmax',
+    'description' => t('@min @max', $description),
+  );
+  
+  $form_state['redirect'] = uc_product_feature_save($data);
+  
+  $minmax['pfid'] = $data['pfid'];
+  
+  // Insert or update uc_product_minmax table
+  $key = array();
+  if ($nid = _uc_minmax_get_nid($minmax['pfid'])) {
+    $key = 'nid';
+    $minmax['nid'] = $nid;
+  }
+  drupal_write_record('uc_product_minmax', $minmax, $key);
+  
+}  
+  
+/**
+ * Get a node id from a product feature id.
+ */
+function _uc_minmax_get_nid($pfid) {
+  return db_query("SELECT nid FROM {uc_product_minmax} WHERE pfid = :pfid", array(':pfid' => $pfid))->fetchField();
+}
+
+/**
+ * This function gets called when a feature of this type is deleted.
+ */
+function uc_product_minmax_feature_delete($feature) {
+    db_delete('uc_product_minmax')
+    ->condition('pfid', $feature['pfid'])
+    ->execute();
+}
+
+/*******************************************************************************
+ * Hook Functions (Ubercart)
+ ******************************************************************************/
+
+/**
+ * Implementation of hook_add_to_cart().
+ */
+function uc_product_minmax_uc_add_to_cart($nid, $qty, $data) {
+  $minmax = uc_product_minmax_feature_load($nid);
+  if ($minmax) {
+	$cart_total = 0;
+	$items = uc_cart_get_contents();
+	foreach($items as $item) {
+		if($item->nid === $nid) {
+		if (module_exists('uc_product_kit') && in_array('uc_product_kit', $item->data)) continue; // If item is part of a product kit, do not count cart items
+		$cart_total += $item->qty;
+		}
+	}
+	
+	$node = node_load($nid, NULL, TRUE);
+	$message = array();
+	$result = array();
+	if ($minmax->product_min && $qty < $minmax->product_min) {
+		$message[] = t('The minimum order quantity for !item is @qty.', array('@qty' => $minmax->product_min, '!item' => $node->title));
+	}
+	if ($minmax->product_max && $qty + $cart_total > $minmax->product_max) {
+		$message[] = t('The maximum order quantity for !item is @qty and you already have @qty in your cart.', array('@qty' => $minmax->product_max, '!item' => $node->title));
+	}
+	else if ($minmax->product_max && $qty > $minmax->product_max) {
+		$message[] = t('The maximum order quantity for !item is @qty.', array('@qty' => $minmax->product_max, '!item' => $node->title));
+	}
+	if ($minmax->pmin_multiple && $qty % $minmax->pmin_multiple) {
+		$message[] = t('Orders for !item must be in multiples of @qty.', array('@qty' => $minmax->pmin_multiple, '!item' => $node->title));
+	}
+
+	if (count($message)) {
+		$result[] = array(
+			'success' => FALSE,
+			'message' => theme_item_list(array('items' => $message, 'title' => t('Please check your quantity and try again.'), 'type' => 'ul', 'attributes' => array())),
+			'silent'  => FALSE,
+		); 
+	}
+
+	if(module_exists('uc_product_kit') && isset($data['kit_id'])){
+		return; // If item is part of a product kit, do not apply minmax rules
+	} else {
+		return $result;
+	}
+  }
+}
+
+/**
+ * Prevent illegal modifications of quantities in cart
+ */
+function uc_product_minmax_form_uc_cart_view_form_alter(&$form, &$form_state, $form_id) {
+  foreach(element_children($form['items']) as $i) {    
+    if(!array_key_exists('nid', $form['items'][$i])) continue;
+    
+    // if removing all items or items with errors, skip validation
+    if(array_key_exists('input', $form_state)) {
+      if (array_key_exists('items', $form_state['input'])) {
+        if (array_key_exists($i, $form_state['input']['items'])) {
+          if (array_key_exists('remove', $form_state['input']['items'][$i])) continue;
+        }
+      }
+    }
+    
+    // If item in cart is part of a product kit, do not apply minmax rules
+    if (module_exists('uc_product_kit')) {
+      if (in_array('uc_product_kit', $form['items'][$i]['module'])) continue;
+    }
+    
+    // If the qty is 0, hide the qty field. 
+    // Commented out until I know if a 0 qty is even useful: http://drupal.org/node/921850#comment-3908812
+    //if ($form['items'][$i]['qty']['#default_value'] == 0) {
+    //  hide($form['items'][$i]['qty']);
+    //}
+
+    $nid = $form['items'][$i]['nid']['#value'];
+    $minmax = uc_product_minmax_feature_load($nid);
+
+    if(!$minmax) continue;
+
+    $form['items'][$i]['#element_validate'][] = 'uc_product_minmax_cart_validate';
+  }
+}
+
+function uc_product_minmax_cart_validate(&$element, &$form_state) {
+  $nid = $element['nid']['#value'];
+  $qty = $element['qty']['#value'];
+  $minmax = uc_product_minmax_feature_load($nid);
+  $message = array();
+  if($minmax->pmin_multiple && $qty % $minmax->pmin_multiple) {
+    $message[] = t('!item must be ordered in multiples of !qty.', array('!item' => $element['title']['#markup'], '!qty' => $minmax->pmin_multiple));
+  }
+  if($minmax->product_min && $qty < $minmax->product_min) {
+    $message[] = t('You must order !min or more of !item.', array('!item' => $element['title']['#markup'], '!min' => $minmax->product_min));
+  }
+  if($minmax->product_max && $qty > $minmax->product_max) {
+    $message[] = t('You cannot order more than !max of !item.', array('!item' => $element['title']['#markup'], '!max' => $minmax->product_max));
+  }
+  if (count($message)) {
+    form_error($element['qty'], theme_item_list(array('items' => $message, 'title' => t('Please check your quantity and try again.'), 'type' => 'ul', 'attributes' => array())));
+  }
+}
+
+
+/*******************************************************************************
+ * Theme and Node functions to display minmax restrictions as node item
+ * if selected in product feature general settings.
+ ******************************************************************************/
+
+/**
+ * Implementation of hook_node_load().
+ */
+function uc_product_minmax_node_load($nodes, $types) {
+  if (variable_get('uc_product_minmax_position', 0) == 0) {
+    foreach ($nodes as $node) {
+      if (uc_product_minmax_feature_load($node->nid)) {
+		  $node->minmax = uc_product_minmax_feature_load($node->nid);
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_node_view().
+ */
+function uc_product_minmax_node_view($node, $view_mode, $langcode) {
+        if (variable_get('uc_product_minmax_position', 0) == 0 && array_key_exists('minmax', $node)) {
+            if ($node->minmax->display_min || $node->minmax->display_max || $node->minmax->display_multiple) {
+              $node->content['minmax_text'] = array(
+                '#markup' => theme('display_minmax', array('min' => $node->minmax->product_min, 
+                										   'multiple' => $node->minmax->pmin_multiple, 
+                										   'max' => $node->minmax->product_max,
+                										   'display_min' => $node->minmax->display_min,
+                										   'display_multiple' => $node->minmax->display_multiple,
+                										   'display_max' => $node->minmax->display_max,
+                										   )),
+                '#weight' => !empty($node->minmax->display_weight) ? $node->minmax->display_weight : variable_get('uc_product_minmax_weight', 9),
+              );
+          }
+        }
+}
+
+/**
+ * Implementation of hook_theme()
+ * Themes the product minimum notice line on product view pages.
+ */
+function uc_product_minmax_theme() {
+  return array(
+    'display_minmax' => array(
+      'variables' => array(
+        'min' => NULL,
+        'multiple' => NULL,
+        'max' => NULL,
+        'display_min' => NULL,
+        'display_multiple' => NULL,
+        'display_max' => NULL,
+        'display_weight' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Custom theme function to allow themes to override or customize display.
+ */
+function theme_display_minmax($variables) {
+  $output = '<div class="product-minmax">';
+  if ($variables['multiple'] > 1 && $variables['display_multiple']) {
+    $output .= '<div class="uc_product_minmax_multiple">' . t('Must be ordered in sets of %qty.', array('%qty' => $variables['multiple'])) . '</div>';
+  }
+  if ($variables['min'] > 1 && $variables['display_min']) {
+    $output .= '<div class="uc_product_minmax_min">' . t('A minimum order of at least %qty is required.', array('%qty' => $variables['min'])) . '</div>';
+  }
+  if ($variables['max'] >= 1 && $variables['display_max']) {
+    $output .= '<div class="uc_product_minmax_max">' . t('A maximum order of %qty is allowed.', array('%qty' => $variables['max'])) . '</div>';
+  }
+  $output .= '</div>';
+  return $output;
+}
+
+/**
+ * Implementation of hook_node_delete().
+ */
+function uc_product_minmax_node_delete(&$node) {
+       // Delete corresponding data from {uc_product_features} and {uc_product_minmax} tables
+       db_query("DELETE FROM {uc_product_features} WHERE nid = :nid AND fid='minmax'", array(':nid' => $node->nid));
+       db_query("DELETE FROM {uc_product_minmax} WHERE nid = :nid", array(':nid' => $node->nid));
+}
+
+
+/*******************************************************************************
+ * Display minmax restrictions in add to cart form if selected in product
+ * feature general settings.
+ ******************************************************************************/
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function uc_product_minmax_form_alter(&$form, &$form_state, $form_id) {
+  // Add text for "Add to cart" and "Buy it now" forms
+  if (variable_get('uc_product_minmax_position', 0) == 1) {
+    if ((strpos($form_id, 'add_to_cart_form') > 0 || strpos($form_id, 'uc_catalog_buy_it_now_form_') === 0)) {
+      $minmax = uc_product_minmax_feature_load($form['nid']['#value']);
+
+      if ($minmax->pmin_multiple > 1 && $minmax->display_multiple) {
+        $output = '<div class="uc_product_multiple">' . t('This product must be ordered in sets of !qty.', array('!qty' => $minmax->pmin_multiple)) . '</div>';
+      }
+      if ($minmax->product_min > 1 && $minmax->display_min) {
+        $output .= '<div class="uc_product_min">' . t('A minimum order of at least !qty is required.', array('!qty' => $minmax->product_min)) . '</div>';
+      }
+      if ($minmax->product_max >= 1 && $minmax->display_max) {
+        $output .= '<div class="uc_product_max">' . t('A maximum order of !qty is allowed.', array('!qty' => $minmax->product_max)) . '</div>';
+      }
+
+      $form['qty']['#description'] = $output;
+    }
+  }
+}
+
+/*******************************************************************************
+ * Misc and callbacks
+ ******************************************************************************/
+
+/**
+ * Restrict multiple minmax features from being added to a single product.
+ * Disable feature on product kits since it doesn't have any effect on them anyway.
+ */
+function uc_product_minmax_form_uc_product_feature_add_form_alter(&$form, &$form_state) {
+  if ( uc_product_minmax_feature_load(arg(1)) || uc_product_minmax_product_kit_load(arg(1)) ) {
+    unset($form['feature']['#options']['minmax']);
+  }
+}
+
+/**
+ * Loads min and max value based on pfid.
+ *
+ * @param $pfid
+ *   The product feature ID to load.
+ * @return
+ *   The min and max object.
+ */
+function uc_product_minmax_values_load($pfid) {
+  return db_query("SELECT * FROM {uc_product_minmax} WHERE pfid = :pfid", array(':pfid' => $pfid))->fetchObject();
+}
+
+/**
+ * Loads min and max value based on nid.
+ *
+ * @param $nid
+ *   The Node ID to load.
+ * @return
+ *   The min and max object.
+ */
+function uc_product_minmax_feature_load($nid) {
+  return db_query("SELECT * FROM {uc_product_minmax} WHERE nid = :nid", array(':nid' => $nid))->fetchObject();
+}
+
+/**
+ * Load product kit matches for the given node.
+ *
+ * @param $nid
+ *   The Node ID to load.
+ * @return
+ *   The product kit object.
+ */
+/**
+ * Load product kit matches for the given node
+ */
+function uc_product_minmax_product_kit_load($nid) {
+  if (module_exists('uc_product_kit')) {
+    return db_query("SELECT * FROM {uc_product_kits} WHERE nid = :nid", array(':nid' => $nid))->fetchObject();
+  }
+}

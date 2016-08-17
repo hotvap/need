@@ -1,0 +1,692 @@
+<?php
+
+/**
+ * @file
+ * Module for work with service liqpay. Module uc_liqpay add in ubercart new type payment.
+ */
+define("LiqpayActionUrl", "https://liqpay.com/?do=clickNbuy");
+
+/**
+ * Implements hook_permisson().
+ */
+function uc_liqpay_permission() {
+  return array(
+    'administer uc_liqpay' => array(
+      'title' => t('Administer Liqpay Payment Gateway'),
+      'description' => t('Change admin settings'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function uc_liqpay_menu() {
+  $items = array();
+  $items['uc_liqpay/server_url'] = array(
+    'title' => 'Internal Data',
+    'page callback' => 'uc_liqpay_done_payment',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  $items['uc_liqpay/result_url'] = array(
+    'title' => 'Liqpay processing',
+    'page callback' => 'uc_liqpay_payment_end',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/store/settings/liqpay'] = array(
+    'title' => 'Liqpay',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('uc_liqpay_list'),
+    'access arguments' => array('administer uc_liqpay'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/store/settings/liqpay/overview'] = array(
+    'title' => 'Overview',
+    'access arguments' => array('administer uc_liqpay'),
+    'weight' => 0,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/store/settings/liqpay/add'] = array(
+    'title' => 'Add currency',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('uc_liqpay_add'),
+    'access arguments' => array('administer uc_liqpay'),
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/store/settings/liqpay/edit'] = array(
+    'title' => 'Edit currency',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('uc_liqpay_edit'),
+    'access arguments' => array('administer uc_liqpay'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_uc_payment_method().
+ */
+function uc_liqpay_uc_payment_method() {
+  $methods = array();
+  $methods['liqpay'] = array(
+    'id' => 'liqpay',
+    'name' => t('Liqpay'),
+    'title' => theme('uc_liqpay_payment_method_title'),
+    'desc' => t('Redirect to liqpay to pay by.'),
+    'callback' => 'uc_payment_method_liqpay',
+    'weight' => 4,
+    'checkout' => TRUE,
+    'no_gateway' => TRUE,
+  );
+  return $methods;
+}
+
+/**
+ * Callback for liqpay payment method settings.
+ */
+function uc_payment_method_liqpay($op, &$order, $form = NULL, &$form_state = NULL) {
+  switch ($op) {
+    case 'cart-details':
+      // @todo
+      // Add rate calculation
+      // add guard for non-currencies
+      $result = db_select('uc_liqpay_rates', 'ulr')
+      ->fields('ulr', array('currency', 'merchant_id', 'secret_key', 'rate'))
+      ->orderBy('currency', 'asc')
+      ->execute()
+      ->fetchAllAssoc('currency');
+      $build = array();
+      $options = array();
+      foreach ($result as $key) {
+        $options[$key->currency] = t('@cur (Rate - @rate)', array('@cur' => $key->currency, '@rate' => $key->rate));
+      }
+      $cur = variable_get('uc_currency_code', 'USD');
+      $build['uc_liqpay_currency'] = array(
+        '#type' => 'radios',
+        '#required' => TRUE,
+        '#title' => t('Select convenient currency for pay'),
+        '#default_value' => array_key_exists($cur, $options) ? $cur : '',
+        '#description' => t('Your order sum will recalculate according to the currency course'),
+        '#options' => $options,
+      );
+      unset($_SESSION['uc_liqpay_currency']);
+
+      return $build;
+
+    case 'cart-process':
+      // @todo
+      // abandon $_SESSION var
+      if (isset($form_state['values']['panes']['payment']['details']['uc_liqpay_currency'])) {
+        $_SESSION['uc_liqpay_currency'] = $form_state['values']['panes']['payment']['details']['uc_liqpay_currency'];
+      }
+      return;
+  }
+}
+
+/**
+ * Callback for liqpay payment page settings
+ */
+function uc_liqpay_list($form, &$form_state) {
+  $result = db_select('uc_liqpay_rates', 'ulr')
+  ->fields('ulr', array('currency', 'merchant_id', 'secret_key', 'rate'))
+  ->orderBy('currency', 'asc')
+  ->execute()
+  ->fetchAll();
+  $form = array();
+  if (count($result)) {
+    $header = array(
+      'currency' => t('Currency'),
+      'merchant_id' => t('Merchant ID'),
+      'secret_key' => t('Secret key'),
+      'rate' => t('Rate'),
+      'edit' => t('Edit'),
+    );
+    foreach ($result as $template) {
+      $options[$template->currency] = array(
+        'currency' => $template->currency,
+        'merchant_id' => $template->merchant_id,
+        'secret_key' => $template->secret_key,
+        'rate' => $template->rate,
+        'edit' => l(t('Edit'), 'admin/store/settings/liqpay/edit/' . $template->currency),
+      );
+    }
+    $form['table'] = array(
+      '#type' => 'tableselect',
+      '#header' => $header,
+      '#options' => $options,
+      '#multiple' => TRUE,
+    );
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete checked currency'),
+    );
+  }
+  else {
+    drupal_set_message(t('You have not any added currencies'));
+  }
+
+  return $form;
+}
+
+/**
+ * Handle post-validation form submission
+ */
+function uc_liqpay_list_submit($form, &$form_state) {
+  foreach ($form_state['values']['table'] as $key => $val) {
+    if ($key == (string) $val) {
+      db_delete('uc_liqpay_rates')
+      ->condition('currency', $val)
+      ->execute();
+      drupal_set_message(t('You successfully deleted currency - @currency.', array('@currency' => $val)));
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function uc_liqpay_theme($existing, $type, $theme, $path) {
+  return array(
+    'uc_liqpay_payment_method_title' => array(
+      'variables' => array(),
+  ));
+}
+
+/**
+ * Returns HTML for payment method title
+ *
+ * @ingroup themeable
+ */
+function theme_uc_liqpay_payment_method_title() {
+  $path = base_path() . drupal_get_path('module', 'uc_liqpay') . '/images/liqpay.png';
+  $title = t('Liqpay');
+  $title .= '<br />';
+  $attr = array(
+    'path' => $path,
+    'alt' => 'Liqpay Payment Gateway',
+    'attributes' => array('class' => 'liqpay-title-image')
+  );
+  $title .= theme_image($attr);
+  return $title;
+}
+
+/**
+ * Callback for liqpay payment page add currency
+ * @see uc_liqpay_add_validate().
+ * @see uc_liqpay_add_submit().
+ * @ingroup forms
+ */
+function uc_liqpay_add() {
+  $form = array();
+  $options = array('UAH' => 'UAH', 'USD' => 'USD', 'EUR' => 'EUR', 'RUR' => 'RUR');
+  $entered_options = db_select('uc_liqpay_rates', 'ulr')
+  ->fields('ulr', array('currency'))
+  ->execute()
+  ->fetchAll();
+  foreach ($entered_options as $option) {
+    unset($options[$option->currency]);
+  }
+  if (count($options)) {
+    $form['currency'] = array(
+      '#type' => 'select',
+      '#title' => t('Currency'),
+      '#default_value' => 'UAH',
+      '#options' => $options,
+      '#description' => t("Please, select currency."),
+      '#required' => TRUE,
+    );
+    $form['merchant_id'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Merchant ID'),
+      '#maxlength' => 13,
+      '#default_value' => '',
+      '#description' => t("Please, enter MERCHANT ID."),
+      '#required' => TRUE,
+    );
+    $form['rate'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Rate'),
+      '#maxlength' => 6,
+      '#default_value' => '1.0',
+      '#description' => t("Please, enter rate of currency."),
+      '#required' => TRUE,
+    );
+    $form['secret_key'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Signature'),
+      '#default_value' => '',
+      '#maxlength' => 64,
+      '#description' => t("Please enter signature."),
+      '#required' => TRUE,
+    );
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('ADD LP-CURRENCY'),
+    );
+  }
+  else {
+    drupal_set_message(t('There are no available currencies. Please delete some of them.'), 'warning');
+  }
+  return $form;
+}
+
+/**
+ * Validation for the form uc_liqpay_add()
+ * @see uc_liqpay_add().
+ * @see uc_liqpay_add_submit().
+ */
+function uc_liqpay_add_validate($form, &$form_state) {
+  if (!empty($form_state['values']['currency'])) {
+    $merchant_ids = db_select('uc_liqpay_rates', 'ulr')
+    ->fields('ulr', array('currency', 'merchant_id', 'secret_key', 'rate'))
+    ->condition('currency', $form_state['values']['currency'])
+    ->execute();
+    if (isset($merchant_ids->currency)) {
+      form_set_error('currency', t('@currency already exists. Please enter another currency.', array('@currency' => $merchant_ids->currency)));
+    }
+  }
+}
+
+/**
+ * Handle post-validation form submission
+ * @see uc_liqpay_add().
+ * @see uc_liqpay_add_validate().
+ */
+function uc_liqpay_add_submit($form, &$form_state) {
+  if (!empty($form_state['values']['currency'])) {
+    $id = db_insert('uc_liqpay_rates')
+    ->fields(array(
+      'currency' => $form_state['values']['currency'],
+      'merchant_id' => $form_state['values']['merchant_id'],
+      'secret_key' => $form_state['values']['secret_key'],
+      'rate' => $form_state['values']['rate'],
+    ))
+    ->execute();
+  }
+  drupal_set_message(t('You successfully added currency - @currency.', array('@currency' => $form_state['values']['currency'])));
+  drupal_goto('admin/store/settings/liqpay/list');
+}
+
+/**
+ * Callback for liqpay payment page edit currency
+ */
+function uc_liqpay_edit($form, $form_state) {
+  $form = array();
+  $data = db_select('uc_liqpay_rates', 'ulr')
+  ->fields('ulr', array('currency', 'merchant_id', 'secret_key', 'rate'))
+  ->condition('currency', arg(5))
+  ->execute()
+  ->fetchObject();
+  if (!empty($data)) {
+    $form['currency'] = array(
+      '#type' => 'hidden',
+      '#value' => $data->currency
+    );
+    $form['merchant_id'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Merchant ID'),
+      '#default_value' => $data->merchant_id,
+      '#required' => TRUE,
+    );
+    $form['secret_key'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Signature'),
+      '#default_value' => $data->secret_key,
+      '#maxlength' => 64,
+      '#description' => t("Please enter SIGNATURE."),
+      '#required' => TRUE,
+    );
+    $form['rate'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Rate to site currency'),
+      '#default_value' => $data->rate,
+      '#required' => TRUE,
+      '#description' => t("Please enter liqpay rate according to site currency."),
+    );
+    $form['actions'] = array('#type' => 'actions');
+    $form['actions']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Update Currency'),
+    );
+    $form['actions']['delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete Currency'),
+    );
+    $form['actions']['cancel'] = array(
+      '#markup' => l(t('Cancel'), 'admin/store/settings/liqpay/overview'),
+    );
+  }
+  else {
+    $form['actions'] = array('#type' => 'actions');
+    $form['actions']['cancel'] = array(
+      '#markup' => l(t('Back'), 'admin/store/settings/liqpay/overview'),
+    );
+    drupal_set_message(t('This currency does not exist'), 'warning');
+  }
+
+  return $form;
+}
+
+/**
+ * Handle post-validation form submission
+ */
+function uc_liqpay_edit_submit($form, &$form_state) {
+  $val = $form_state['values'];
+  if ($form_state['submitted'] == TRUE) {
+    if ($val['op'] == t('Update Currency')) {
+      db_update('uc_liqpay_rates')
+      ->fields(array('secret_key' => $val['secret_key'], 'rate' => $val['rate'], 'merchant_id' => $val['merchant_id']))
+      ->condition('currency', $val['currency'])
+      ->execute();
+      drupal_set_message(t('Currency has been updated successfully'));
+    }
+    elseif ($val['op'] == t('Delete Currency')) {
+      db_delete('uc_liqpay_rates')
+      ->condition('currency', $val['currency'])
+      ->execute();
+      drupal_set_message(t('Currency has been deleted'));
+    }
+  }
+  drupal_goto('admin/store/settings/liqpay/list');
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function uc_liqpay_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'uc_cart_checkout_review_form') {
+    $order = $form_state['uc_order'];
+    if ($order->payment_method == 'liqpay') {
+      // TODO
+      // Add custom review table
+      unset($form['actions']['submit']);
+      if (floatval($order->order_total) < 0.02) {
+        $order->order_total = '0.02';
+        drupal_set_message(t('You order total sum increased to @cur 0.02. Because Liqpay does not support sum less @cur 0.02', array('@cur' => $order->currency)));
+      }
+      $form['#prefix'] = '<table ><tr><td>';
+      $form['#suffix'] = '</td><td>' . drupal_render(drupal_get_form('uc_liqpay_submit_form', $order)) . '</td></tr></table>';
+    }
+  }
+}
+
+/**
+ * Add new button with liqpay settings
+ */
+function uc_liqpay_submit_form($form, &$form_state, $order) {
+  global $base_url;
+  $lp = db_select('uc_liqpay_rates', 'ulr')
+  ->fields('ulr', array('currency', 'merchant_id', 'secret_key', 'rate'))
+  ->condition('currency', $_SESSION['uc_liqpay_currency'])->execute();
+
+  // @todo
+  // Add custom review table
+  $lp = $lp->fetch();
+  $sum = round($order->order_total * $lp->rate, 2);
+  if ($sum != $order->order_total) {
+    drupal_set_message(t('Your order sum was increase to @sum @cur', array('@sum' => $sum, '@cur' => $_SESSION['uc_liqpay_currency'])));
+  }
+
+  $ser[$lp->merchant_id] = $sum;
+  $description = serialize($ser);
+
+  $txnid_count = db_select('uc_liqpay_transaction', 'ult')
+  ->fields('ult', array('txnid'))
+  ->condition('txnid', $order->order_id)
+  ->execute()
+  ->fetchField();
+  if ($txnid_count) {
+    db_update('uc_liqpay_transaction')->fields(array(
+      'description' => $description,
+    ))
+    ->condition('txnid', $order->order_id)
+    ->execute();
+  }
+  else {
+    $txnid = db_insert('uc_liqpay_transaction')
+    ->fields(array(
+      'txnid' => $order->order_id,
+      'description' => $description,
+    ))
+    ->execute();
+  }
+  $product_description = variable_get('site_name', '');
+
+  foreach ($order->products as $value) {
+    $product_description .= $value->qty . ' x ' . $value->title . '; ';
+  }
+  // delete from string all special symbols
+  $product_description = preg_replace('![^\w\d\s]*!', '', $product_description);
+  $xml = '<request>
+    <version>1.2</version>
+    <merchant_id>' . $lp->merchant_id . '</merchant_id>
+    <result_url>' . $base_url . '/uc_liqpay/result_url</result_url>
+    <server_url>' . $base_url . '/uc_liqpay/server_url</server_url>
+    <order_id>' . $order->order_id . '</order_id>
+    <amount>' . $sum . '</amount>
+    <currency>' . $lp->currency . '</currency>
+    <description>' . transliteration_get($product_description) . '</description>
+    <default_phone>' . $order->billing_phone . '</default_phone>
+    <pay_way>card</pay_way>
+    <goods_id>' . $order->order_id . '</goods_id></request>';
+
+  $operation_xml = base64_encode($xml);
+  $signature = base64_encode(sha1($lp->secret_key . $xml . $lp->secret_key, 1));
+
+  $form['operation_xml'] = array(
+    '#type' => 'hidden',
+    '#value' => $operation_xml,
+  );
+  $form['signature'] = array(
+    '#type' => 'hidden',
+    '#value' => $signature,
+  );
+  $form['#action'] = LiqpayActionUrl;
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Place your order via Liqpay'),
+    '#disabled' => isset($lp->currency) ? FALSE : TRUE,
+  );
+  if (!isset($lp->currency)) {
+    drupal_set_message(t('You have not selected the currency. If no selected the currency, contact the site administrator.', 'warning'));
+  }
+  return $form;
+}
+
+/**
+ * Callback for liqpay
+ */
+function uc_liqpay_done_payment() {
+  drupal_add_http_header('Content-Type', 'text/html');
+  if (isset($GLOBALS['_POST']['operation_xml']) && isset($GLOBALS['_POST']['signature'])) {
+    $operation_xml = $GLOBALS['_POST']['operation_xml'];
+    $signature = $GLOBALS['_POST']['signature'];
+  }
+  else {
+    drupal_exit('node');
+  }
+
+  $xml = base64_decode($operation_xml);
+  $vars = simplexml_load_string($xml);
+
+  if ($vars->status != 'success') {
+    if (intval($vars->order_id) > 0) {
+      uc_order_comment_save($vars->order_id, 0, t('Status error') . "Something is wrong: " . $vars->status, 'admin');
+      uc_order_update_status($vars->order_id, 'canceled');
+    }
+    drupal_exit('node');
+  }
+
+  $order = uc_order_load(intval($vars->order_id . ''));
+  if ($order === FALSE) {
+    drupal_set_message(t('An error has occurred during payment.  Please contact us to ensure your order has submitted.'));
+    drupal_exit('node');
+  }
+  $respons = array();
+  $respons['version'] = $vars->version;
+  $respons['action'] = $vars->action;
+  $respons['merchant_id'] = $vars->merchant_id;
+  $respons['order_id'] = $vars->order_id;
+  $respons['amount'] = $vars->amount;
+  $respons['status'] = $vars->status;
+  $respons['currency'] = $vars->currency;
+  $respons['description'] = $vars->description;
+  $respons['transaction_id'] = $vars->transaction_id;
+  $respons['pay_way'] = $vars->pay_way;
+  $respons['sender_phone'] = $vars->sender_phone;
+
+  $merchant_id = $respons['merchant_id'];
+
+  $data = db_select('uc_liqpay_rates', 'r')
+  ->fields('r')
+  ->condition('r.currency', $respons['currency'])
+  ->execute()
+  ->fetchObject();
+
+  $signature_check = base64_encode(sha1($data->secret_key . $xml . $data->secret_key, 1));
+
+  $data2 = db_select('uc_liqpay_transaction', 't')
+  ->fields('t')
+  ->condition('t.txnid', $respons['order_id'])
+  ->execute()
+  ->fetchObject();
+
+  $un = unserialize($data2->description);
+
+  if ($un["$merchant_id"] != $respons['amount']) {
+    $res = t('This number does not match the original price');
+    uc_order_comment_save($respons['order_id'], 0, $res . var_export($un, TRUE), 'admin');
+    uc_order_update_status($respons['order_id'], 'canceled');
+  }
+  if (empty($data) || $data->currency != $respons['currency']) {
+    $res = t('Your currency does not match the original');
+    uc_order_comment_save($respons['order_id'], 0, $res, 'admin');
+    uc_order_update_status($respons['order_id'], 'canceled');
+  }
+  if (!empty($signature)) {
+    if ($signature != $signature_check) {
+      $res = t('Security check failed');
+      uc_order_comment_save($respons['order_id'], 0, $res, 'admin');
+      uc_order_update_status($respons['order_id'], 'canceled');
+    }
+  }
+  if (!empty($data) && $un["$merchant_id"] == $respons['amount'] && $signature == $signature_check && $respons['status'] == 'success') {
+    $isok = TRUE;
+  }
+  if ($isok == TRUE) {
+    $description = t('Payment from phone %sender_phone by %pay_way', array('%sender_phone' => $respons['sender_phone'], '%pay_way' => $respons['pay_way']));
+    uc_order_comment_save($respons['order_id'], 0, $description, 'admin');
+    uc_payment_enter($respons['order_id'], 'liqpay', $respons['amount'], $order->uid, NULL, $description);
+    uc_cart_complete_sale($respons['order_id']);
+    uc_order_comment_save($respons['order_id'], 0, t('A payment has been accepted.'), 'admin');
+  }
+  elseif ($respons['status'] == 'wait_secure') {
+    uc_order_comment_save($respons['order_id'], 0, $res . "Status of payment: " . $respons['status'] . " (validation of card)", 'admin');
+    uc_order_update_status($respons['order_id'], 'canceled');
+  }
+  exit();
+}
+
+/**
+ * Callback function with result.
+ */
+function uc_liqpay_payment_end() {
+  if (isset($GLOBALS['_POST']['operation_xml']) && isset($GLOBALS['_POST']['signature'])) {
+    $operation_xml = $GLOBALS['_POST']['operation_xml'];
+    $signature = $GLOBALS['_POST']['signature'];
+  }
+  else {
+    drupal_goto('<front>');
+  }
+  $xml = base64_decode($operation_xml);
+  $vars = simplexml_load_string($xml);
+  $respons = array();
+  $respons['version'] = $vars->version;
+  $respons['action'] = $vars->action;
+  $respons['merchant_id'] = $vars->merchant_id;
+  $respons['order_id'] = $vars->order_id;
+  $respons['amount'] = $vars->amount;
+  $respons['currency'] = $vars->currency;
+  $respons['description'] = $vars->description;
+  $respons['status'] = $vars->status;
+  $respons['code'] = $vars->code;
+  $respons['transaction_id'] = $vars->transaction_id;
+  $respons['pay_way'] = $vars->pay_way;
+  $respons['sender_phone'] = $vars->sender_phone;
+
+  $merchant_id = $respons['merchant_id'];
+
+  $data = db_select('uc_liqpay_rates', 'r')
+  ->fields('r')
+  ->condition('r.currency', $respons['currency'])
+  ->execute()
+  ->fetchObject();
+  $signature_check = base64_encode(sha1($data->secret_key . $xml . $data->secret_key, 1));
+
+  $data2 = db_select('uc_liqpay_transaction', 't')
+  ->fields('t')
+  ->condition('t.txnid', $respons['order_id'])
+  ->execute()
+  ->fetchObject();
+
+  $un = unserialize($data2->description);
+
+  if ($un["$merchant_id"] != $respons['amount']) {
+    $res = FALSE;
+  }
+
+  if (empty($data) || $data->currency != $respons['currency']) {
+    $res = FALSE;
+  }
+  if (!empty($signature)) {
+    if ($signature != $signature_check) {
+      $res = FALSE;
+    }
+  }
+  if (!empty($data) && $un["$merchant_id"] == $respons['amount'] && $signature == $signature_check) {
+    $res = $respons;
+  }
+
+  if (count($res) != 0) {
+    if ($res['status'] == 'success' || $res['status'] == 'wait_secure') {
+      if (isset($_SESSION['cart_order'])) {
+        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+        drupal_goto('cart/checkout/complete');
+      }
+      else {
+        if ($res['status'] == 'success' || $res['status'] == 'wait_secure') {
+          $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+          drupal_goto('cart/checkout/complete');
+        }
+        else {
+          drupal_set_message(t("Your payment has been declined.
+                     Maybe internet payments on your card is prohibited.
+                     Or you have exceeded the card limit.
+                     Ways of solving problem:
+                     - unlock internet purchasing
+                     - increase card limit
+                     - try again in 1 hour
+                     - try another card"), 'warning');
+          drupal_goto('cart');
+        }
+      }
+    }
+    else {
+      unset($_SESSION['cart_order']);
+      unset($_SESSION['uc_liqpay_currency']);
+      $status = empty($res['status']) ? t('Undefined') : $res['status'];
+      drupal_set_message(t("Status of your payment is @status and Your payment has been declined.
+                 Maybe internet payments on your card is prohibited.
+                 Or you have exceeded the card limit.
+                 Ways of solving problem:
+                 - unlock internet purchasing
+                 - increase card limit
+                 - try again in 1 hour
+                 - try another card", array('@status' => $status)), 'warning');
+      drupal_goto('cart');
+    }
+  }
+}

@@ -1,0 +1,458 @@
+#admpage #content .view-mystock .view-filters{
+    float: right;
+}
+#admpage #content .view-content{
+    clear: both;
+}
+#admpage #content .views-exposed-form .form-text{
+    height: 44px;
+    border: 1px solid #3e3d3c;
+    text-align: right;
+    -moz-border-radius: 11px;
+    -khtml-border-radius: 11px;
+    -webkit-border-radius: 11px;
+    border-radius: 11px;
+    behavior: url("/sites/all/libraries/img/PIE.php");
+    position: relative; left: +0px;
+    padding-right: 9px;
+    font-size: 16pt;
+    width: 233px;
+}
+#admpage #content .form-type-date-popup .description{
+    display: none;
+}
+#admpage #content table{
+    margin-top: 21px;
+}
+#admpage #content table td.f_nothing_1 *{
+    font-size: 11pt !important;
+}
+#admpage #content table td.f_nothing_1 a{
+    display: inline-block;
+    text-decoration: none;
+    font-weight: bold !important;
+    font-size: 14pt !important;
+    padding-left: 14px;
+    color: #009846 !important;
+}
+#admpage #content table td.f_nothing_1 .form-text{
+    text-align: right !important;
+    border: 0px none transparent !important;
+}
+#admpage #content table td{
+    border: 1px solid #dddfe0 !important;
+    padding: 5px 5px 2px 3px !important;
+    vertical-align: bottom !important;
+}
+#admpage #content table td.f_status{
+    border-right: 0px none transparent !important;
+}
+#admpage #content table td.f_model{
+    border-left: 0px none transparent !important;
+    color: #e31e24 !important;
+    font-size: 11pt !important;
+    text-align: right !important;
+}
+#admpage #content table td.f_nothing,
+#admpage #content table td.f_taxonomy_catalog,
+#admpage #content table td.f_sell_price,
+#admpage #content table td.f_stock{
+    text-align: center !important;
+}
+#admpage #content table td.f_sell_price{
+    white-space: nowrap;
+    color: #6f943b !important;
+    font-size: 11pt;
+}
+#admpage #content table td.f_stock{
+    white-space: nowrap;
+    font-size: 11pt;
+}
+#admpage #content table td.f_nothing_1{
+    white-space: nowrap;
+}
+#admpage #content table td.f_field_discount{
+    border-left: 0px none transparent !important;
+}
+#admpage #content table td.f_title{
+    padding: 0px !important;
+    border-right: 0px none transparent !important;
+}
+#admpage #content table td.f_title a{
+    font-size: 11pt !important;
+    text-decoration: none;
+    display: block;
+    padding: 5px 5px 2px 3px !important;
+    border: 1px solid #fff !important;
+}
+#admpage #content table td.f_title a:hover,
+#admpage #content table td.f_title a.stockactive{
+    border: 1px solid #049949 !important;
+}
+#admpage #content table th{
+    border: 0px none transparent !important;
+    background: #009846 !important;
+    text-align: center !important;
+    padding: 13px 5px 11px 5px !important;
+}
+#admpage #content table th.f_status{
+    -moz-border-radius: 15px 0 0 0;
+    -khtml-border-radius:15px 0 0 0;
+    -webkit-border-radius:15px 0 0 0;
+    border-radius:15px 0 0 0;
+    behavior: url("/sites/all/libraries/img/PIE.php");
+}
+#admpage #content table th.f_nothing_1{
+    -moz-border-radius: 0 15px 0 0;
+    -khtml-border-radius: 0 15px 0 0;
+    -webkit-border-radius: 0 15px 0 0;
+    border-radius: 0 15px 0 0;
+    behavior: url("/sites/all/libraries/img/PIE.php");
+}
+#admpage #content table th,
+#admpage #content table th *{
+    color: #fff !important;
+    font-weight: bold !important;
+    font-size: 11pt !important;
+}
+#admpage *{
+    color: #2b2a29;
+}
+#admpage a{
+    text-decoration: underline;
+}
+#admpage table td,
+#admpage table th,
+#admpage table tbody,
+#admpage table thead{
+    padding: 0px !important; margin: 0px !important;
+    background: transparent none !important;
+    color: #000 !important;
+}
+#admpage table th *{
+    color: #000 !important;
+}
+.admclock *{
+    font-size: 14pt;
+}
+.admmenu{
+    position: absolute; right: 169px; top: 0px;
+    white-space: nowrap;
+    background: #ffed00;
+    padding: 39px 9px 21px 9px;
+    -moz-border-radius: 0 0 31px 31px;
+    -khtml-border-radius:0 0 31px 31px;
+    -webkit-border-radius:0 0 31px 31px;
+    border-radius:0 0 31px 31px;
+    behavior: url("/sites/all/libraries/img/PIE.php");
+}
+.admmenu a{
+    display: inline-block;
+    font-size: 14pt;
+    margin: 0 21px;
+}
+.admmenu a:hover,
+.admmenu a.active{
+    text-decoration: none !important;
+}
+#adm_left{
+    width: 293px; float: left; margin-right: -343px; position: relative; overflow: hidden;
+    z-index: 33;
+}
+#adm_left_top{
+    background: #009846;
+    padding: 3px 27px 4px 21px;
+}
+#adm_left_top *{
+    color: #fff;
+    font-weight: bold;
+}
+#adm_left_bottom,
+#adm_left_spoiler{
+    padding: 7px 23px 7px 21px;
+    background: #eef3fa;
+}
+#adm_left_spoiler{
+    padding: 0px 23px 95px 21px;
+}
+#adm_left_bottom label,
+#adm_left2 label,
+#adm_right label{
+    display: block;
+    padding-bottom: 7px;
+}
+#adm_right .field-type-list-boolean label,
+#adm_left_bottom li label{
+    display: inline-block;
+    padding: 0 0 0 7px;
+}
+#adm_right  .form-item-weight,
+#adm_right  .field-name-field-volume{
+    float: right;
+    padding: 0 0 0 7px;
+}
+#adm_left_bottom .description,
+#adm_left2 .description,
+#adm_right .field-name-uc-product-image .description,
+#adm_left2 .field-suffix{
+    display: none;
+}
+#adm_left_bottom .form-actions{
+    text-align: right;
+}
+#adm_left_bottom .form-submit{
+    border: 0px none transparent;
+    background: #ffed00;
+    -moz-border-radius: 9px;
+    -khtml-border-radius:9px;
+    -webkit-border-radius:9px;
+    border-radius:9px;
+    behavior: url("/sites/all/libraries/img/PIE.php");
+    position: relative; left: +0px;
+    text-transform: uppercase;
+    padding: 0 23px 0 23px;
+    height: 33px;
+    margin: 1px;
+}
+#pre_adm_center{
+    float: left;
+    width: 100%;
+    position: relative; left: +0px;
+}
+#adm_center{
+    margin-left: 334px;
+    position: relative; left: +0px;
+}
+#adm_left2{
+    padding: 11px 7px 0 0;
+    border-right: 1px solid #cdcccc;
+    width: 349px; float: left; margin-right: -357px; position: relative; overflow: hidden;
+    z-index: 35;
+}
+#adm_left2 .form-text{
+    width: 331px;
+}
+#adm_left2 .form-item-cost{
+    width: 161px;
+    float: left;
+    padding: 0px !important; margin: 0px !important;
+}
+#adm_left2 .form-item-cost .form-text{
+    width: 141px;
+}
+#adm_left2 .field-name-field-kef{
+    width: 111px;
+}
+#adm_left2 .field-name-field-kef .form-text{
+    width: 91px;
+}
+#adm_left2 .field-name-field-stock .form-text{
+    width: 121px;
+}
+#adm_left2 .field-name-field-stock{
+    width: 141px;
+}
+#adm_left2 textarea{
+    width: 337px;
+    height: 61px;
+}
+#adm_left2 .grippie{
+    width: 335px;
+}
+#pre_adm_right{
+    float: left;
+    width: 100%;
+    position: relative; left: +0px;
+}
+#adm_right{
+    margin-left: 391px;
+    padding-top: 11px;
+    position: relative; left: +0px;
+}
+#adm_right .form-item-dim-height,
+#adm_right .form-item-dim-length,
+#adm_right .form-item-dim-width,
+#adm_right .field-name-field-diagonal{
+    display: inline-block;
+    padding-right: 7px;
+}
+#adm_left2 .field-name-field-stockadd{
+    width: 111px;
+    float: right;
+    padding: 0px !important; margin: 0px !important;
+    position: relative; top: -14px;
+}
+#adm_left2 .field-name-field-stockadd .form-text{
+    width: 91px;
+}
+
+#stockright{
+    width: 506px; float: right; margin-left: -546px; position: relative; overflow: hidden;
+    padding: 30px 10px 85px 30px;
+    background: #eef3fa;
+    z-index: 33;
+}
+#stockleft{
+    float: left;
+    width: 100%;
+    position: relative; left: +0px;
+}
+#stockleft #content{
+    margin-right: 571px;
+}
+#stockbottom{
+    padding-top: 9px;
+}
+.stock_more_left{
+    float: left;
+}
+.stock_more_left a,
+.stock_more_left a *,
+.stock_more_right a{
+    font-size: 11pt;
+}
+.stock_more_left div,
+.stock_more_right div{
+    margin-top: 11px;
+}
+.stock_more_right{
+    float: right;
+    margin-right: 30px;
+    text-align: right;
+}
+
+#cboxLoadedContent{
+    padding: 11px;
+}
+#cboxLoadedContent div.course{
+    width: 153px;
+}
+#cboxLoadedContent div.course div.label{
+    padding: 21px 0 5px 0 !important;
+}
+#cboxLoadedContent div.course .form-text{
+    width: 143px;
+}
+#cboxLoadedContent div.course .form-actions{
+    padding: 11px 0 0 0;
+}
+#cboxLoadedContent div.course .form-actions input{
+    float: right;
+}
+#cboxLoadedContent div.course .form-submit{
+    background: #ffed00;
+    border: 0px none transparent;
+    -moz-border-radius: 11px;
+    -khtml-border-radius: 11px;
+    -webkit-border-radius: 11px;
+    border-radius: 11px;
+    width: 121px;
+    text-align: center;
+    behavior: url("/sites/all/libraries/img/PIE.php");
+    position: relative; left: +0px;
+    padding: 7px 0 7px 0;
+    font-size: 11pt;
+}
+
+.stock_prinfo .item{
+    display: inline-block;
+    padding: 17px 17px 0 0;
+    height: 43px;
+}
+.stock_prinfo .item2{
+    padding: 17px 0 0 0;
+    height: 43px;
+}
+.stock_prinfo .label{
+    padding-bottom: 7px;
+    white-space: nowrap;
+}
+.views-table caption{
+    padding: 20px 0 15px 0;
+    margin-left: 127px;
+}
+#admpage #content .view-id-uc_orders .views-table td,
+#admpage #content .view-id-reserve .views-table td{
+    border: 0px none transparent !important;
+    border-bottom: 1px solid #434339 !important;
+    padding-bottom: 7px !important;
+}
+#admpage #content .statusis1 td{
+    background: #dbe285 !important;
+}
+#admpage #content .statusis2 td{
+    background: #fff383 !important;
+}
+#admpage #content td.order_id{
+    font-size: 12pt;
+    text-align: center;
+}
+#admpage #content .statusis3 td.order_status select{
+    color: #e52d32;
+    font-weight: bold;
+}
+#admpage #content .statusis3 td.order_status select option{
+    color: #000;
+    font-weight: normal;
+}
+#admpage #content .view-id-uc_orders .views-table th.billing_full_name,
+#admpage #content .view-id-reserve .views-table th.billing_full_name{
+    text-align: left !important;
+}
+#admpage #content .view-id-uc_orders .views-table td.billing_full_name,
+#admpage #content .view-id-uc_orders .views-table td.billing_full_name *,
+#admpage #content .view-id-reserve .views-table td.billing_full_name,
+#admpage #content .view-id-reserve .views-table td.billing_full_name *{
+    font-size: 12pt !important;
+}
+ul.product_count li{
+    list-style-image: none; list-style-type: none; display: block;
+    padding: 5px 0 !important;
+    white-space: nowrap !important;
+}
+ul.product_count li a{
+    display: inline-block !important;
+    min-width: 377px !important;
+}
+ul.product_count li *{
+    font-size: 11pt !important;
+    text-decoration: none !important;
+    line-height: 1.1em !important;
+}
+ul.product_count li a strong{
+    color: #e31e24 !important;
+}
+ul.product_count li span{
+    color: #6e943b !important;
+}
+ul.product_count li a span{
+    color: #9d9e9e !important;
+    font-weight: bold !important;
+}
+#admpage #content .view-id-uc_orders .views-table td.created_1,
+#admpage #content .view-id-reserve .views-table td.created_1{
+    font-size: 7pt !important;
+    color: #727271 !important;
+}
+#admpage #content .view-id-reserve .views-table .orderisneg{
+    background: #a6d7d5 !important;
+}
+#admpage #content .view-id-uc_orders .views-table td.order_total,
+#admpage #content .view-id-reserve .views-table td.order_total{
+    white-space: nowrap;
+    font-size: 12pt !important;
+}
+#admpage #content .view-id-uc_orders .views-table a.order_cancel{
+    color: #e31e24 !important;
+    font-weight: bold !important;
+    font-size: 14pt !important;
+    display: inline-block !important;
+    margin-left: 31px !important;
+    text-decoration: none !important;
+}
+#admpage #content .view-id-uc_orders .views-table a.order_ok{
+    color: #e31e24 !important;
+    font-weight: bold !important;
+    font-size: 14pt !important;
+    text-decoration: none !important;
+}
