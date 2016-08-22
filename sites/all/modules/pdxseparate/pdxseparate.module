@@ -6761,20 +6761,17 @@ function pdxgenhelp(){
         $data=file_get_contents('html/help/index.tpl');
         if( isset($data) and strlen($data) ){
             $sitename='help.needto.me';
-            $files=scandir('../'.$sitename);
+            $files=scandir('../../'.$sitename.'/public_html');
             if( isset($files) and is_array($files) and count($files) ){
                 foreach( $files as $file ){
                     if( strlen($file)>3 ){
-                        unlink('../'.$sitename.'/'.$file);
+                        unlink('../../'.$sitename.'/public_html/'.$file);
                     }
                 }
             }
-//            copy('html/help/style.css', '../'.$sitename.'/style.css');
-//            copy('html/help/addons.js', '../'.$sitename.'/addons.js');
-//            copy('html/help/jquery.zoom.min.js', '../'.$sitename.'/jquery.zoom.min.js');
-            copy('html/help/.htaccess', '../'.$sitename.'/.htaccess');
-            copy('html/help/robots.txt', '../'.$sitename.'/robots.txt');
-            copy('mistakes.php', '../'.$sitename.'/mistakes.php');
+            copy('html/help/.htaccess', '../../'.$sitename.'/public_html/.htaccess');
+            copy('html/help/robots.txt', '../../'.$sitename.'/public_html/robots.txt');
+            copy('mistakes.php', '../../'.$sitename.'/public_html/mistakes.php');
             @file_get_contents('http://mn.needto.me/html/help/compress.php');
             $apages=$apagestop=array();
             $datelast=gmdate("D, d M Y H:i:s ")."GMT";
@@ -6882,7 +6879,7 @@ function pdxgenhelp(){
                 $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
             }
             $outdata=str_replace('{{META_DESC}}', 'Справочная система по работе с сервисом аренды needto.me и его филиалами.', $outdata);
-            $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+            $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
             
 //            drupal_set_message('<pre>'.print_r($apages, true). '</pre>');
             
@@ -7068,7 +7065,7 @@ function pdxgenhelp(){
                     if( function_exists('pdxgetcitys') ){
                         $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
                     }
-                    $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+                    $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
                                 
                 }
             }
@@ -7087,23 +7084,10 @@ function pdxgenfront(){
         $data2=file_get_contents('html/front/other.tpl');
         if( isset($data) and strlen($data) and isset($data2) and strlen($data2) ){
             $sitename='needto.me';
-/*
-            $files=scandir('../'.$sitename);
-            if( isset($files) and is_array($files) and count($files) ){
-                foreach( $files as $file ){
-                    if( strlen($file)>3 ){
-                        unlink('../'.$sitename.'/'.$file);
-                    }
-                }
-            }
-*/
-//            copy('html/front/style.css', '../'.$sitename.'/style.css');
-//            copy('html/front/jquery.zoom.min.js', '../'.$sitename.'/jquery.zoom.min.js');
-//            copy('html/front/addons.js', '../'.$sitename.'/addons.js');
-//            copy('html/front/swiper.min.js', '../'.$sitename.'/swiper.min.js');
-            copy('html/front/.htaccess', '../'.$sitename.'/.htaccess');
-            copy('html/front/robots.txt', '../'.$sitename.'/robots.txt');
-            copy('mistakes.php', '../'.$sitename.'/mistakes.php');
+
+            copy('html/front/.htaccess', '../../'.$sitename.'/public_html/.htaccess');
+            copy('html/front/robots.txt', '../../'.$sitename.'/public_html/robots.txt');
+            copy('mistakes.php', '../../'.$sitename.'/public_html/mistakes.php');
             @file_get_contents('http://mn.needto.me/html/front/compress.php');
             $apages=$apagestop=array(); 
             $datelast=gmdate("D, d M Y H:i:s ")."GMT";
@@ -7128,7 +7112,7 @@ function pdxgenfront(){
             if( function_exists('pdxgetcitys') ){
                 $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
             }
-            $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+            $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
 
 
             //новости
@@ -7164,7 +7148,7 @@ function pdxgenfront(){
             if( function_exists('pdxgetcitys') ){
                 $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
             }
-            $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+            $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
 
 
             if( function_exists('pdxgettexts') ){
@@ -7180,7 +7164,7 @@ function pdxgenfront(){
                 if( function_exists('pdxgetcitys') ){
                     $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
                 }
-                $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+                $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
                 //для прессы
                 $right='<div id="center_content"><div class="block-title">Для прессы</div><div class="cnt">'.pdxgettexts('press').'</div><div class="clear">&nbsp;</div></div>';
                 $filename='press.html';
@@ -7193,7 +7177,7 @@ function pdxgenfront(){
                 if( function_exists('pdxgetcitys') ){
                     $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
                 }
-                $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+                $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
                 //api
                 $right='<div id="center_content"><div class="block-title">Наш API</div><div class="cnt">'.pdxgettexts('apime').'</div><div class="clear">&nbsp;</div></div>';
                 $filename='apime.html';
@@ -7206,7 +7190,7 @@ function pdxgenfront(){
                 if( function_exists('pdxgetcitys') ){
                     $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
                 }
-                $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+                $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
                 //rules
                 $right='<div id="center_content"><div class="block-title">Правила сайтов сети NEEDTO.ME</div><div class="cnt">'.pdxgettexts('rules').'</div><div class="clear">&nbsp;</div></div>';
                 $filename='rules.html';
@@ -7219,7 +7203,7 @@ function pdxgenfront(){
                 if( function_exists('pdxgetcitys') ){
                     $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
                 }
-                $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+                $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
                 //dev
                 $right='<div id="center_content"><div class="block-title">Нужен сайт? Нам по плечу проекты любой сложности!</div><div class="cnt">'.pdxgettexts('dev').'</div><div class="clear">&nbsp;</div></div>';
                 $filename='dev.html';
@@ -7232,7 +7216,7 @@ function pdxgenfront(){
                 if( function_exists('pdxgetcitys') ){
                     $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
                 }
-                $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+                $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
                 //apply
                 $right='<div id="center_content"><div class="block-title">Соглашение об использовании личных данных</div><div class="cnt">'.pdxgettexts('apply').'</div><div class="clear">&nbsp;</div></div>';
                 $filename='apply.html';
@@ -7245,7 +7229,7 @@ function pdxgenfront(){
                 if( function_exists('pdxgetcitys') ){
                     $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
                 }
-                $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+                $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
                 //i
                 $right='<div id="center_content"><div class="block-title">Инвестирование в наш Интернет-ресурс</div><div class="cnt">'.pdxgettexts('i').'</div><div class="clear">&nbsp;</div></div>';
                 $filename='i.html';
@@ -7258,7 +7242,7 @@ function pdxgenfront(){
                 if( function_exists('pdxgetcitys') ){
                     $outdata=str_replace('{{CITY}}', pdxgetcitys(0), $outdata);
                 }
-                $fp = fopen('../'.$sitename.'/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
+                $fp = fopen('../../'.$sitename.'/public_html/'.$filename, 'w'); fwrite($fp, $outdata); fclose($fp);
                 
             }
             
