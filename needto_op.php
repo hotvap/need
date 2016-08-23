@@ -1461,6 +1461,194 @@ if( isset( $_REQUEST['op'] ) and is_numeric($_REQUEST['op']) ){
     
     //без необходимости авторизации
         switch($_REQUEST['op']){
+            case 13: //выбор города
+    $out='';
+    $cur=0;
+    $out.= '<div id="iscityblock">&nbsp;';
+    $topath='';
+    if($cur){
+        if( arg(0)==PDXCAT_NAME ){
+            $topath=implode('/', arg());
+        }else{
+            switch(arg(0)){
+            case 'news':
+            case 'a':
+            case 'i':
+            case 'apply':
+            case 'rules':
+                $topath=arg(0);
+                break;
+            case 'users':
+                if( is_string(arg(1)) and arg(1)=='rents' ){
+                    $topath=implode('/', arg());
+                }
+                break;
+            case 'findmy':
+            case 'admin':
+                $topath=implode('/', arg());
+                break;
+            case 'node':
+                if( isset($_SESSION['pdxpdx_node_tid']) and is_numeric($_SESSION['pdxpdx_node_tid']) ){
+                    $topath=PDXCAT_NAME.'/'.$_SESSION['pdxpdx_node_tid'];
+                }
+                break;
+            }
+        }
+    }
+    $out.= '<div id="city_current" onclick=" stpr(event || window.event); "><div id="city_current_is" onclick="showcountrys();" title="Сменить город">';
+    if( $cur ){
+        $out.= PDX_CITY_NAME;
+    }else{
+        $out.= 'Ваш город';
+    }
+    $out.= '</div>';
+    $out.= '<div style="display: none;" id="city_current_list"><a target="blank" class="helpme" href="http://'.PDX_URL_HELP.'/vybor-goroda-s-kotorym-vy-budete-rabotat.html" title="Открыть справку в новом окне">&nbsp;</a><noindex>';
+    $out.= '<div class="countrydiv">';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://needto.me/index.html"';
+    if( !$cur ){
+        $out.= ' class="active"';
+    }
+    $out.= '>все города</a></div>';
+    $out.= '</div>';
+    $out.= '<div class="countrydiv">';
+    $out.= '<div class="countrylbl">Россия</div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://sp.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==26 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Санкт-Петербург</a></div>';
+    $out.= '</div>';
+    $out.= '<div class="countrydiv">';
+    $out.= '<div class="countrylbl">Беларусь</div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://mn.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==28 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Минск</a></div>';
+    $out.= '</div>';
+    $out.= '<div class="countrydiv">';
+    $out.= '<div class="countrylbl">Украина</div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://od.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==27 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Одесса</a></div>';
+    $out.= '</div>';
+    $out.= '</noindex></div>';
+    $out.= '</div>';
+    $out.= '</div>';
+    echo $out;            
+                break;
+            case 14: //получить страницы справки
+                $outs=array();
+                
+                $anids=array(
+                    163=>array(),
+                    136=>array(142, 144, 143, 151, 1890),
+                    137=>array(),
+                    139=>array(150, 152, 153, 154),
+                    138=>array(156, 167, 168),
+                    141=>array(145, 146),
+                    1734=>array(1735),
+                    140=>array(164, 165, 171, 147, 148, 149),
+                    1892=>array(),
+                    4480=>array(),
+                );
+                $outs['anids']=$anids;
+                $outs['apages']=array();
+                $outs['apagestop']=array();
+                $outs['aaddon']=array();
+                
+                if( isset($outs['anids']) and is_array($outs['anids']) and count($outs['anids']) ){
+                    foreach($outs['anids'] as $isnid=>$tmpval ){
+
+                        $link=db_query('select alias from {url_alias} where source=\'node/'.$isnid.'\'');
+                        $link=$link->fetchAssoc();
+                        if( isset($link['alias']) and strlen( $link['alias'] ) ){
+                                $link=$link['alias'].'.html';
+                                $link='%%'.$link;
+                                $link=str_replace('%%help/', '', $link);
+                                $link=str_replace('%%', '', $link);
+                                $link='/'.$link;
+                        }else{
+                            $link='node/'.$isnid.'.html';
+                        }
+                        $title=db_query('select title from {node} where nid='.$isnid);
+                        $title=$title->fetchAssoc();
+                        if( isset($title['title']) and strlen( $title['title'] ) ){
+                            $title=$title['title'];
+                        }else{
+                            $title='';
+                        }
+                        $outs['apages'][$isnid]['parent']=0;
+                        $outs['apages'][$isnid]['link']=$link;
+                        $outs['apages'][$isnid]['mlid']=$isnid;
+                        $outs['apages'][$isnid]['title']=$title;
+                        $outs['apagestop'][]='<a class="lnk'.$isnid.'" href="'.$link.'">'.$title.'</a>';
+
+                        $body=db_query('select b.body_value, y.field_youtube_video_id from {field_data_body} as b left join {field_data_field_youtube} as y on (b.entity_id=y.entity_id and y.entity_type=\'node\') where b.entity_type=\'node\' and b.entity_id='.$isnid);
+                        $body=$body->fetchAssoc();
+                        if( isset($body['field_youtube_video_id']) and strlen($body['field_youtube_video_id']) ){
+                            $outs['apages'][$isnid]['video']=$body['field_youtube_video_id'];
+                            $outs['apages'][$isnid]['body']=$body['body_value'];
+                        }
+                        
+                        
+                        if( isset($tmpval) and is_array($tmpval) and count($tmpval) ){
+                            foreach($tmpval as $isnid2 ){
+                                $link=db_query('select alias from {url_alias} where source=\'node/'.$isnid2.'\'');
+                                $link=$link->fetchAssoc();
+                                if( isset($link['alias']) and strlen( $link['alias'] ) ){
+                                        $link=$link['alias'].'.html';
+                                        $link='%%'.$link;
+                                        $link=str_replace('%%help/', '', $link);
+                                        $link=str_replace('%%', '', $link);
+                                        $link='/'.$link;
+                                }else{
+                                    $link='node/'.$isnid2.'.html';
+                                }
+                                $title=db_query('select title from {node} where nid='.$isnid2);
+                                $title=$title->fetchAssoc();
+                                if( isset($title['title']) and strlen( $title['title'] ) ){
+                                    $title=$title['title'];
+                                }else{
+                                    $title='';
+                                }
+                                $outs['apages'][$isnid2]['parent']=$isnid;
+                                $outs['apages'][$isnid2]['link']=$link;
+                                $outs['apages'][$isnid2]['mlid']=$isnid2;
+                                $outs['apages'][$isnid2]['title']=$title;
+                                $outs['aaddon'][]='<li><a href="'.$link.'">'.$title.'</a>';
+
+                                $body=db_query('select b.body_value, y.field_youtube_video_id from {field_data_body} as b left join {field_data_field_youtube} as y on (b.entity_id=y.entity_id and y.entity_type=\'node\') where b.entity_type=\'node\' and b.entity_id='.$isnid2);
+                                $body=$body->fetchAssoc();
+                                if( isset($body['field_youtube_video_id']) and strlen($body['field_youtube_video_id']) ){
+                                    $outs['apages'][$isnid2]['video']=$body['field_youtube_video_id'];
+                                    $outs['apages'][$isnid2]['body']=$body['body_value'];
+                                }
+                            }
+                        }
+
+
+                    }
+                }                
+                
+                if( isset($outs) and is_array($outs) and count($outs) ){
+                    echo serialize($outs);
+                }
+                
+                break;
+            case 12: //получить заголовки новостей
+                $outs=array();
+                $nums=db_query('select title from {node} where status=1 and type=\'news\' order by created desc limit 0,3');
+                while( $num=$nums->fetchAssoc() ){
+                    $outs[]=$num;
+                }
+                if( isset($outs) and is_array($outs) and count($outs) ){
+                    echo serialize($outs);
+                }
+                
+                break;
             case 11: //получить новости
                 $outs=array();
                 $nums=db_query('select n.title, b.body_value, i.field_image_fid from {node} as n inner join {field_data_body} as b on n.nid=b.entity_id left join {field_data_field_image} as i on (n.nid=i.entity_id and i.entity_type=\'node\') where n.status=1 and n.type=\'news\' order by n.created desc limit 0,77');
