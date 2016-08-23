@@ -1461,6 +1461,27 @@ if( isset( $_REQUEST['op'] ) and is_numeric($_REQUEST['op']) ){
     
     //без необходимости авторизации
         switch($_REQUEST['op']){
+            case 11: //получить новости
+                $outs=array();
+                $nums=db_query('select n.title, b.body_value, i.field_image_fid from {node} as n inner join {field_data_body} as b on n.nid=b.entity_id left join {field_data_field_image} as i on (n.nid=i.entity_id and i.entity_type=\'node\') where n.status=1 and n.type=\'news\' order by n.created desc limit 0,77');
+                while( $num=$nums->fetchAssoc() ){
+                    if( isset( $num['field_image_fid'] ) and is_numeric( $num['field_image_fid'] ) ){
+                        $file = file_load($num['field_image_fid']);
+                        if( isset( $file->uri ) and strlen( $file->uri ) ){
+                            $img=image_style_url('news_preview', $file->uri);
+                        }
+                        if( isset($img) and strlen($img) ){
+                            $num['img']=$img;
+                        }
+
+                    }
+                    $outs[]=$num;
+                }
+                if( isset($outs) and is_array($outs) and count($outs) ){
+                    echo serialize($outs);
+                }
+                
+                break;
             case 10: //показать на карте
                 if( isset( $_REQUEST['data2'] ) and strlen($_REQUEST['data2']) ){
                     $nids=explode('|',$_REQUEST['data2']);
