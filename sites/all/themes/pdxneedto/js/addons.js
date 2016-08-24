@@ -307,10 +307,12 @@ jQuery(document).ready(function($){
 
     
     if( jQuery('#block_rec_items').length ){
-        jQuery.post(Drupal.settings.basePath + 'html/rec.htm#start?r='+(new Date).getTime(), function( data ) { jQuery('#block_rec_items').html(data); } );
+        jQuery('#block_rec_items').load(Drupal.settings.basePath + 'html/rec.htm#start?r='+(new Date).getTime(), function() {
+        } );
     }
     if( jQuery('#block_new_items').length ){
-        jQuery.post(Drupal.settings.basePath + 'html/new.htm#start?r='+(new Date).getTime(), { }, function( data ) {  jQuery('#block_new_items').html(data); } );
+        jQuery('#block_new_items').load(Drupal.settings.basePath + 'html/new.htm#start?r='+(new Date).getTime(), function() {
+        } );
     }
     if( jQuery('#block_viewed_items').length ){
         jQuery('#block_viewed_items').html('<img alt="" src="/sites/all/libraries/img/throbber.gif" />');
@@ -458,7 +460,8 @@ jQuery(document).ready(function($){
     if( jQuery('#getaboutuser').length ){
         if( isPUid>0 ){
             jQuery('#getaboutuser').html('<img alt="" src="/sites/all/libraries/img/throbber.gif" />');
-            jQuery.post(Drupal.settings.basePath + 'html/user/'+isPUid+'.htm#start?r='+(new Date).getTime(), { }, function( data ) {  jQuery('#getaboutuser').html(data); } );
+            jQuery('#getaboutuser').load(Drupal.settings.basePath + 'html/user/'+isPUid+'.htm#start?r='+(new Date).getTime(), function() {
+            } );
         }
     }
     if( jQuery('#linkprofile').length && curUid>0 ){
@@ -551,7 +554,8 @@ jQuery(document).ready(function($){
         function(){
             var uid=jQuery(this).attr('id').replace('showmeuser', '');
             if( uid>0 ){
-                jQuery.post(Drupal.settings.basePath + 'html/map/'+uid+'.htm#start?r='+(new Date).getTime(), { }, function( data ) { jQuery('#showmeuser'+uid).html(data); } );
+                jQuery('#showmeuser'+uid).load(Drupal.settings.basePath + 'html/map/'+uid+'.htm#start?r='+(new Date).getTime(), function() {
+                } );
             }
         }
     );
@@ -636,17 +640,19 @@ function findsubmit(val){
     }
 }
 function showmap(uid){
-    jQuery.post(Drupal.settings.basePath + 'html/map/'+uid+'.htm#start?r='+(new Date).getTime(), { }, function( data ) {  jQuery('#showcompanyoncart .cnt').html(data); jQuery('#showcompanyoncart').show(); } );
-
+    jQuery('#showcompanyoncart .cnt').load(Drupal.settings.basePath + 'html/map/'+uid+'.htm#start?r='+(new Date).getTime(), function() {
+        jQuery('#showcompanyoncart').show();
+    } );
 }
 function switchsubscribe(label){
     if( jQuery('#presubscribe').hasClass('presubscribeyes') ){
         jQuery('#presubscribe').removeClass('presubscribeyes');
         jQuery('#presubscribe .block-title').html(label);
     }else{
-        jQuery.post(Drupal.settings.basePath + 'html/subscribe_'+curCity+'.htm#start?r='+(new Date).getTime(), { }, function( data ) {  jQuery('#presubscribe .subscribecnt').html(data); } );
-        jQuery('#presubscribe').addClass('presubscribeyes');
-        jQuery('#presubscribe .block-title').html('<img class="subclose" alt="X" src="/sites/all/themes/pdxneedto/img/no.png" />');
+        jQuery('#presubscribe .subscribecnt').load(Drupal.settings.basePath + 'html/subscribe_'+curCity+'.htm#start?r='+(new Date).getTime(), function() {
+            jQuery('#presubscribe').addClass('presubscribeyes');
+            jQuery('#presubscribe .block-title').html('<img class="subclose" alt="X" src="/sites/all/themes/pdxneedto/img/no.png" />');
+        } );
     }
 }
 function addadmuser(){
@@ -694,7 +700,8 @@ function balancego(nid){
 }
 function showvideo(nid, delta){
     jQuery('.nid_video_'+nid+'_'+delta).html('<img alt="" src="/sites/all/libraries/img/throbber.gif" />');
-    jQuery.post(Drupal.settings.basePath + 'html/video/'+nid+'.htm#start?r='+(new Date).getTime(), { }, function( data ) {  jQuery('#videoblock'+nid+' .cnt').html(data); } );
+    jQuery('#videoblock'+nid+' .cnt').load(Drupal.settings.basePath + 'html/video/'+nid+'.htm#start?r='+(new Date).getTime(), function() {
+    } );
 }
 function gotoshop(nid, page, brand){
     jQuery('.itemofuser_pager .throbber').html('<img alt="" src="/sites/all/libraries/img/throbber.gif" />');
@@ -915,8 +922,10 @@ function preparecurrency(){
 }
 function addsel(){
     jQuery('.add_product').addClass('ajaxproc2');
+    jQuery('#add_product_more .cnt').load(Drupal.settings.basePath + 'html/addsel.htm#start?r='+(new Date).getTime(), function() {
+        jQuery('#add_product_more').show(); jQuery('.add_product').removeClass('ajaxproc2');
+    } );
     
-    jQuery.post(Drupal.settings.basePath + 'html/addsel.htm#start?r='+(new Date).getTime(), { }, function( data ) { jQuery('#add_product_more .cnt').html(data); jQuery('#add_product_more').show(); jQuery('.add_product').removeClass('ajaxproc2'); } );
 }
 function addfindmy(tid){
     jQuery('.addfindmy span.is_a').addClass('ajaxproc2');
@@ -1374,11 +1383,15 @@ function savemyorder(type){
 }
 function smmi(uid){
     jQuery('.slinkta').addClass('thr');
-    jQuery.post(Drupal.settings.basePath + 'html/userimgs/'+uid+'.htm#start?r='+(new Date).getTime(), { }, function( data ) {  jQuery('#ajaxrs').html(data); } );
+    jQuery('#ajaxrs').load(Drupal.settings.basePath + 'html/userimgs/'+uid+'.htm#start?r='+(new Date).getTime(), function() {
+        jQuery('#add_product_more').show(); jQuery('.add_product').removeClass('ajaxproc2');
+    } );
+    
 }
 function abuse(type, nid, obj){
     jQuery(obj).find('span').addClass('thr');
-    jQuery.post(Drupal.settings.basePath + 'html/abuse'+parseInt(type)+'.htm#start?id='+parseInt(nid)+'&city='+parseInt(curCity), { }, function( data ) {  jQuery('#ajaxrs').html(data); } );
+    jQuery('#ajaxrs').load(Drupal.settings.basePath + 'html/abuse'+parseInt(type)+'.htm#start?id='+parseInt(nid)+'&city='+parseInt(curCity), function() {
+    } );
 }
 function getGet(name) {
     var s = window.location.search;
