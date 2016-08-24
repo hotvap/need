@@ -912,6 +912,7 @@ function preparecurrency(){
 }
 function addsel(){
     jQuery('.add_product').addClass('ajaxproc2');
+    window.alert(Drupal.settings.basePath + 'html/addsel.htm#start?r='+(new Date).getTime());
     jQuery.post(Drupal.settings.basePath + 'html/addsel.htm#start?r='+(new Date).getTime(), { }, function( data ) { jQuery('#add_product_more .cnt').html(data); jQuery('#add_product_more').show(); jQuery('.add_product').removeClass('ajaxproc2'); } );
 }
 function addfindmy(tid){
