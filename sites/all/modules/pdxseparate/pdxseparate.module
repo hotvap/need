@@ -1012,9 +1012,10 @@ if( isset( $_GET['update'] ) and is_numeric($_GET['update']) ){
         $source_content.= '<strong>maps update ok</strong>';
         break;
     case 3: //справочная система
-        if( function_exists('pdxgenhelp') ){
-            pdxgenhelp();
-        }
+//        if( function_exists('pdxgenhelp') ){
+//            pdxgenhelp();
+//        }
+        @file_get_contents('http://help.needto.me/render/start.php');
         $source_content.= '<strong>help update ok</strong>';
         break;
     case 4: //картинки пользователей
