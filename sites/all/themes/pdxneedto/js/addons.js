@@ -913,7 +913,7 @@ function preparecurrency(){
 function addsel(){
     jQuery('.add_product').addClass('ajaxproc2');
     
-    jQuery.post(Drupal.settings.basePath + 'html/addsel.htm#start?r='+(new Date).getTime(), { }, function( data ) { jQuery('#add_product_more .cnt').html(data); jQuery('#add_product_more').show(); jQuery('.add_product').removeClass('ajaxproc2'); } ).fail(function(e, e2, e3, e4) { window.alert(e+'_'+e2+'_'+e3+'_'+e4); });
+    jQuery.post(Drupal.settings.basePath + 'html/addsel.htm#start?r='+(new Date).getTime(), { }, function( data ) { jQuery('#add_product_more .cnt').html(data); jQuery('#add_product_more').show(); jQuery('.add_product').removeClass('ajaxproc2'); } );
 }
 function addfindmy(tid){
     jQuery('.addfindmy span.is_a').addClass('ajaxproc2');
