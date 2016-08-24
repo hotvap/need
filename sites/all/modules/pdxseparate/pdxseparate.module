@@ -7310,7 +7310,7 @@ function pdxgetshare3($title='', $desc='', $img='', $url=''){
     return $out;
 }
 function pdxgetshare2($title='', $desc='', $img='', $url=''){
-    $out.='';
+    $out='';
     $out.='<div class="ya-share2"';
     if( isset($url) and strlen($url) ){
         $url=str_replace('"', '', $url);

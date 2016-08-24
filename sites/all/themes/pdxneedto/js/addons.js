@@ -191,7 +191,10 @@ jQuery(document).ready(function($){
             istid=istid.replace('mtid','');
     
             if( istid>=0 ){
-                jQuery.post(Drupal.settings.basePath + 'html/amenu/'+istid+'.htm#start?r='+(new Date).getTime(), { }, function( data ) {  jQuery('.catsubmenu').html(data); if(istid>0){ shmyc(); } } );
+                jQuery('.catsubmenu').load(Drupal.settings.basePath + 'html/amenu/'+istid+'.htm#start?r='+(new Date).getTime(), function() {
+                    if(istid>0){ shmyc(); }
+                } );
+                
                 jQuery('.catsubmenu').show();
                 jQuery('#catmenu li a.level1').removeClass('active');
                 jQuery(this).addClass('active');
