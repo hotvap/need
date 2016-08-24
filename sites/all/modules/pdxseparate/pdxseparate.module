@@ -1036,9 +1036,10 @@ if( isset( $_GET['update'] ) and is_numeric($_GET['update']) ){
         $source_content.= '<strong>share images update ok</strong>';
         break;
     case 5: //needto.me
-        if( function_exists('pdxgenfront') ){
-            pdxgenfront();
-        }
+//        if( function_exists('pdxgenfront') ){
+//            pdxgenfront();
+//        }
+        @file_get_contents('http://needto.me/render/start.php');
         $source_content.= '<strong>front update ok</strong>';
         break;
     case 6: //share node
