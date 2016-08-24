@@ -1012,10 +1012,9 @@ if( isset( $_GET['update'] ) and is_numeric($_GET['update']) ){
         $source_content.= '<strong>maps update ok</strong>';
         break;
     case 3: //справочная система
-//        if( function_exists('pdxgenhelp') ){
-//            pdxgenhelp();
-//        }
-        @file_get_contents('http://help.needto.me/render/start.php');
+        if( function_exists('pdxgenhelp') ){
+            pdxgenhelp();
+        }
         $source_content.= '<strong>help update ok</strong>';
         break;
     case 4: //картинки пользователей
@@ -1037,10 +1036,9 @@ if( isset( $_GET['update'] ) and is_numeric($_GET['update']) ){
         $source_content.= '<strong>share images update ok</strong>';
         break;
     case 5: //needto.me
-//        if( function_exists('pdxgenfront') ){
-//            pdxgenfront();
-//        }
-        @file_get_contents('http://needto.me/render/start.php');
+        if( function_exists('pdxgenfront') ){
+            pdxgenfront();
+        }
         $source_content.= '<strong>front update ok</strong>';
         break;
     case 6: //share node
@@ -6759,6 +6757,9 @@ function pdxgetcitys($cur=1){
     return $out;
 }
 function pdxgenhelp(){
+    @file_get_contents('http://help.needto.me/render/start.php');
+    return;
+    
     if( defined('PDX_CITY_ID') and is_numeric(PDX_CITY_ID) and PDX_CITY_ID==28 and file_exists('html/help/index.tpl') ){
         $data=file_get_contents('html/help/index.tpl');
         if( isset($data) and strlen($data) ){
@@ -7077,6 +7078,9 @@ function pdxgenhelp(){
     }
 }
 function pdxgenfront(){
+    @file_get_contents('http://needto.me/render/start.php');
+    return;
+    
     if( isset($_SERVER['HTTP_HOST']) and strlen( $_SERVER['HTTP_HOST'] ) and strpos($_SERVER['HTTP_HOST'], 'site')===false and strpos($_SERVER['HTTP_HOST'], 'localhost')===false and strpos($_SERVER['HTTP_HOST'], '.loc')===false ){
     }else{
         return;
