@@ -307,8 +307,7 @@ jQuery(document).ready(function($){
 
     
     if( jQuery('#block_rec_items').length ){
-        jQuery('#block_rec_items').load(Drupal.settings.basePath + 'html/rec.htm#start?r='+(new Date).getTime(), function() {
-        } );
+        jQuery('#block_rec_items').load(Drupal.settings.basePath + 'html/rec.htm#start?r='+(new Date).getTime(), function() { } );
     }
     if( jQuery('#block_new_items').length ){
         jQuery('#block_new_items').load(Drupal.settings.basePath + 'html/new.htm#start?r='+(new Date).getTime(), function() {
