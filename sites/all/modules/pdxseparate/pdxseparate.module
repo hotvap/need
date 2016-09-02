@@ -2458,7 +2458,7 @@ function pdxshareme($node){
         if( isset($price1) and is_numeric($price1) and $price1>0 ){
             $out.= '<div class="priceitem price1">';
             $out.= '<strong class="isprice">';
-            $tmponly=number_format($price1, 0, '', ' ');
+            $tmponly=number_format($price1, 2, '.', ' ');
             $out.= $tmponly.'</strong>';
             $out.= ' '.$sign;
             $out.= ' / час</div>';
@@ -2469,7 +2469,7 @@ function pdxshareme($node){
         if( isset($price2) and is_numeric($price2) and $price2>0 ){
             $out.= '<div class="priceitem price2">';
             $out.= '<strong class="isprice">';
-            $tmponly=number_format($price2, 0, '', ' ');
+            $tmponly=number_format($price2, 2, '.', ' ');
             $out.= $tmponly.'</strong>';
             $out.= ' '.$sign;
             $out.= ' / день (24 ч)';
@@ -2490,7 +2490,7 @@ function pdxshareme($node){
         if( isset($price3) and is_numeric($price3) and $price3>0 ){
             $out.= '<div class="priceitem price3">';
             $out.= '<strong class="isprice">';
-            $tmponly=number_format($price3, 0, '', ' ');
+            $tmponly=number_format($price3, 2, '.', ' ');
             $out.= $tmponly.'</strong>';
             $out.= ' '.$sign;
             $out.= ' / неделю';
@@ -2512,7 +2512,7 @@ function pdxshareme($node){
         }
         if( isset($price4) and is_numeric($price4) and $price4>0 ){
             $out.= '<div class="priceitem price4">';
-            $out.= '<strong class="isprice">'.number_format($price4, 0, '', ' ').'</strong>';
+            $out.= '<strong class="isprice">'.number_format($price4, 2, '.', ' ').'</strong>';
             $out.= ' '.$sign;
             $out.= ' / месяц (30 дн)';
             if( $nodiscount>0 and $nodiscount>$price4 ){
@@ -2567,11 +2567,11 @@ $out.= $str;
 $out.='" data-yashareDescription="';
 $str='';
 if( isset($price1) and is_numeric($price1) and $price1>0 ){
-    $str.=number_format($price1, 0, '', ' ').' '.strip_tags($sign).' / час. ';
+    $str.=number_format($price1, 2, '.', ' ').' '.strip_tags($sign).' / час. ';
 }elseif( isset($price2) and is_numeric($price2) and $price2>0 ){
-    $str.=number_format($price2, 0, '', ' ').' '.strip_tags($sign).' / день. ';
+    $str.=number_format($price2, 2, '.', ' ').' '.strip_tags($sign).' / день. ';
 }elseif( isset($price3) and is_numeric($price3) and $price3>0 ){
-    $str.=number_format($price3, 0, '', ' ').' '.strip_tags($sign).' / месяц. ';
+    $str.=number_format($price3, 2, '.', ' ').' '.strip_tags($sign).' / месяц. ';
 }
 $str.=str_replace('"', '', strip_tags($node->body['und'][0]['value']));
 if( mb_strlen($str)>127 ){
@@ -4193,14 +4193,14 @@ function pdxgetmyitem($nid, $nd=false){
         if( isset($nd->field_price_month['und'][0]['value']) and is_numeric($nd->field_price_month['und'][0]['value']) ){
             $price4=$nd->field_price_month['und'][0]['value'];
             $price3=round($nd->field_price_month['und'][0]['value']/4, 2);
-            $pricelen=strlen(number_format($price3, 0, '', ' '));
+            $pricelen=strlen(number_format($price3, 2, '.', ' '));
             $price2=round($nd->field_price_month['und'][0]['value']/30, 2);
             $price1=round($price2/24, 2);
             $yesprice=1;
         }
         if( isset($nd->field_price_week['und'][0]['value']) and is_numeric($nd->field_price_week['und'][0]['value']) ){
             $price3=$nd->field_price_week['und'][0]['value'];
-            $pricelen=strlen(number_format($price3, 0, '', ' '));
+            $pricelen=strlen(number_format($price3, 2, '.', ' '));
             $price2=round($nd->field_price_week['und'][0]['value']/7, 2);
             if( !isset($price4) or !is_numeric($price4) or $price4<1 ){
                 $price4=$price2*30;
@@ -4215,7 +4215,7 @@ function pdxgetmyitem($nid, $nd=false){
             }
             if( !isset($price3) or !is_numeric($price3) or $price3<1 ){
                 $price3=$price2*7;
-                $pricelen=strlen(number_format($price3, 0, '', ' '));
+                $pricelen=strlen(number_format($price3, 2, '.', ' '));
             }
             $price1=round($price2/24, 2);
             $yesprice=1;
@@ -4230,7 +4230,7 @@ function pdxgetmyitem($nid, $nd=false){
             }
             if( !isset($price3) or !is_numeric($price3) or $price3<1 ){
                 $price3=$price2*7;
-                $pricelen=strlen(number_format($price3, 0, '', ' '));
+                $pricelen=strlen(number_format($price3, 2, '.', ' '));
             }
             $yesprice=1;
         }
@@ -4279,7 +4279,7 @@ function pdxgetmyitem($nid, $nd=false){
                 }else{
                     $out.= '<div class="price1"><strong>';
                 }
-                $tmponly=number_format($price1, 0, '', ' ').'</strong>';
+                $tmponly=number_format($price1, 2, '.', ' ').'</strong>';
 /*
                 if( $pricelen>0 and $pricelen>strlen($tmponly) ){
                     switch($pricelen-strlen($tmponly)){
@@ -4332,7 +4332,7 @@ function pdxgetmyitem($nid, $nd=false){
                 }else{
                     $out.= '<div class="price1"><strong>';
                 }
-                $tmponly=number_format($price2, 0, '', ' ').'</strong>';
+                $tmponly=number_format($price2, 2, '.', ' ').'</strong>';
 /*
                 if( $pricelen>0 and $pricelen>strlen($tmponly) ){
                     switch($pricelen-strlen($tmponly)){
@@ -4386,7 +4386,7 @@ function pdxgetmyitem($nid, $nd=false){
                     $out.= '<div class="price1"><strong>';
                 }
 
-                $out.= number_format($price3, 0, '', ' ').'</strong>';
+                $out.= number_format($price3, 2, '.', ' ').'</strong>';
                 $out.= ' '.$sign;
                 $out.= ' / неделю</div>';
             }else{
@@ -4403,7 +4403,7 @@ function pdxgetmyitem($nid, $nd=false){
                         $out.= '<div class="price1"><strong>';
                     }
     
-                    $out.= number_format($price4, 0, '', ' ').'</strong>';
+                    $out.= number_format($price4, 2, '.', ' ').'</strong>';
                     $out.= ' '.$sign;
                     $out.= ' / месяц</div>';
                 }else{

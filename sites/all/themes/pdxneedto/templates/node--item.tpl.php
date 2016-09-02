@@ -355,7 +355,7 @@ echo '</div>
                 echo '* ';
             }
             echo '<strong class="isprice">';
-            $tmponly=number_format($price1, 0, '', ' ');
+            $tmponly=number_format($price1, 2, '.', ' ');
 /*
             if( $pricelen>0 and $pricelen>strlen($tmponly) ){
                 switch($pricelen-strlen($tmponly)){
@@ -405,7 +405,7 @@ echo '</div>
                 echo '* ';
             }
             echo '<strong class="isprice">';
-            $tmponly=number_format($price2, 0, '', ' ');
+            $tmponly=number_format($price2, 2, '.', ' ');
 /*
             if( $pricelen>0 and $pricelen>strlen($tmponly) ){
                 switch($pricelen-strlen($tmponly)){
@@ -465,7 +465,7 @@ echo '</div>
                 echo '* ';
             }
             echo '<strong class="isprice">';
-            $tmponly=number_format($price3, 0, '', ' ');
+            $tmponly=number_format($price3, 2, '.', ' ');
 /*
             if( $pricelen>0 and $pricelen>strlen($tmponly) ){
                 switch($pricelen-strlen($tmponly)){
@@ -526,7 +526,7 @@ echo '</div>
             if( isset( $node->field_cur['und'][0]['value'] ) and $node->field_cur['und'][0]['value']>1 ){
                 echo '* ';
             }
-            echo '<strong class="isprice">'.number_format($price4, 0, '', ' ').'</strong>';
+            echo '<strong class="isprice">'.number_format($price4, 2, '.', ' ').'</strong>';
             echo ' '.$sign;
             echo ' / месяц (30 дн)';
             if( $nodiscount>0 and $nodiscount>$price4 ){
@@ -757,7 +757,7 @@ echo '<div class="abuseme abusenid" onclick=" abuse(2, '.$node->nid.', this); ">
                 $tmponly.= '<li';
 //                $tmponly.= ' class="is_yes2"';
                 $tmponly.= '>требуется залоговая сумма в размере: ';
-                $tmponly.= '<em><strong class="isprice">'.number_format($node->field_rent_price['und'][0]['value'], 0, '', ' ').'</strong>';
+                $tmponly.= '<em><strong class="isprice">'.number_format($node->field_rent_price['und'][0]['value'], 2, '.', ' ').'</strong>';
                 $tmponly.= ' '.$sign;
                 $tmponly.= '</em>';
                 $tmponly.= ' *;</li>';
@@ -834,7 +834,7 @@ echo '<div class="abuseme abusenid" onclick=" abuse(2, '.$node->nid.', this); ">
         }
         if( isset($node->field_price_crashed['und'][0]['value']) and is_numeric($node->field_price_crashed['und'][0]['value']) ){
             $tmponly.= '<div class="prim">';
-            $tmponly.= '** полная стоимость в случае поломки/потери: <strong class="isprice">'.number_format($node->field_price_crashed['und'][0]['value'], 0, '', ' ');
+            $tmponly.= '** полная стоимость в случае поломки/потери: <strong class="isprice">'.number_format($node->field_price_crashed['und'][0]['value'], 2, '.', ' ');
             $tmponly.= '</strong>';
             $tmponly.= ' '.$sign;
             $tmponly.= '</div>';
@@ -881,7 +881,7 @@ echo '<div class="abuseme abusenid" onclick=" abuse(2, '.$node->nid.', this); ">
                 if( $node->field_delivery1_price['und'][0]['value']==0 ){
                     $tmponly.='<strong>бесплатно</strong>';
                 }else{
-                    $tmponly.='<strong>'.number_format($node->field_delivery1_price['und'][0]['value'], 0, '', ' ').'</strong>';
+                    $tmponly.='<strong>'.number_format($node->field_delivery1_price['und'][0]['value'], 2, '.', ' ').'</strong>';
                     $tmponly.=' '.$sign;
                 }
                 $tmponly.=')';
@@ -973,11 +973,11 @@ if(isset($user->roles[3])){
     }
     $soc_desc='';
     if( isset($price1) and is_numeric($price1) and $price1>0 ){
-        $soc_desc.=number_format($price1, 0, '', ' ').' '.strip_tags($sign).' / час. ';
+        $soc_desc.=number_format($price1, 2, '.', ' ').' '.strip_tags($sign).' / час. ';
     }elseif( isset($price2) and is_numeric($price2) and $price2>0 ){
-        $soc_desc.=number_format($price2, 0, '', ' ').' '.strip_tags($sign).' / день. ';
+        $soc_desc.=number_format($price2, 2, '.', ' ').' '.strip_tags($sign).' / день. ';
     }elseif( isset($price3) and is_numeric($price3) and $price3>0 ){
-        $soc_desc.=number_format($price3, 0, '', ' ').' '.strip_tags($sign).' / месяц. ';
+        $soc_desc.=number_format($price3, 2, '.', ' ').' '.strip_tags($sign).' / месяц. ';
     }
     if( isset($node->body['und'][0]['value']) and strlen($node->body['und'][0]['value']) ){
         $soc_desc.=str_replace('"', '', strip_tags($node->body['und'][0]['value']));
