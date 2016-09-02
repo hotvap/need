@@ -270,14 +270,14 @@ echo '</div>
     echo '<div class="price">';
     $price1=$price2=$price4=$price3=$yesprice=$pricelen=0;
     
-    if( isset($node->field_price_month['und'][0]['value']) and is_numeric($node->field_price_month['und'][0]['value']) ){
+    if( isset($node->field_price_month['und'][0]['value']) and is_numeric($node->field_price_month['und'][0]['value']) and $node->field_price_month['und'][0]['value']>0 ){
         $price4=$node->field_price_month['und'][0]['value'];
         $price3=round($node->field_price_month['und'][0]['value']/4, 2);
         $price2=round($node->field_price_month['und'][0]['value']/30, 2);
         $price1=round($price2/24, 2);
         $yesprice=1;
     }
-    if( isset($node->field_price_week['und'][0]['value']) and is_numeric($node->field_price_week['und'][0]['value']) ){
+    if( isset($node->field_price_week['und'][0]['value']) and is_numeric($node->field_price_week['und'][0]['value']) and $node->field_price_week['und'][0]['value']>0 ){
         $price3=$node->field_price_week['und'][0]['value'];
         $price2=round($node->field_price_week['und'][0]['value']/7, 2);
         if( !isset($price4) or !is_numeric($price4) or $price4<1 ){
@@ -286,7 +286,7 @@ echo '</div>
         $price1=round($price2/24, 2);
         $yesprice=1;
     }
-    if( isset($node->field_price_day['und'][0]['value']) and is_numeric($node->field_price_day['und'][0]['value']) ){
+    if( isset($node->field_price_day['und'][0]['value']) and is_numeric($node->field_price_day['und'][0]['value']) and $node->field_price_day['und'][0]['value']>0 ){
         $price2=$node->field_price_day['und'][0]['value'];
         if( !isset($price4) or !is_numeric($price4) or $price4<1 ){
             $price4=$price2*30;
@@ -297,7 +297,7 @@ echo '</div>
         $price1=round($price2/24, 2);
         $yesprice=1;
     }
-    if( isset($node->field_price_hour['und'][0]['value']) and is_numeric($node->field_price_hour['und'][0]['value']) ){
+    if( isset($node->field_price_hour['und'][0]['value']) and is_numeric($node->field_price_hour['und'][0]['value']) and $node->field_price_hour['und'][0]['value']>0 ){
         $price1=$node->field_price_hour['und'][0]['value'];
         if( !isset($price2) or !is_numeric($price2) or $price2<1 ){
             $price2=$price1*24;

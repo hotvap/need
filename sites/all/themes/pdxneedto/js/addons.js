@@ -871,9 +871,6 @@ function preparecurrency(){
                 var price=oldprice;
                 if( price>0 && curs>0 ){
                     price*=curs;
-                    if(price>100 && siteCountry==62){
-                        price=(Math.ceil(price/100))*100;
-                    }
                     jQuery(this).html(accounting.formatNumber(price, 0, " ", "."));
                     var text=curInNal.replace("%cursign", '$').replace("%curprice", accounting.formatNumber(oldprice, 0, " ", ".")).replace("%curs", accounting.formatNumber(curs, 2, " ", ".").replace('.00', ''));
                     jQuery(this).attr('title', text );
@@ -894,9 +891,6 @@ function preparecurrency(){
                 var price=oldprice;
                 if( price>0 && curs2>0 ){
                     price*=curs2;
-                    if(price>100 && siteCountry==62){
-                        price=(Math.ceil(price/100))*100;
-                    }
                     jQuery(this).html(accounting.formatNumber(price, 0, " ", "."));
                     var text=curInNal.replace("%cursign", 'euro').replace("%curprice", accounting.formatNumber(oldprice, 0, " ", ".")).replace("%curs", accounting.formatNumber(curs2, 2, " ", ".").replace('.00', ''));
                     jQuery(this).attr('title', text );
@@ -1105,9 +1099,6 @@ function myfiltclick(obj){
                         var id=jQuery(obj).parent().find('.ffilter').attr('class').replace('ffilter ', '').replace('ffilter_', '');
                         if( id!='' ){
                             var slstep=1;
-                            if( siteCountry==62 && id.search('price')!=-1 ){
-                                slstep=100;
-                            }
                             jQuery('#filter_'+id).slider({
                        	        min: parseInt(jQuery('.minval_'+id).val()),
                                 max: parseInt(jQuery('.maxval_'+id).val()),
@@ -1342,13 +1333,9 @@ function recalc(nid){
                 priceind=1;
             }
             if( hours>0 ){
-                var price = (parseFloat(hours*calcp[priceind])+parseInt(addon))*cur;
-                if(price>100 && siteCountry==62){
-                    price-=7;
-                    price=(Math.ceil(price/100))*100;
-                }
+                var price = (parseFloat(hours*calcp[priceind])+parseFloat(addon))*cur;
                 
-                jQuery('#calc'+nid+'res').html( accounting.formatNumber(price, 0, " ", ".")+' '+siteCur );
+                jQuery('#calc'+nid+'res').html( accounting.formatNumber(price, 2, " ", ".")+' '+siteCur );
                 return;
             }
             
@@ -1565,9 +1552,6 @@ function myfiltclick(obj){
                         var id=jQuery(obj).parent().find('.ffilter').attr('class').replace('ffilter ', '').replace('ffilter_', '');
                         if( id!='' ){
                             var slstep=1;
-                            if( siteCountry==62 && id.search('price')!=-1 ){
-                                slstep=100;
-                            }
                             jQuery('#filter_'+id).slider({
                        	        min: parseInt(jQuery('.minval_'+id).val()),
                                 max: parseInt(jQuery('.maxval_'+id).val()),

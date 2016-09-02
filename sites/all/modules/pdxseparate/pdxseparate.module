@@ -114,6 +114,11 @@ function pdxseparate_menu() {
     'page callback' => 'pdxseparate_p_clearcaches',
     'access callback' => 'pdxseparate_checkadm',
   );
+  $mypage['admin/denomin'] = array(
+    'title' => 'Деноминация цен',
+    'page callback' => 'pdxseparate_denomin',
+    'access callback' => 'pdxseparate_checkadm',
+  );
   return $mypage;
 }
 function pdxseparate_item_export_pdf($source_content = NULL){
@@ -965,6 +970,80 @@ function pdxseparate_page_build(&$page) {
     if( $user->uid ){
         drupal_add_js(' var admDelMat="Удалить объявление"; var admEditNode="Редактировать объявление"; ', array('type' => 'inline', 'scope' => 'footer', 'weight' => 5) );
     }
+}
+function pdxseparate_denomin($source_content = NULL){
+    $source_content= '';
+    
+    global $user;
+    if(isset($user->roles[3]) or isset($user->roles[4])){
+    }else{
+        return '';
+    }
+    
+    if( isset( $_GET['go'] ) ){
+
+        $counter=0;
+
+        //int
+        $outs=db_query('select field_price_hour_value, entity_id, entity_type from {field_data_field_price_hour} where field_price_hour_value>3450');
+        while( $out=$outs->fetchAssoc() ){
+            $price=round($out['field_price_hour_value']/10000, 2);
+
+            db_query('update {field_data_field_price_hour} set field_price_hour_value=:combo where entity_type=\''.$out['entity_type'].'\' and entity_id='.$out['entity_id'], array(':combo'=>$price));
+            $counter++;
+        }
+        $outs=db_query('select field_price_day_value, entity_id, entity_type from {field_data_field_price_day} where field_price_day_value>3450');
+        while( $out=$outs->fetchAssoc() ){
+            $price=round($out['field_price_day_value']/10000, 2);
+
+            db_query('update {field_data_field_price_day} set field_price_day_value=:combo where entity_type=\''.$out['entity_type'].'\' and entity_id='.$out['entity_id'], array(':combo'=>$price));
+            $counter++;
+        }
+        $outs=db_query('select field_price_week_value, entity_id, entity_type from {field_data_field_price_week} where field_price_week_value>3450');
+        while( $out=$outs->fetchAssoc() ){
+            $price=round($out['field_price_week_value']/10000, 2);
+
+            db_query('update {field_data_field_price_week} set field_price_week_value=:combo where entity_type=\''.$out['entity_type'].'\' and entity_id='.$out['entity_id'], array(':combo'=>$price));
+            $counter++;
+        }
+        $outs=db_query('select field_price_month_value, entity_id, entity_type from {field_data_field_price_month} where field_price_month_value>3450');
+        while( $out=$outs->fetchAssoc() ){
+            $price=round($out['field_price_month_value']/10000, 2);
+
+            db_query('update {field_data_field_price_month} set field_price_month_value=:combo where entity_type=\''.$out['entity_type'].'\' and entity_id='.$out['entity_id'], array(':combo'=>$price));
+            $counter++;
+        }
+        $outs=db_query('select field_delivery1_price_value, entity_id, entity_type from {field_data_field_delivery1_price} where field_delivery1_price_value>3450');
+        while( $out=$outs->fetchAssoc() ){
+            $price=round($out['field_delivery1_price_value']/10000, 2);
+
+            db_query('update {field_data_field_delivery1_price} set field_delivery1_price_value=:combo where entity_type=\''.$out['entity_type'].'\' and entity_id='.$out['entity_id'], array(':combo'=>$price));
+            $counter++;
+        }
+        $outs=db_query('select field_rent_price_value, entity_id, entity_type from {field_data_field_rent_price} where field_rent_price_value>3450');
+        while( $out=$outs->fetchAssoc() ){
+            $price=round($out['field_rent_price_value']/10000, 2);
+
+            db_query('update {field_data_field_rent_price} set field_rent_price_value=:combo where entity_type=\''.$out['entity_type'].'\' and entity_id='.$out['entity_id'], array(':combo'=>$price));
+            $counter++;
+        }
+        $outs=db_query('select field_price_crashed_value, entity_id, entity_type from {field_data_field_price_crashed} where field_price_crashed_value>3450');
+        while( $out=$outs->fetchAssoc() ){
+            $price=round($out['field_price_crashed_value']/10000, 2);
+
+            db_query('update {field_data_field_price_crashed} set field_price_crashed_value=:combo where entity_type=\''.$out['entity_type'].'\' and entity_id='.$out['entity_id'], array(':combo'=>$price));
+            $counter++;
+        }
+
+
+
+        $source_content.= 'Выполнено для объектов: '.$counter;
+
+    }else{
+        $source_content.= 'please GO! ;-)';
+    }
+    
+    return $source_content;
 }
 function pdxseparate_p_clearcaches($source_content = NULL){
     $source_content= '';

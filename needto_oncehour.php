@@ -18,7 +18,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>3333 ){
 
     if( PDX_CITY_ID==28 ){
         require_once DRUPAL_ROOT . '/sites/all/libraries/s3-php5-curl/S3.php';
-        $s3=new S3('AKIAJZBFGP6M7K354GTQ', 'n3G35KKdug3H4IhYqDS5Y9WtzGgsZfqKneRufqFH');
+        $s3=new S3(PDX_S3_1, PDX_S3_2);
 
         $change=0;
         //Обновление таксономии
@@ -164,7 +164,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>3333 ){
                 $fp = fopen('js/a_'.PDX_CITY_ID.'.js', 'w'); fwrite($fp, $out); fclose($fp);
                 if( !isset($s3) ){
                     require_once DRUPAL_ROOT . '/sites/all/libraries/s3-php5-curl/S3.php';
-                    $s3=new S3('AKIAJZBFGP6M7K354GTQ', 'n3G35KKdug3H4IhYqDS5Y9WtzGgsZfqKneRufqFH');
+                    $s3=new S3(PDX_S3_1, PDX_S3_2);
                 }
                 $s3->putObject($out, $bucketName, 'curs/a_'.PDX_CITY_ID.'.js', S3::ACL_PUBLIC_READ);
                 $s3->putObject('jQuery(\'#mcounter'.PDX_CITY_ID.'\').html('.$countall.');', $bucketName, 'curs/al_'.PDX_CITY_ID.'.js', S3::ACL_PUBLIC_READ);
@@ -274,7 +274,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>3333 ){
 
         if( !isset($s3) ){
             require_once DRUPAL_ROOT . '/sites/all/libraries/s3-php5-curl/S3.php';
-            $s3=new S3('AKIAJZBFGP6M7K354GTQ', 'n3G35KKdug3H4IhYqDS5Y9WtzGgsZfqKneRufqFH');
+            $s3=new S3(PDX_S3_1, PDX_S3_2);
         }
         $s3->putObject($out, $bucketName, 'static/rss/'.PDX_CITY_ID.'.rss', S3::ACL_PUBLIC_READ);
 

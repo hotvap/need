@@ -209,7 +209,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>291 ){
             $fp = fopen('js/b_'.PDX_CITY_ID.'.js', 'w'); fwrite($fp, $outscr); fclose($fp);
             if( !isset($s3) ){
                 require_once DRUPAL_ROOT . '/sites/all/libraries/s3-php5-curl/S3.php';
-                $s3=new S3('AKIAJZBFGP6M7K354GTQ', 'n3G35KKdug3H4IhYqDS5Y9WtzGgsZfqKneRufqFH');
+                $s3=new S3(PDX_S3_1, PDX_S3_2);
             }
             $s3->putObject($outscr, $bucketName, 'curs/b_'.PDX_CITY_ID.'.js', S3::ACL_PUBLIC_READ);
 
@@ -335,7 +335,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>291 ){
             }
             if( !isset($s3) ){
                 require_once DRUPAL_ROOT . '/sites/all/libraries/s3-php5-curl/S3.php';
-                $s3=new S3('AKIAJZBFGP6M7K354GTQ', 'n3G35KKdug3H4IhYqDS5Y9WtzGgsZfqKneRufqFH');
+                $s3=new S3(PDX_S3_1, PDX_S3_2);
             }
 /*
             if( !$connect ){

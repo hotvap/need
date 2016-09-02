@@ -1,9 +1,6 @@
 <?php // $Id$
     global $user;
 //$user = user_load(156);
-if( arg(0)=='admin' ){
-    echo 'tttt';
-}
 
 if( arg(0)=='node' and is_string(arg(1)) and arg(1)=='add' and is_string(arg(2)) ){
     if( $user->uid and arg(2)=='item' ){

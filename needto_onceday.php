@@ -425,7 +425,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>77777 ){
     if( isset($anids) and is_array($anids) and count($anids) ){
         echo '<pre>'.print_r($anids, true). '</pre>';
         require_once DRUPAL_ROOT . '/sites/all/libraries/s3-php5-curl/S3.php';
-        $s3=new S3('AKIAJZBFGP6M7K354GTQ', 'n3G35KKdug3H4IhYqDS5Y9WtzGgsZfqKneRufqFH');
+        $s3=new S3(PDX_S3_1, PDX_S3_2);
         $bucketName='needtominsk';
         
         $zip = new ZipArchive();
