@@ -8,6 +8,7 @@ $city=0;
 $stopcache=0;
 $skiprender=0;
 
+
 require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
 
 if( isset( $_GET['token'] ) and strlen($_GET['token']) ){
