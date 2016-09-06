@@ -371,41 +371,25 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>77777 ){
 
 
         if( isset( $price1 ) and is_numeric($price1) ){
-            if( defined('PDX_CITY_COUNTRY') and PDX_CITY_COUNTRY==62 ){
-                $price1=(ceil($price1/100))*100;
-            }else{
-                $price1=ceil($price1);
-            }
+            $price1=ceil($price1);
             $pr['price1']=$price1;
         }else{
             $pr['price1']=0;
         }
         if( isset( $price2 ) and is_numeric($price2) ){
-            if( defined('PDX_CITY_COUNTRY') and PDX_CITY_COUNTRY==62 ){
-                $price2=(ceil($price2/100))*100;
-            }else{
-                $price2=ceil($price2);
-            }
+            $price2=ceil($price2);
             $pr['price2']=$price2;
         }else{
             $pr['price2']=0;
         }
         if( isset( $price3 ) and is_numeric($price3) ){
-            if( defined('PDX_CITY_COUNTRY') and PDX_CITY_COUNTRY==62 ){
-                $price3=(ceil($price3/100))*100;
-            }else{
-                $price3=ceil($price3);
-            }
+            $price3=ceil($price3);
             $pr['price3']=$price3;
         }else{
             $pr['price3']=0;
         }
         if( isset( $price4 ) and is_numeric($price4) ){
-            if( defined('PDX_CITY_COUNTRY') and PDX_CITY_COUNTRY==62 ){
-                $price4=(ceil($price4/100))*100;
-            }else{
-                $price4=ceil($price4);
-            }
+            $price4=ceil($price4);
             $pr['price4']=$price4;
         }else{
             $pr['price4']=0;
@@ -429,11 +413,11 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>77777 ){
         $bucketName='needtominsk';
         
         $zip = new ZipArchive();
-        $zip->open(sys_get_temp_dir().'/'.PDX_CITY_ID.'_items.zip', ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->open(DRUPAL_ROOT.'/curs/tmp/'.PDX_CITY_ID.'_items.zip', ZipArchive::CREATE | ZipArchive::OVERWRITE);
         $zip->addFromString(PDX_CITY_ID.'_items.dat', json_encode($anids));
         $zip->close();
         
-        $s3->putObjectFile( sys_get_temp_dir().'/'.PDX_CITY_ID.'_items.zip' , $bucketName, 'mobile/'.PDX_CITY_ID.'_items.zip', S3::ACL_PUBLIC_READ);
+        $s3->putObjectFile( DRUPAL_ROOT.'/curs/tmp/'.PDX_CITY_ID.'_items.zip' , $bucketName, 'mobile/'.PDX_CITY_ID.'_items.zip', S3::ACL_PUBLIC_READ);
         
         
     }

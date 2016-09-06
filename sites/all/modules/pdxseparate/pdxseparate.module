@@ -114,11 +114,13 @@ function pdxseparate_menu() {
     'page callback' => 'pdxseparate_p_clearcaches',
     'access callback' => 'pdxseparate_checkadm',
   );
+/*    
   $mypage['admin/denomin'] = array(
     'title' => 'Деноминация цен',
     'page callback' => 'pdxseparate_denomin',
     'access callback' => 'pdxseparate_checkadm',
   );
+*/
   return $mypage;
 }
 function pdxseparate_item_export_pdf($source_content = NULL){
