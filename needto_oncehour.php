@@ -78,10 +78,10 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>3333 ){
 */            
                 if( isset($aval) and is_array($aval) and count($aval) ){ 
                     $zip = new ZipArchive();
-                    $zip->open(sys_get_temp_dir().'/tax.zip', ZipArchive::CREATE | ZipArchive::OVERWRITE);
+                    $zip->open(DRUPAL_ROOT.'/curs/tmp/tax.zip', ZipArchive::CREATE | ZipArchive::OVERWRITE);
                     $zip->addFromString("tax.dat", json_encode($aval));
                     $zip->close();
-                    $s3->putObjectFile( sys_get_temp_dir().'/tax.zip' , $bucketName, 'mobile/tax.zip', S3::ACL_PUBLIC_READ);
+                    $s3->putObjectFile( DRUPAL_ROOT.'/curs/tmp/tax.zip' , $bucketName, 'mobile/tax.zip', S3::ACL_PUBLIC_READ);
                 }
         }
     

@@ -1067,6 +1067,7 @@ $source_content.='<div style="float: left; width: 233px;">
 <li><a href="?update=5">Обновить needto.me</a></li>
 <li><a href="?update=6">Обновить share node</a></li>
 <li><a href="?update=7">Обновить share html с картинками пользователей</a></li>
+<li><a href="?update=8">Новые и рекомендуемые товары</a></li>
 </ul>
 ';
 
@@ -1128,6 +1129,10 @@ if( isset( $_GET['update'] ) and is_numeric($_GET['update']) ){
             }
         }
         $source_content.= '<strong>share me update ok</strong>';
+        break;
+    case 8: //new and rec
+        setlastnew();
+        setrecall();
         break;
     }
 }
