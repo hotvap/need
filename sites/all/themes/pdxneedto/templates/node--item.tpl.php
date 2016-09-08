@@ -997,9 +997,9 @@ if(isset($user->roles[3])){
 </div>
 <div class="clear">&nbsp;</div>
 <div class="liexport">Сохранить в <a href="javascript: void(0);" onclick=" window.location.replace('/needto_op.php?op=6&nid=<?php echo $node->nid; ?>'); " class="li_pdf" title="Сохранить объявление как PDF">PDF</a><a href="javascript: void(0);" onclick=" window.location.replace('/needto_op.php?op=7&nid=<?php echo $node->nid; ?>'); " class="li_pdf" title="Сохранить объявление как DOC">DOC</a></div>
-<div class="sharehtml"><div class="ttl">Поделиться объявлением <br style="display: none;" />на своем сайте (HTML): (<a target="_blank" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/html/share/node/<?php echo $node->nid; ?>.htm">см. как выглядит</a>)</div>
+<div class="sharehtml"><div class="ttl">Поделиться объявлением <br style="display: none;" />на своем сайте (HTML): (<a target="_blank" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>/html/<?php echo PDX_CITY_ID; ?>/share/node/<?php echo $node->nid; ?>.htm">см. как выглядит</a>)</div>
 <div class="sharehtmlmn">
-<input type="text" value='<iframe width="100%" height="537" src="http://<?php echo $_SERVER['HTTP_HOST']; ?>/html/share/node/<?php echo $node->nid; ?>.htm" frameborder="0"></iframe>' onclick=" jQuery(this).select(); " />
+<input type="text" value='<iframe width="100%" height="537" src="http://<?php echo $_SERVER['HTTP_HOST']; ?>/html/<?php echo PDX_CITY_ID; ?>/share/node/<?php echo $node->nid; ?>.htm" frameborder="0"></iframe>' onclick=" jQuery(this).select(); " />
 </div>
 </div>
     <?php endif; ?>

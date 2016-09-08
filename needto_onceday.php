@@ -1,6 +1,6 @@
 <?php
 
-$out= @file_get_contents('pdxcache/needto_onceday');
+$out= @file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/needto_onceday');
 if( !isset($out) or !is_numeric($out) or (time()-$out)>77777 ){
 
     define('DRUPAL_ROOT', getcwd());
@@ -9,7 +9,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>77777 ){
     require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
     drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
-    $fp = fopen('pdxcache/needto_onceday', 'w');
+    $fp = fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/needto_onceday', 'w');
     fwrite($fp, time());
     fclose($fp);
 
@@ -164,9 +164,6 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>77777 ){
         }
     }
 
-        if( function_exists('pdxclearmycache') ){
-            pdxclearmycache($pages);
-        }
 
 
 

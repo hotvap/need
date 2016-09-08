@@ -91,12 +91,12 @@ if( $user->uid ){
     <div id="confirmaction" style="display: none;"><div id="confirmactionin"><div id="confirmactioncnt"></div><img class="closeconfirm" onclick=" jQuery(this).parent().parent().hide(); jQuery('#confirmactioncnt').html(''); " alt="x" src="<?php echo PDX_IMGPATH; ?>/img/ico_close.png" /><div class="clear">&nbsp;</div></div></div>
     <div id="addbalance" style="display: none;"><div id="addbalancein">
     <div id="addbalancecnt"><input type="hidden" value="<?php echo intval($buy['sell_price']); ?>" id="nid_price" />
-    Пополнить баланс на <input id="countbalance" type="text" value="30" class="form-text" size="3" onfocus=" buyInterval=window.setInterval('buyCheck();', 1333); " onblur=" window.clearInterval(buyInterval); " /> "нид" за<br /> <strong class="balanceresult"><?php echo number_format(30*$buy['sell_price'], 0, '', ' '); ?></strong> <?php
+    Пополнить баланс на <input id="countbalance" type="text" value="10" class="form-text" size="3" onfocus=" buyInterval=window.setInterval('buyCheck();', 1333); " onblur=" window.clearInterval(buyInterval); " /> "нид" за<br /> <strong class="balanceresult"><?php echo number_format(10*$buy['sell_price'], 2, '.', ' '); ?></strong> <?php
 if( defined('PDX_CITY_CUR') ){
     echo PDX_CITY_CUR;
 }
     ?> <span class="balancego" onclick=" balancego(<?php echo $buy['nid']; ?>); ">Далее &gt;&gt;</span>
-    </div><div class="balance_prim"><a target="blank" class="helpme" href="http://<?php echo PDX_URL_HELP; ?>/kak-mozhno-popolnit-balans-polzovatelya.html" title="Открыть справку в новом окне">&nbsp;</a>* минимум 30 "нид", максимум 10 000 "нид"</div>
+    </div><div class="balance_prim"><a target="blank" class="helpme" href="http://<?php echo PDX_URL_HELP; ?>/kak-mozhno-popolnit-balans-polzovatelya.html" title="Открыть справку в новом окне">&nbsp;</a>* минимум 10 "нид", максимум 10 000 "нид"</div>
     <img class="closebalance" onclick=" jQuery(this).parent().parent().hide(); jQuery('.addbalance').show(); " alt="x" src="<?php echo PDX_IMGPATH; ?>/img/ico_close.png" /><div class="clear">&nbsp;</div></div></div>
 <?php
     }
@@ -396,7 +396,7 @@ echo '<div id="site_title">';
         $display_items = entity_view('uc_cart_item', uc_cart_get_contents(), 'cart');
         foreach (element_children($display_items['uc_cart_item']) as $key) {
             if( isset($display_items['uc_cart_item'][$key]['#entity']->qty) ){
-                echo $display_items['uc_cart_item'][$key]['#entity']->qty.' "нид" ('.number_format($display_items['uc_cart_item'][$key]['#entity']->qty*$display_items['uc_cart_item'][$key]['#entity']->sell_price, 0, '', ' ');
+                echo $display_items['uc_cart_item'][$key]['#entity']->qty.' "нид" ('.number_format($display_items['uc_cart_item'][$key]['#entity']->qty*$display_items['uc_cart_item'][$key]['#entity']->sell_price, 2, '.', ' ');
                 if( defined( 'PDX_CITY_CUR' ) ){
                     echo ' '.PDX_CITY_CUR;
                 }
@@ -412,7 +412,7 @@ echo '<div id="site_title">';
             $isset=$isset->fetchAssoc();
             if( isset( $isset['order_total'] ) and is_numeric($isset['order_total']) ){
                 echo '<div class="wrnblock">';
-                echo 'Своего завершения еще ожидает ваша заявка на пополнение баланса на сумму <strong>'.number_format($isset['order_total'], 0, '', ' ').'</strong>';
+                echo 'Своего завершения еще ожидает ваша заявка на пополнение баланса на сумму <strong>'.number_format($isset['order_total'], 2, '.', ' ').'</strong>';
                 if( defined( 'PDX_CITY_CUR' ) ){
                     echo ' '.PDX_CITY_CUR;
                 }

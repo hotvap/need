@@ -1,0 +1,6 @@
+name = Yandex.Money Core
+description = "Yandex.Money core module."
+package = Yandex.Money
+core = 7.x
+version = 1.2.0
+configure = admin/config/system/yamoney

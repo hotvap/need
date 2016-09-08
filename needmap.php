@@ -9,7 +9,7 @@ $alllink=0;
 
 $aout=array();
 $aout[]='
-<sitemap><loc>http://'.$_SERVER['HTTP_HOST'].'/sitemap_other.xml</loc><lastmod>'.date('Y-m-d', time()).'</lastmod></sitemap>';
+<sitemap><loc>http://'.$_SERVER['HTTP_HOST'].'/sitemap_other_'.PDX_CITY_ID.'.xml</loc><lastmod>'.date('Y-m-d', time()).'</lastmod></sitemap>';
 
 
 
@@ -30,9 +30,9 @@ while( $res=$ress->fetchAssoc() ){
     $counter++;
     if( !($counter%49998) ){
         if( isset($arr) and is_array($arr) and count($arr) ){
-            cxml($arr, 'sitemap_node_'.$counternum, 'weekly', 0.3);
+            cxml($arr, 'sitemap_node_'.PDX_CITY_ID.'_'.$counternum, 'weekly', 0.3);
             $aout[]='
-<sitemap><loc>http://'.$_SERVER['HTTP_HOST'].'/sitemap_node_'.$counternum.'.xml</loc><lastmod>'.date('Y-m-d', time()).'</lastmod></sitemap>';
+<sitemap><loc>http://'.$_SERVER['HTTP_HOST'].'/sitemap_node_'.PDX_CITY_ID.'_'.$counternum.'.xml</loc><lastmod>'.date('Y-m-d', time()).'</lastmod></sitemap>';
             $counternum++;
         }
         $counter++;
@@ -41,9 +41,9 @@ while( $res=$ress->fetchAssoc() ){
 
 }
 if( isset($arr) and is_array($arr) and count($arr) ){
-    cxml($arr, 'sitemap_node_'.$counternum, 'weekly', 0.3);
+    cxml($arr, 'sitemap_node_'.PDX_CITY_ID.'_'.$counternum, 'weekly', 0.3);
     $aout[]='
-<sitemap><loc>http://'.$_SERVER['HTTP_HOST'].'/sitemap_node_'.$counternum.'.xml</loc><lastmod>'.date('Y-m-d', time()).'</lastmod></sitemap>';
+<sitemap><loc>http://'.$_SERVER['HTTP_HOST'].'/sitemap_node_'.PDX_CITY_ID.'_'.$counternum.'.xml</loc><lastmod>'.date('Y-m-d', time()).'</lastmod></sitemap>';
 }
 
 /* --- sitemap_other --- */
@@ -194,7 +194,7 @@ if( isset($aout) and is_array($aout) and count($aout) ){
     $out.=implode('', $aout);
     $out.='</sitemapindex>';
 
-    $fp = fopen('sitemap.xml', 'w'); fwrite($fp, $out); fclose($fp);
+    $fp = fopen('sitemap_'.PDX_CITY_ID.'.xml', 'w'); fwrite($fp, $out); fclose($fp);
 
 }
 
@@ -226,7 +226,7 @@ function cxml($arr, $name, $changefreq, $priority){
         }
         $out.='
 </urlset>';
-        $fp = fopen($name.'.xml', 'w'); fwrite($fp, $out); fclose($fp);
+        $fp = fopen($name.'_'.PDX_CITY_ID.'.xml', 'w'); fwrite($fp, $out); fclose($fp);
     }
 }
 ?>

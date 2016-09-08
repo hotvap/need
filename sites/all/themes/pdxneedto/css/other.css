@@ -4510,7 +4510,16 @@ table.mycartshow .del{
 .slinqout{
     position: absolute; left: -12px; top: 0px;
 }
-
+.review_action{
+    position: relative;
+    left: +0px;
+}
+.review_action #edit-submit{
+    position: absolute;
+    left: 137px;
+    top: 0px;
+    z-index: 33;
+}
 
 @media screen and (max-width: 1021px) {
     .status_item{

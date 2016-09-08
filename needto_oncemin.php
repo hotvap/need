@@ -1,13 +1,17 @@
 <?php
 
-$out= @file_get_contents('pdxcache/needto_oncemin');
+if( !is_dir('pdxcache/'.$_SERVER['HTTP_HOST']) ){
+    mkdir('pdxcache/'.$_SERVER['HTTP_HOST']);
+}
+
+$out= @file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/needto_oncemin');
 if( !isset($out) or !is_numeric($out) or (time()-$out)>291 ){
 
     define('DRUPAL_ROOT', getcwd());
     
     require_once DRUPAL_ROOT . '/sites/all/themes/pdxneedto/my.inc';
 
-    $fp = fopen('pdxcache/needto_oncemin', 'w');
+    $fp = fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/needto_oncemin', 'w');
     fwrite($fp, time());
     fclose($fp);
     
@@ -56,7 +60,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>291 ){
         $out.='</div></div></div></div>';
         $out.='<script type="text/javascript"> preparecurrency(); addadmuser(); updateswiperitem(); </script>';
 
-        $fp = fopen('html/rec.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
+        $fp = fopen('html/rec_'.PDX_CITY_ID.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
     }
 
     //Новые объявления
@@ -101,7 +105,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>291 ){
                         $out.='</div></div></div></div>';
                         $out.='<script type="text/javascript"> preparecurrency(); addadmuser(); updateswiperitem(); </script>';
 
-                        $fp = fopen('html/new.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
+                        $fp = fopen('html/new_'.PDX_CITY_ID.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
 
                     }
 
@@ -297,14 +301,14 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>291 ){
     }
 
     //проверка онлайн-статуса пользователей
-    if( is_dir('curs/online') ){
-        $files=scandir('curs/online');
+    if( is_dir('curs/'.PDX_CITY_ID.'/online') ){
+        $files=scandir('curs/'.PDX_CITY_ID.'/online');
         if( isset($files) and is_array($files) and count($files) ){
             $istime=time();
             foreach( $files as $file ){
                 if( strpos($file, '.txt')===false ){}else{
-                    if( filectime('curs/online/'.$file)<($istime-777) ){
-                        unlink('curs/online/'.$file);
+                    if( filectime('curs/'.PDX_CITY_ID.'/online/'.$file)<($istime-777) ){
+                        unlink('curs/'.PDX_CITY_ID.'/online/'.$file);
                     }
                 }
             }

@@ -1,6 +1,6 @@
 <?php
 
-$out= @file_get_contents('pdxcache/needto_oncehour');
+$out= @file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/needto_oncehour');
 if( !isset($out) or !is_numeric($out) or (time()-$out)>3333 ){
 
     define('DRUPAL_ROOT', getcwd());
@@ -9,7 +9,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>3333 ){
     require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
     drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
-    $fp = fopen('pdxcache/needto_oncehour', 'w');
+    $fp = fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/needto_oncehour', 'w');
     fwrite($fp, time());
     fclose($fp);
     

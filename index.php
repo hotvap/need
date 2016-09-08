@@ -36,10 +36,13 @@ drupal_bootstrap(DRUPAL_BOOTSTRAP_SESSION);
 if(isset($_SESSION['pdxuseruid']) and $_SESSION['pdxuseruid']!=0){
     $mysessuid=$_SESSION['pdxuseruid'];
 
-    if( !is_dir('curs/online') ){
-        mkdir('curs/online');
+    if( !is_dir('curs/'.PDX_CITY_ID.'/online') ){
+        mkdir('curs/'.PDX_CITY_ID.'/online');
     }
-    $fp = fopen('curs/online/'.$mysessuid.'.txt', 'w'); fwrite($fp, ''); fclose($fp);
+    if( !is_dir('curs/'.PDX_CITY_ID) ){
+        mkdir('curs/'.PDX_CITY_ID);
+    }
+    $fp = fopen('curs/'.PDX_CITY_ID.'/online/'.$mysessuid.'.txt', 'w'); fwrite($fp, ''); fclose($fp);
 
 }
 

@@ -1155,7 +1155,7 @@ if( function_exists('pdxseparate_getmnumass') ){
 
 $source_content.='</ul></div><div class="clear">&nbsp;</div>
 
-<iframe width="100%" height="537" src="http://localhost/html/share/node/2866.htm" frameborder="0"></iframe>
+<iframe width="100%" height="537" src="http://localhost/html/'.PDX_CITY_ID.'/share/node/2866.htm" frameborder="0"></iframe>
 
 ';
 
@@ -1870,8 +1870,8 @@ function pdxcleartermcaches($term){
         switch( $term->vid ){
         case 1:
             if( isset($term->field_part['und'][0]['tid']) and is_numeric($term->field_part['und'][0]['tid']) ){
-                if( file_exists('pdxcache/amenu/'.$term->field_part['und'][0]['tid']) ){
-                    unlink('pdxcache/amenu/'.$term->field_part['und'][0]['tid']);
+                if( file_exists('pdxcache/amenu/'.PDX_CITY_ID.'_'.$term->field_part['und'][0]['tid']) ){
+                    unlink('pdxcache/amenu/'.PDX_CITY_ID.'_'.$term->field_part['und'][0]['tid']);
                 }
                 if( isset($term->field_subpart['und'][0]['tid']) and is_numeric($term->field_subpart['und'][0]['tid']) ){
                     $pages[]='_'.PDXCAT_NAME.'_'.$term->field_part['und'][0]['tid'].'_'.$term->field_subpart['und'][0]['tid'].'_'.$term->tid;
@@ -1886,8 +1886,8 @@ function pdxcleartermcaches($term){
                 pdxcreate_dirty('tax');
             }
 
-            if( file_exists('pdxcache/amenu/'.$term->field_part['und'][0]['tid']) ){
-                unlink('pdxcache/amenu/'.$term->field_part['und'][0]['tid']);
+            if( file_exists('pdxcache/amenu/'.PDX_CITY_ID.'_'.$term->field_part['und'][0]['tid']) ){
+                unlink('pdxcache/amenu/'.PDX_CITY_ID.'_'.$term->field_part['und'][0]['tid']);
             }
             $pages[]='_'.PDXCAT_NAME.'_'.$term->tid;
             if( function_exists('getaddtocat') ){
@@ -1900,8 +1900,8 @@ function pdxcleartermcaches($term){
             }
 
             if( isset($term->field_part['und'][0]['tid']) and is_numeric($term->field_part['und'][0]['tid']) ){
-                if( file_exists('pdxcache/amenu/'.$term->field_part['und'][0]['tid']) ){
-                    unlink('pdxcache/amenu/'.$term->field_part['und'][0]['tid']);
+                if( file_exists('pdxcache/amenu/'.PDX_CITY_ID.'_'.$term->field_part['und'][0]['tid']) ){
+                    unlink('pdxcache/amenu/'.PDX_CITY_ID.'_'.$term->field_part['und'][0]['tid']);
                 }
                 $pages[]='_'.PDXCAT_NAME.'_'.$term->field_part['und'][0]['tid'].'_'.$term->tid;
             }
@@ -1915,8 +1915,8 @@ function pdxcleartermcaches($term){
             }
 
             $pages[]='_'.PDXCAT_NAME.'_'.$term->tid;
-            if( file_exists('pdxcache/amenu/0') ){
-                unlink('pdxcache/amenu/0');
+            if( file_exists('pdxcache/amenu/'.PDX_CITY_ID.'_0') ){
+                unlink('pdxcache/amenu/'.PDX_CITY_ID.'_0');
             }
             break;
         default:
@@ -2362,11 +2362,14 @@ function pdxisstoppremod($node, $nodeold){
     return $stop;
 }
 function pdxshareme($node){
-    if( !is_dir('html/share') ){
-        mkdir('html/share');
+    if( !is_dir('html/'.PDX_CITY_ID) ){
+        mkdir('html/'.PDX_CITY_ID);
     }
-    if( !is_dir('html/share/node') ){
-        mkdir('html/share/node');
+    if( !is_dir('html/'.PDX_CITY_ID.'/share') ){
+        mkdir('html/'.PDX_CITY_ID.'/share');
+    }
+    if( !is_dir('html/'.PDX_CITY_ID.'/share/node') ){
+        mkdir('html/'.PDX_CITY_ID.'/share/node');
     }
     if( !isset($node) or !isset($node->title) ){
         return;
@@ -2598,7 +2601,7 @@ $out.='" ></div>';
     $out.='<a target="_blank" href="'.url('node/'.$node->nid, array('absolute'=>TRUE) ).'">Взять в аренду</a></div>';
     $out.='</div>';
 
-    $fp = fopen('html/share/node/'.$node->nid.'.htm', 'w');
+    $fp = fopen('html/'.PDX_CITY_ID.'/share/node/'.$node->nid.'.htm', 'w');
     fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда needto.me: '.$node->title.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><script type="text/javascript" src="//yastatic.net/share/share.js" charset="utf-8"></script><style type="text/css">
     .shareme *{
     font-family:Arial,sans-serif;
@@ -4569,8 +4572,11 @@ function setrecall(){
 }
 /* обновление картинок объявлений */
 function updateuseritemimgs($uid){
-    if( !is_dir('html/userimgs') ){
-        mkdir('html/userimgs');
+    if( !is_dir('html/'.PDX_CITY_ID) ){
+        mkdir('html/'.PDX_CITY_ID);
+    }
+    if( !is_dir('html/'.PDX_CITY_ID.'/userimgs') ){
+        mkdir('html/'.PDX_CITY_ID.'/userimgs');
     }
     $username='';
     $count=0;
@@ -4602,20 +4608,23 @@ function updateuseritemimgs($uid){
     
     
     
-    $fp = fopen('html/userimgs/'.$uid.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start"><div class="inlinebodydiv" id="showuserimgs'.$uid.'" style="display: none;"><img class="closeimg" onclick=" jQuery(this).parent().hide(); " alt="x" src="'.PDX_IMGPATH.'/img/ico_close.png" /><div class="inlinetitle"><div class="inlinetitlein"><a href="'.url('user/'.$uid, array('absolute'=>TRUE)).'">Объявления пользователя '.$username.' <span>('.$count.' шт.)</span></a></div></div><div class="sharehtml sharehtmlp"><div class="ttl">Поделиться фотографиями на своем сайте (HTML): (<a target="_blank" href="http://'. $_SERVER['HTTP_HOST'].'/html/share/userpic/'. $uid.'.htm">см. как выглядит</a>)</div>
+    $fp = fopen('html/'.PDX_CITY_ID.'/userimgs/'.$uid.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start"><div class="inlinebodydiv" id="showuserimgs'.$uid.'" style="display: none;"><img class="closeimg" onclick=" jQuery(this).parent().hide(); " alt="x" src="'.PDX_IMGPATH.'/img/ico_close.png" /><div class="inlinetitle"><div class="inlinetitlein"><a href="'.url('user/'.$uid, array('absolute'=>TRUE)).'">Объявления пользователя '.$username.' <span>('.$count.' шт.)</span></a></div></div><div class="sharehtml sharehtmlp"><div class="ttl">Поделиться фотографиями на своем сайте (HTML): (<a target="_blank" href="http://'. $_SERVER['HTTP_HOST'].'/html/'.PDX_CITY_ID.'/share/userpic/'. $uid.'.htm">см. как выглядит</a>)</div>
 <div class="sharehtmlmn">
-<input type="text" value=\'<iframe width="100%" height="537" src="http://'. $_SERVER['HTTP_HOST'].'/html/share/userpic/'. $uid.'.htm" frameborder="0"></iframe>\' onclick=" jQuery(this).select(); " />
+<input type="text" value=\'<iframe width="100%" height="537" src="http://'. $_SERVER['HTTP_HOST'].'/html/'.PDX_CITY_ID.'/share/userpic/'. $uid.'.htm" frameborder="0"></iframe>\' onclick=" jQuery(this).select(); " />
 </div>
 </div><div class="fieldset-wrapper2">'.$out.'</div></div><script type="text/javascript"> jQuery(\'#showuserimgs'.$uid.'\').show(); jQuery(\'.slinkta\').removeClass(\'thr\'); </script></body></html>'); fclose($fp);
 }
 
 /* обновление картинок объявлений */
 function updateuseritemimgshare($uid){
-    if( !is_dir('html/share') ){
-        mkdir('html/share');
+    if( !is_dir('html/'.PDX_CITY_ID) ){
+        mkdir('html/'.PDX_CITY_ID);
     }
-    if( !is_dir('html/share/userpic') ){
-        mkdir('html/share/userpic');
+    if( !is_dir('html/'.PDX_CITY_ID.'/share') ){
+        mkdir('html/'.PDX_CITY_ID.'/share');
+    }
+    if( !is_dir('html/'.PDX_CITY_ID.'/share/userpic') ){
+        mkdir('html/'.PDX_CITY_ID.'/share/userpic');
     }
     $username='';
     $count=0;
@@ -4676,7 +4685,7 @@ $out.='" ></div>';
     
     
     
-    $fp = fopen('html/share/userpic/'.$uid.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда: предложения пользователя '.$username.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><script type="text/javascript" src="//yastatic.net/share/share.js" charset="utf-8"></script><style type="text/css">
+    $fp = fopen('html/'.PDX_CITY_ID.'/share/userpic/'.$uid.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда: предложения пользователя '.$username.'</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><script type="text/javascript" src="//yastatic.net/share/share.js" charset="utf-8"></script><style type="text/css">
     .shareme *{
     font-family:Arial,sans-serif;
     }
@@ -4900,7 +4909,7 @@ function getaddtocat(){
                 }
                 $outis.='<div class="clear">&nbsp;</div></div>';
                 if( isset($outis) and strlen($outis) ){
-                    $fp=fopen('html/amenu/0.htm', "w");
+                    $fp=fopen('html/amenu/'.PDX_CITY_ID.'_0.htm', "w");
                     if($fp){
                         fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$outis.'</body></html>'); fclose($fp);
                     }
@@ -4999,7 +5008,7 @@ function getaddtocat(){
         $outis.='<div class="clear">&nbsp;</div></div>';
 
                     if( isset($outis) and strlen($outis) ){
-                    $fp=fopen('html/amenu/'.$term['tid'].'.htm', "w");
+                    $fp=fopen('html/amenu/'.PDX_CITY_ID.'_'.$term['tid'].'.htm', "w");
                     if($fp){
                         fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$outis.'</body></html>'); fclose($fp);
                     }
@@ -5074,7 +5083,7 @@ function getaddtocat(){
         }
 
     
-    $fp = fopen('html/addsel.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
+    $fp = fopen('html/addsel_'.PDX_CITY_ID.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
 }
 function pdxseparate_userpoints($op, $params = array()){
     if( $op=='points after' ){
@@ -5087,8 +5096,11 @@ function pdxseparate_userpoints($op, $params = array()){
 }
 function htmlUserProf($us1){
 
-    if( !is_dir('html/user') ){
-        mkdir('html/user');
+    if( !is_dir('html/'.PDX_CITY_ID) ){
+        mkdir('html/'.PDX_CITY_ID);
+    }
+    if( !is_dir('html/'.PDX_CITY_ID.'/user') ){
+        mkdir('html/'.PDX_CITY_ID.'/user');
     }
 
         $out='';
@@ -5472,7 +5484,7 @@ function htmlUserProf($us1){
             $out='&nbsp;';
         }    
 
-    $fp = fopen('html/user/'.$us1.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
+    $fp = fopen('html/'.PDX_CITY_ID.'/user/'.$us1.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Аренда вещей без проблем</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
 
 }
 function htmlUserMap($usr){
@@ -5567,10 +5579,13 @@ function htmlUserMap($usr){
 
     }
     
-    if( !is_dir('html/map') ){
-        mkdir('html/map');
+    if( !is_dir('html/'.PDX_CITY_ID) ){
+        mkdir('html/'.PDX_CITY_ID);
     }
-    $fp = fopen('html/map/'.$usr->uid.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Арендодатель на карте</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
+    if( !is_dir('html/'.PDX_CITY_ID.'/map') ){
+        mkdir('html/'.PDX_CITY_ID.'/map');
+    }
+    $fp = fopen('html/'.PDX_CITY_ID.'/map/'.$usr->uid.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Арендодатель на карте</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
     
 }
 function htmlNodeVideo($nd){
@@ -5591,10 +5606,13 @@ function htmlNodeVideo($nd){
                     jQuery(\'#videoblock'.$nd->nid.'\').show();
                 </script>';
 
-            if( !is_dir('html/video') ){
-                mkdir('html/video');
+            if( !is_dir('html/'.PDX_CITY_ID) ){
+                mkdir('html/'.PDX_CITY_ID);
             }
-            $fp = fopen('html/video/'.$nd->nid.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Арендодатель на карте</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
+            if( !is_dir('html/'.PDX_CITY_ID.'/video') ){
+                mkdir('html/'.PDX_CITY_ID.'/video');
+            }
+            $fp = fopen('html/'.PDX_CITY_ID.'/video/'.$nd->nid.'.htm', 'w'); fwrite($fp, '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru" xml:lang="ru" dir="ltr"><head><title>Арендодатель на карте</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body id="start">'.$out.'</body></html>'); fclose($fp);
 
         }
     }
@@ -7411,5 +7429,45 @@ function pdxgetshare2($title='', $desc='', $img='', $url=''){
         $out.= ' data-description="'.$desc.'"';
     }
     $out.=' data-image="'.$img.'" data-services="vkontakte,facebook,odnoklassniki,moimir,gplus,twitter,lj,viber,whatsapp" data-counter></div>';
+    return $out;
+}
+function pdxskipreviewtd($title){
+    switch($title){
+        case 'E-mail':
+        case 'Сумма':
+            return '';
+        case 'Оплата':
+            $title='Способ оплаты';
+            break;
+    }
+    return $title;
+}
+function pdxreplacereviewtd(){
+    $out='';
+    if( isset($_SESSION['cart_order']) and is_numeric($_SESSION['cart_order']) ){
+        $isorder=uc_order_load($_SESSION['cart_order']);
+        if( isset($isorder->order_total) and is_numeric($isorder->order_total) ){
+            $out.='<tr><td class="title-col">Сумма для оплаты:</td><td class="data-col">'.$isorder->order_total.' ';
+            $out.=PDX_CITY_CUR;
+            $out.='</td></tr>';
+            if( isset($isorder->payment_method) and strlen($isorder->payment_method) ){
+                $out.='</tr><td class="title-col">Способ оплаты:</td><td class="data-col">';
+                switch($isorder->payment_method){
+                    case 'webmoney':
+                        $out.='Webmoney';
+                        break;
+                    case 'ya_ubercart':
+                        $out.='Яндекс.Касса';
+                        break;
+                    default:
+                        $out.='Кредитная карта';
+                }
+                $out.='</td></tr>';
+            }
+        }
+    }
+    
+    
+    
     return $out;
 }

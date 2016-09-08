@@ -290,7 +290,7 @@ function checkonline(){
             var uid=jQuery(this).attr('class').replace('ustat ustat_', '').replace('ustata', '').trim();
             if( uid>0 ){
                 jQuery.ajax({
-                  url: Drupal.settings.basePath+'curs/online/'+uid+'.txt?r='+(new Date).getTime(),
+                  url: Drupal.settings.basePath+'curs/'+curCity+'/online/'+uid+'.txt?r='+(new Date).getTime(),
                   success: function(){
                     jQuery('.ustat_'+uid).addClass('ustata');
                     jQuery('.ustat_'+uid).attr('title', 'online');

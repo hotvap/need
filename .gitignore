@@ -14,7 +14,6 @@ js/*
 mcache/*
 p/*
 sites/default/*
-sites/all/themes/pdxneedto/my.inc
 *.xml
 web.config
 cookie.txt

@@ -1709,6 +1709,26 @@ $ret.=theme('item_list', array(
     return $ret;
   }
 }
+function pdxneedto_uc_cart_checkout_review($variables) {
+  $panes = $variables['panes'];
+  $form = $variables['form'];
+
+  drupal_add_css(drupal_get_path('module', 'uc_cart') . '/uc_cart.css');
+
+  $output = '<div id="review-instructions">' . filter_xss_admin(variable_get('uc_checkout_review_instructions', uc_get_message('review_instructions'))) . '</div>';
+
+  $output .= '<table class="order-review-table">';
+
+    if( function_exists('pdxreplacereviewtd') ){
+        $output .= pdxreplacereviewtd();
+    }
+    
+  $output .= '</table>';
+    
+    $output .= '<div class="review_action">'.drupal_render($form).'</div>';
+
+  return $output;
+}
 function pdxneedto_html_head_alter(&$head_elements) {
   foreach ($head_elements as $key => $element) {
     if (isset($element['#name']) && ($element['#name'] == 'shortlink' or $element['#name'] == 'canonical') ) {

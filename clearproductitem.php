@@ -45,7 +45,6 @@ if( defined('PDX_CITY_ID') and is_numeric(PDX_CITY_ID) ){
                 }
                     
                 $path='pdxcache/pages/'.$_SERVER['HTTP_HOST'].'/';
-//                $path4='pdxcache/amenu/';
                 @file_get_contents($GLOBALS['base_url'].'/compress.php');
                 cache_clear_all();
                 break;

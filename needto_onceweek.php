@@ -1,6 +1,6 @@
 <?php
 
-$out= @file_get_contents('pdxcache/needto_onceweek');
+$out= @file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/needto_onceweek');
 if( !isset($out) or !is_numeric($out) or (time()-$out)>600000 ){
 
     define('DRUPAL_ROOT', getcwd());
@@ -9,7 +9,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>600000 ){
     require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
     drupal_bootstrap(DRUPAL_BOOTSTRAP_SESSION);
 
-    $fp = fopen('pdxcache/needto_onceweek', 'w');
+    $fp = fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/needto_onceweek', 'w');
     fwrite($fp, time());
     fclose($fp);
 
