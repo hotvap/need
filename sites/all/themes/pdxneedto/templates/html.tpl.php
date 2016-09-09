@@ -32,6 +32,8 @@ if( file_exists('pdxcache/compress_needto_timestamp.php') ){
     $compress_stamp=filectime('pdxcache/compress_needto_timestamp.php');
 }
 if ( isset($_SERVER['HTTP_ACCEPT_ENCODING']) and stripos($_SERVER['HTTP_ACCEPT_ENCODING'],'GZIP')!==false) $gz='gz'; else $gz=null;
+
+$gz='';
 $outis.='<link rel="stylesheet" type="text/css" href="/sites/all/themes/pdxneedto/min/needto.css'.$gz.'?r='.$compress_stamp.'" />';
 if(isset($user->roles[3]) or isset($user->roles[4])){
     $outis.='<link rel="stylesheet" type="text/css" href="/sites/all/themes/pdxneedto/min/adm.css'.$gz.'?r='.$compress_stamp.'" />';
