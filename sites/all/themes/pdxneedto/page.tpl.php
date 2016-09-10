@@ -27,7 +27,6 @@ if( $user->uid ){
 <div class="clear clear0">&nbsp;</div></div>
 
 </div>
-
 <?php
 
     if( $user->uid ){

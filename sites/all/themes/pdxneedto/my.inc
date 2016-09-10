@@ -1,5 +1,7 @@
 <?php // $Id$
-define('DRUPAL_ROOT', getcwd());
+if( defined('DRUPAL_ROOT') ){}else{
+    define('DRUPAL_ROOT', getcwd());
+}
 if( file_exists( DRUPAL_ROOT . '/sites/all/themes/pdxneedto/my_'.$_SERVER['HTTP_HOST'].'.inc' ) ){
     require_once DRUPAL_ROOT . '/sites/all/themes/pdxneedto/my_'.$_SERVER['HTTP_HOST'].'.inc';
 }else{

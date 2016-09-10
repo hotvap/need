@@ -3831,10 +3831,10 @@ body.page-catalog- #mycatfilter{
     padding: 12px 21px 7px 41px;
     border: 1px solid #dbdbdb;
     font-size: 13pt;
-    -moz-border-radius: 27px;
-    -khtml-border-radius:27px;
-    -webkit-border-radius:27px;
-    border-radius:27px;
+    -moz-border-radius: 33px;
+    -khtml-border-radius:33px;
+    -webkit-border-radius:33px;
+    border-radius:33px;
     width: 101px;
     background: #fff url('../img/pointmap.png') no-repeat 18px 11px;
     position: absolute; left: 0px; top: 0px;
@@ -3867,6 +3867,9 @@ body.page-catalog- #mycatfilter{
 }
 #city_current_list .citylblnone{
     font-size: 9pt !important;
+}
+.citylbl{
+    padding: 1px 0;
 }
 #city_current_list a.active{
     color: #ffc000;

@@ -6832,11 +6832,88 @@ function pdxgetcitys($cur=1){
     $out.= '</div>';
     $out.= '<div class="countrydiv">';
     $out.= '<div class="countrylbl">Россия</div>';
+    
     $out.= '<div class="citylbl"><a rel="nofollow" href="http://sp.needto.me/'.$topath.'"';
     if( $cur and PDX_CITY_ID==26 ){
         $out.= ' class="active"';
     }
     $out.= '>Санкт-Петербург</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://ekb.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==1 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Екатеринбург</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://msc.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==2 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Москва</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://nsb.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==3 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Новосибирск</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://smr.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==4 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Самара</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://tmn.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==5 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Тюмень</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://chlb.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==6 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Челябинск</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://nn.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==7 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Нижний Новгород</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://kzn.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==8 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Казань</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://omsk.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==9 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Омск</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://ufa.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==10 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Уфа</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://krs.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==11 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Курск</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://perm.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==12 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Пермь</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://vlg.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==13 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Волгоград</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://vnzh.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==14 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Воронеж</a></div>';
+    $out.= '<div class="citylbl"><a rel="nofollow" href="http://rnd.needto.me/'.$topath.'"';
+    if( $cur and PDX_CITY_ID==15 ){
+        $out.= ' class="active"';
+    }
+    $out.= '>Ростов-на-Дону</a></div>';
+    
     $out.= '</div>';
     $out.= '<div class="countrydiv">';
     $out.= '<div class="countrylbl">Беларусь</div>';

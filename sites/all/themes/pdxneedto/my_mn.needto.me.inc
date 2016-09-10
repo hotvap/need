@@ -14,7 +14,7 @@ define('PDX_CITY_MASK', '+375 (99) 9999999');
 define('PDX_PRICE_GOLD', 200);
 define('PDX_PRICE_PREMIUM', 20);
 define('PDX_PRICE_TOP', 1);
-define('PDX_METRIKA_YANDEX', '33407838'); //
+define('PDX_METRIKA_YANDEX', '39250435'); //
 define('PDX_TWITTER1', 'tCzrVjLKpglr307WJ1bvmIY05');
 define('PDX_TWITTER2', 'gKEcL5HckNlexYl2OU4R66NmynLNm1ZcV1vDif8TU5pbS0VJVS');
 define('PDX_TWITTER3', '4364958322-eu3BeJht34jjwvfymfhoP3MJLG0d70q5gvD1ty6');
