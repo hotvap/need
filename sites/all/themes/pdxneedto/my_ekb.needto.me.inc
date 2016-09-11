@@ -10,10 +10,10 @@ define('PDX_CITY_CREATED', 1473334741);
 define('PDX_CITY_COUNTRY', 60);
 define('PDX_CITY_SUFFIX', 'ekb');
 define('PDX_CITY_CUR', 'руб');
-define('PDX_CITY_MASK', '+375 (99) 9999999');
-define('PDX_PRICE_GOLD', 200);
-define('PDX_PRICE_PREMIUM', 20);
-define('PDX_PRICE_TOP', 1);
+define('PDX_CITY_MASK', '+7 (999) 9999999');
+define('PDX_PRICE_GOLD', 600);
+define('PDX_PRICE_PREMIUM', 60);
+define('PDX_PRICE_TOP', 3);
 define('PDX_METRIKA_YANDEX', ''); //
 define('PDX_TWITTER1', '');
 define('PDX_TWITTER2', '');

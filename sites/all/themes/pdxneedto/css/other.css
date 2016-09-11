@@ -3869,7 +3869,8 @@ body.page-catalog- #mycatfilter{
     font-size: 9pt !important;
 }
 .citylbl{
-    padding: 1px 0;
+    padding: 3px 0;
+    line-height: 1.1em !important;
 }
 #city_current_list a.active{
     color: #ffc000;
