@@ -1193,10 +1193,12 @@ function pdxseparate_form_alter(&$form, &$form_state, $form_id){
     global $user;
     switch($form_id){
     case 'taxonomy_form_term':
+/*            
         if( PDX_CITY_ID!=28 and arg(0)=='admin' and is_string(arg(4)) and arg(4)=='add' ){
             $form=array();
             $form['#prefix']='Добавлять термины можно только на родительском сайте!';
         }
+*/
         break;
     case 'views_exposed_form':
         switch(arg(0)){
@@ -6180,7 +6182,7 @@ function pdxseparate_cron() {
     $reqpath=getcwd() . '/sites/all/themes/pdxneedto/my.inc';
     $reqpath=str_replace('mcache/filecache-default/', '', $reqpath);
     require_once $reqpath;
-    
+/*    
     if( defined('PDX_CITY_ID') and PDX_CITY_ID!=28 ){
         $changed=$changedvid=0;
         $data='';
@@ -6285,6 +6287,7 @@ function pdxseparate_cron() {
             }
         }
     }
+*/    
 
     @file_get_contents($GLOBALS['base_url'].'/clearold.php');
 

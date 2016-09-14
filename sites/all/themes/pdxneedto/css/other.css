@@ -3843,6 +3843,7 @@ body.page-catalog- #mycatfilter{
 #city_current_is{
     background: transparent url('../img/city_arrow.png') no-repeat right 9px;
     padding: 0 11px 7px 8px;
+    line-height: 1.1em;
 }
 #city_current_list{
     padding: 11px 0 0 9px;
@@ -4527,7 +4528,7 @@ table.mycartshow .del{
 
 @media screen and (max-width: 1021px) {
     .status_item{
-        padding-right: 17px;
+        padding-right: 15px;
     }
     .status_item_3{
         padding-right: 0;

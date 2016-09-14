@@ -1,6 +1,6 @@
 <?php
 
-if( isset($_GET['nid']) and is_numeric($_GET['nid']) and isset($_GET['qty']) and is_numeric($_GET['qty']) and $_GET['qty']>29 and $_GET['qty']<10000 ){
+if( isset($_GET['nid']) and is_numeric($_GET['nid']) and isset($_GET['qty']) and is_numeric($_GET['qty']) and $_GET['qty']>9 and $_GET['qty']<10000 ){
     define('DRUPAL_ROOT', getcwd());
     require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
     drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);

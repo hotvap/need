@@ -682,9 +682,9 @@ function addadmuser(){
 function buyCheck(){
     if( jQuery('#nid_price').val() && jQuery('#countbalance').val() && jQuery('#nid_price').val()>0 && jQuery('#countbalance').val()>0 ){
         if( jQuery('#countbalance').val()<10 || jQuery('#countbalance').val()>10000 ){
-            jQuery('#countbalance').val(10);
+            jQuery('#countbalance').val('10');
         }
-        jQuery('.balanceresult').html(accounting.formatNumber(jQuery('#nid_price').val()*jQuery('#countbalance').val(), 0, " ", "."));
+        jQuery('.balanceresult').html(accounting.formatNumber(jQuery('#nid_price').val()*jQuery('#countbalance').val(), 2, " ", "."));
     }
 }
 function balancego(nid){
@@ -1370,7 +1370,7 @@ function savemyorder(type){
 function smmi(uid){
     jQuery('.slinkta').addClass('thr');
     jQuery('#ajaxrs').load(Drupal.settings.basePath + 'html/'+curCity+'/userimgs/'+uid+'.htm#start?r='+(new Date).getTime(), function() {
-        jQuery('#add_product_more').show(); jQuery('.add_product').removeClass('ajaxproc2');
+        jQuery('.add_product').removeClass('ajaxproc2');
     } );
     
 }

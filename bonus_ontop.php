@@ -100,7 +100,7 @@ if( isset($_POST['nid']) and is_numeric($_POST['nid']) ){
     
                     }else{
                         echo '<script type="text/javascript"> ';
-                        echo 'jQuery(\'#othermsg .cnt\').html(\'На Вашем счету недостаточно средств. Требуется еще '.($iscost-$points).' "нид". <span class="balancego" onclick=" jQuery(\'+"\'#countbalance\'"+\').val(30); jQuery(\'+"\'#addbalance\'"+\').show(); jQuery(\'+"\'html, body\'"+\').animate({ scrollTop: jQuery(\'+"\'#addbalance\'"+\').offset().top }, 333); ">Пополнить баланс</span>\');';
+                        echo 'jQuery(\'#othermsg .cnt\').html(\'На Вашем счету недостаточно средств. Требуется еще '.($iscost-$points).' "нид". <span class="balancego" onclick=" jQuery(\'+"\'#countbalance\'"+\').val(10); jQuery(\'+"\'#addbalance\'"+\').show(); jQuery(\'+"\'html, body\'"+\').animate({ scrollTop: jQuery(\'+"\'#addbalance\'"+\').offset().top }, 333); ">Пополнить баланс</span>\');';
                         echo 'jQuery(\'#othermsg\').addClass(\'regshow\');';
                         echo '</script>';
                         echo 'Поднять наверх!';

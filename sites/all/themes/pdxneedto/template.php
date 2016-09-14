@@ -1,4 +1,5 @@
 <?php // $Id$
+
     global $user;
 //$user = user_load(156);
 

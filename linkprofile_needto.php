@@ -76,7 +76,7 @@ if( isset( $_POST['uid'] ) and is_numeric($_POST['uid']) and $_POST['uid']>0 ){
                 jQuery(\'.breadcrumbno_first\').html(\''.$tmp.'\');
                 jQuery(\'.addbalance\').bind(\'click\', 
                     function(){
-                        jQuery(\'#countbalance\').val(30); jQuery(\'#addbalance\').show(); jQuery(this).hide();
+                        jQuery(\'#countbalance\').val(10); jQuery(\'#addbalance\').show(); jQuery(this).hide();
                     }
                 );
             

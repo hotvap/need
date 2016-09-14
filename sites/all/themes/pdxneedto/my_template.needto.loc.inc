@@ -3,7 +3,7 @@
 define('PDX_SOC_FACEBOOK', 'https://www.facebook.com/NeedTome-996282783743830/');
 define('PDX_SOC_TWITTER', '');
 define('PDX_SOC_VKONTAKTE', '');
-define('PDX_CITY_NAME', 'Тестович');
+define('PDX_CITY_NAME', 'Тест Тестович');
 define('PDX_CITY_NAME2', 'Тесте');
 define('PDX_CITY_ID', 0);
 define('PDX_CITY_CREATED', 1473334741);

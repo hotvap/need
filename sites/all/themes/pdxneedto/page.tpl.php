@@ -89,7 +89,7 @@ if( $user->uid ){
 ?>
     <div id="confirmaction" style="display: none;"><div id="confirmactionin"><div id="confirmactioncnt"></div><img class="closeconfirm" onclick=" jQuery(this).parent().parent().hide(); jQuery('#confirmactioncnt').html(''); " alt="x" src="<?php echo PDX_IMGPATH; ?>/img/ico_close.png" /><div class="clear">&nbsp;</div></div></div>
     <div id="addbalance" style="display: none;"><div id="addbalancein">
-    <div id="addbalancecnt"><input type="hidden" value="<?php echo intval($buy['sell_price']); ?>" id="nid_price" />
+    <div id="addbalancecnt"><input type="hidden" value="<?php echo floatval($buy['sell_price']); ?>" id="nid_price" />
     Пополнить баланс на <input id="countbalance" type="text" value="10" class="form-text" size="3" onfocus=" buyInterval=window.setInterval('buyCheck();', 1333); " onblur=" window.clearInterval(buyInterval); " /> "нид" за<br /> <strong class="balanceresult"><?php echo number_format(10*$buy['sell_price'], 2, '.', ' '); ?></strong> <?php
 if( defined('PDX_CITY_CUR') ){
     echo PDX_CITY_CUR;
@@ -765,8 +765,11 @@ if( isset($_SESSION['pdxpdx_node_type']) and strlen($_SESSION['pdxpdx_node_type'
 }
     echo '<div id="pre_statusline"><div id="statusline">';
     
-        echo '<div class="footer_name">Needto.me';
+        echo '<div class="footer_name">';
         if( defined('PDX_CITY_NAME') ){
+            if( mb_strlen(PDX_CITY_NAME)<=7 ){
+                echo 'Needto.me';
+            }
             echo '<span>'.PDX_CITY_NAME.'</span>';
         }
         echo '</div>';
@@ -971,7 +974,7 @@ if( !defined('PDX_JIVOSITE') or !strlen(PDX_JIVOSITE) or isset($user->roles[3]) 
     echo '<script type=\'text/javascript\'> (function(){ if( window.innerWidth>1111 ){ var widget_id = \''.PDX_JIVOSITE.'\'; var s = document.createElement(\'script\'); s.type = \'text/javascript\'; s.async = true; s.src = \'//code.jivosite.com/script/widget/\'+widget_id; var ss = document.getElementsByTagName(\'script\')[0]; ss.parentNode.insertBefore(s, ss); } })();</script>';
 }
 
-
+/*
 ?>
 <div id="presubscribe"><a target="_blank" href="http://<?php echo PDX_URL_HELP; ?>/rabota-s-rassylkami-sayta.html" class="smhelp">&nbsp;</a><div id="subscribeis">
 <div class="block-title" onclick=" switchsubscribe('Подпишись на наши рассылки'); ">Подпишись на наши рассылки</div>
@@ -979,6 +982,7 @@ if( !defined('PDX_JIVOSITE') or !strlen(PDX_JIVOSITE) or isset($user->roles[3]) 
 </div></div>
 
 <?php
-
+*/
+    
 }
 ?>
