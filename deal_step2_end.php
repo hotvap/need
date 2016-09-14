@@ -62,11 +62,11 @@ if( isset( $_POST['nid'] ) and is_numeric( $_POST['nid'] ) and $_POST['nid']>0 a
                             pdxupdateuserrat($user->uid, 'field_rat2', 'field_userrat2', 'user2');
                         }
     
-                        if( file_exists('pdxcache/user/'.$user->uid.'_sm_needto') ){
-                            unlink('pdxcache/user/'.$user->uid.'_sm_needto');
+                        if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto') ){
+                            unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto');
                         }
-                        if( file_exists('pdxcache/user/'.$ismail['uid'].'_sm_needto') ){
-                            unlink('pdxcache/user/'.$ismail['uid'].'_sm_needto');
+                        if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$ismail['uid'].'_sm_needto') ){
+                            unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$ismail['uid'].'_sm_needto');
                         }
                         
                     }

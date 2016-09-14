@@ -3,8 +3,8 @@
 
 if( isset( $_POST['uid'] ) and is_numeric($_POST['uid']) and $_POST['uid']>0 ){
 
-    if( file_exists('pdxcache/user/'.$_POST['uid'].'_sm_needto') and filesize('pdxcache/user/'.$_POST['uid'].'_sm_needto') ){
-        echo @file_get_contents('pdxcache/user/'.$_POST['uid'].'_sm_needto');
+    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$_POST['uid'].'_sm_needto') and filesize('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$_POST['uid'].'_sm_needto') ){
+        echo @file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$_POST['uid'].'_sm_needto');
         
     }else{
         
@@ -299,7 +299,7 @@ if( isset( $_POST['uid'] ) and is_numeric($_POST['uid']) and $_POST['uid']>0 ){
     
             if( isset($out) and strlen($out) ){
                 echo $out;
-                $fp=fopen('pdxcache/user/'.$_POST['uid'].'_sm_needto', "w");
+                $fp=fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$_POST['uid'].'_sm_needto', "w");
                 if($fp){
                     fwrite($fp, $out); fclose($fp);
                 }

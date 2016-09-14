@@ -266,8 +266,8 @@ if( isset( $_REQUEST['id'] ) and is_numeric($_REQUEST['id']) ){
                         if( isset($n) and is_numeric($n) and $n>0 ){}else{
                             continue;
                         }
-                        if( file_exists('pdxcache/user/'.$n.'_item') and filesize('pdxcache/'.$_SERVER['HTTP_HOST'].'/item/'.$n) ){
-                            $anids[]='<div class="views-row">'.file_get_contents('pdxcache/user/'.$n.'_item').'</div>';
+                        if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$n.'_item') and filesize('pdxcache/'.$_SERVER['HTTP_HOST'].'/item/'.$n) ){
+                            $anids[]='<div class="views-row">'.file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$n.'_item').'</div>';
                         }else{
                             if( !$connect ){
                                 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);

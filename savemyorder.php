@@ -14,13 +14,13 @@ if( isset( $_GET['cols'] ) and strlen( $_GET['cols'] ) and isset( $_GET['type'] 
                 $suf=$_GET['type'];
             }
             
-            if( !is_dir('pdxcache/settings') ){
-                mkdir('pdxcache/settings');
+            if( !is_dir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings') ){
+                mkdir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings');
             }
-            if( !is_dir('pdxcache/settings/colorder'.$suf) ){
-                mkdir('pdxcache/settings/colorder'.$suf);
+            if( !is_dir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder'.$suf) ){
+                mkdir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder'.$suf);
             }
-            $fp = fopen('pdxcache/settings/colorder'.$suf.'/'.$_SESSION['pdxuseruid'], 'w');
+            $fp = fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder'.$suf.'/'.$_SESSION['pdxuseruid'], 'w');
             fwrite($fp, $_GET['cols']); fclose($fp);
             
             echo '<script type="text/javascript"> jQuery(\'.savemyorder\').hide(111); </script>';

@@ -137,11 +137,11 @@ if( isset($_POST['nid']) and is_numeric($_POST['nid']) and $_POST['nid']>0 ){
                 }
                 </script>';
 
-                if( file_exists('pdxcache/user/'.$user->uid.'_sm_needto') ){
-                    unlink('pdxcache/user/'.$user->uid.'_sm_needto');
+                if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto') ){
+                    unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto');
                 }
-                if( file_exists('pdxcache/user/'.$isset['uid'].'_sm_needto') ){
-                    unlink('pdxcache/user/'.$isset['uid'].'_sm_needto');
+                if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$isset['uid'].'_sm_needto') ){
+                    unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$isset['uid'].'_sm_needto');
                 }
                 
             }

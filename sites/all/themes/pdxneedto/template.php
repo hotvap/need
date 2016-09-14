@@ -90,8 +90,8 @@ if( arg(0)=='node' and is_string(arg(1)) and arg(1)=='add' and is_string(arg(2))
         }
     }
     if( arg(0)=='user' and is_string(arg(1)) and arg(1)=='reset' and is_numeric(arg(2)) ){
-        if( file_exists('pdxcache/user/'.arg(2).'_sm') ){
-            unlink('pdxcache/user/'.arg(2).'_sm');
+        if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.arg(2).'_sm') ){
+            unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.arg(2).'_sm');
         }
     }
     

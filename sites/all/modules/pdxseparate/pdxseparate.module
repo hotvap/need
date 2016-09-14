@@ -197,11 +197,14 @@ function pdxseparate_item_export_pdf($source_content = NULL){
     $source_content.= '></option>'.$addon2;
     $source_content.= '</select></div><input id="icols" name="cols" type="hidden" value="';
     $coldef='colpos1|colpos2|colpos3|colpos4|colpos5|colpos6|colpos7|colpos8|colpos9|colpos10|colpos11';
-    if( !is_dir('pdxcache/settings/colorder3') ){
-        mkdir('pdxcache/settings/colorder3');
+    if( !is_dir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings') ){
+        mkdir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings');
     }
-    if( file_exists('pdxcache/settings/colorder3/'.$user->uid) ){
-        $coluser=file_get_contents('pdxcache/settings/colorder3/'.$user->uid);
+    if( !is_dir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder3') ){
+        mkdir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder3');
+    }
+    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder3/'.$user->uid) ){
+        $coluser=file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder3/'.$user->uid);
         if( isset($coluser) and strlen($coluser) ){
             $coldef=filter_xss(strip_tags($coluser));
         }
@@ -328,11 +331,11 @@ function pdxseparate_item_export_doc($source_content = NULL){
     $source_content.= '></option>'.$addon2;
     $source_content.= '</select></div><input id="icols" name="cols" type="hidden" value="';
     $coldef='colpos1|colpos2|colpos3|colpos4|colpos5|colpos6|colpos7|colpos8|colpos9|colpos10|colpos11';
-    if( !is_dir('pdxcache/settings/colorder2') ){
-        mkdir('pdxcache/settings/colorder2');
+    if( !is_dir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder2') ){
+        mkdir('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder2');
     }
-    if( file_exists('pdxcache/settings/colorder2/'.$user->uid) ){
-        $coluser=file_get_contents('pdxcache/settings/colorder2/'.$user->uid);
+    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder2/'.$user->uid) ){
+        $coluser=file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder2/'.$user->uid);
         if( isset($coluser) and strlen($coluser) ){
             $coldef=filter_xss(strip_tags($coluser));
         }
@@ -460,8 +463,8 @@ function pdxseparate_item_import($source_content = NULL){
     $source_content.= '></option>'.$addon2;
     $source_content.= '</select></div><input id="icols" name="cols" type="hidden" value="';
     $coldef='colpos1|colpos2|colpos3|colpos4|colpos5|colpos6|colpos7|colpos8|colpos9|colpos10|colpos11';
-    if( file_exists('pdxcache/settings/colorder/'.$user->uid) ){
-        $coluser=file_get_contents('pdxcache/settings/colorder/'.$user->uid);
+    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder/'.$user->uid) ){
+        $coluser=file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/colorder/'.$user->uid);
         if( isset($coluser) and strlen($coluser) ){
             $coldef=filter_xss(strip_tags($coluser));
         }
@@ -2090,8 +2093,8 @@ function pdxclearnodecaches($node){
             if( isset($node->field_part['und'][0]['tid']) ){
                 $pages[]='_findmy_'.$node->field_part['und'][0]['tid'];
             }
-            if( file_exists('pdxcache/user/'.$node->uid.'_sm_needto') ){
-                unlink('pdxcache/user/'.$node->uid.'_sm_needto');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$node->uid.'_sm_needto') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$node->uid.'_sm_needto');
             }
     
             break;
@@ -3372,8 +3375,8 @@ function pdxseparate_user_insert(&$edit, $account, $category) {
         pdxcreate_dirty('user');
     }
 
-            if( file_exists('pdxcache/user/'.$account->uid) ){
-                unlink('pdxcache/user/'.$account->uid);
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid) ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid);
             }
 
     $pages=array();
@@ -3512,8 +3515,8 @@ function pdxseparate_user_update(&$edit, $account, $category) {
             htmlUserMap($account);
         }
                         
-            if( file_exists('pdxcache/user/'.$account->uid) ){
-                unlink('pdxcache/user/'.$account->uid);
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid) ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid);
             }
         
     $path=path_load('user/'.$account->uid);
@@ -3701,20 +3704,20 @@ function pdxseparate_user_delete($account) {
         pdxcreate_dirty('user');
     }
 
-            if( file_exists('pdxcache/user/'.$account->uid) ){
-                unlink('pdxcache/user/'.$account->uid);
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid) ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid);
             }
-            if( file_exists('pdxcache/user/'.$account->uid.'_sm') ){
-                unlink('pdxcache/user/'.$account->uid.'_sm');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid.'_sm') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid.'_sm');
             }
-            if( file_exists('pdxcache/user/'.$account->uid.'_sm_needto') ){
-                unlink('pdxcache/user/'.$account->uid.'_sm_needto');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid.'_sm_needto') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid.'_sm_needto');
             }
-            if( file_exists('pdxcache/user/'.$account->uid.'_item') ){
-                unlink('pdxcache/user/'.$account->uid.'_item');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid.'_item') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid.'_item');
             }
-            if( file_exists('pdxcache/user/'.$account->uid.'_o') ){
-                unlink('pdxcache/user/'.$account->uid.'_o');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid.'_o') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$account->uid.'_o');
             }
 
 
@@ -3874,8 +3877,8 @@ function pdxgetuseritems($uid, $page, $pager_cat){
 
 function pdxgetmyuser($uid){
 
-    if( file_exists('pdxcache/user/'.$uid.'_item') and filectime('pdxcache/user/'.$uid.'_item')>(time()-376400) ){
-        return @file_get_contents('pdxcache/user/'.$uid.'_item');
+    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_item') and filectime('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_item')>(time()-376400) ){
+        return @file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_item');
     }else{
         
     $path=path_load('user/'.$uid);
@@ -4046,7 +4049,7 @@ function pdxgetmyuser($uid){
     }
     
         if( isset($out) and strlen($out) ){
-            $fp=fopen('pdxcache/user/'.$uid.'_item', "w");
+            $fp=fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_item', "w");
             if($fp){
                 fwrite($fp, $out); fclose($fp);
             }
@@ -4506,12 +4509,12 @@ function pdxupdateuserrat($uid, $rat, $field='field_userrat', $us='user1'){
 
 
 function prepuser($uid, $all=1){
-    if( file_exists('pdxcache/user/'.$uid.'_o') and filesize('pdxcache/user/'.$uid.'_o') and file_exists('pdxcache/user/'.$uid.'_o_needto') and filesize('pdxcache/user/'.$uid.'_o_needto') ){
-        $mass1=unserialize(@file_get_contents('pdxcache/user/'.$uid.'_o'));
+    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o') and filesize('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o') and file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o_needto') and filesize('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o_needto') ){
+        $mass1=unserialize(@file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o'));
         if( !$all ){
             return $mass1;
         }
-        $mass2=unserialize(@file_get_contents('pdxcache/user/'.$uid.'_o_needto'));
+        $mass2=unserialize(@file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o_needto'));
         foreach( $mass2 as $field=>$val ){
             $mass1->{$field}=$mass2->{$field};
         }
@@ -4534,11 +4537,11 @@ function prepuser($uid, $all=1){
             }
 
             
-            $fp=fopen('pdxcache/user/'.$uid.'_o', "w");
+            $fp=fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o', "w");
             if($fp){
                 fwrite($fp, serialize($mass1) ); fclose($fp);
             }
-            $fp=fopen('pdxcache/user/'.$uid.'_o_needto', "w");
+            $fp=fopen('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o_needto', "w");
             if($fp){
                 fwrite($fp, serialize($mass2) ); fclose($fp);
             }
@@ -4847,17 +4850,17 @@ function updateuseritem($uid){
 function clearusercaches($uid){
             cache_clear_all('field:user:' . $uid, 'cache_field', true);
             htmlUserProf($uid);
-            if( file_exists('pdxcache/user/'.$uid.'_sm') ){
-                unlink('pdxcache/user/'.$uid.'_sm');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_sm') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_sm');
             }
-            if( file_exists('pdxcache/user/'.$uid.'_sm_needto') ){
-                unlink('pdxcache/user/'.$uid.'_sm_needto');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_sm_needto') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_sm_needto');
             }
-            if( file_exists('pdxcache/user/'.$uid.'_item') ){
-                unlink('pdxcache/user/'.$uid.'_item');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_item') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_item');
             }
-            if( file_exists('pdxcache/user/'.$uid.'_o') ){
-                unlink('pdxcache/user/'.$uid.'_o');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid.'_o');
             }
 
 }
@@ -5090,8 +5093,8 @@ function getaddtocat(){
 function pdxseparate_userpoints($op, $params = array()){
     if( $op=='points after' ){
         if( isset($params['uid']) and is_numeric($params['uid']) ){
-            if( file_exists('pdxcache/user/'.$params['uid'].'_sm_needto') ){
-                unlink('pdxcache/user/'.$params['uid'].'_sm_needto');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$params['uid'].'_sm_needto') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$params['uid'].'_sm_needto');
             }
         }
     }
@@ -6717,15 +6720,15 @@ function pdxseparate_taxonomy_term_delete($term) {
 }
 function pdxseparate_flag_unflag($flag, $entity_id, $account, $flagging) {
     global $user; if( $user->uid ){ 
-        if( file_exists('pdxcache/user/'.$user->uid.'_sm_needto') ){
-            unlink('pdxcache/user/'.$user->uid.'_sm_needto');
+        if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto') ){
+            unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto');
         }
     }
 }
 function pdxseparate_flag_flag($flag, $entity_id, $account, $flagging) {
     global $user; if( $user->uid ){ 
-        if( file_exists('pdxcache/user/'.$user->uid.'_sm_needto') ){
-            unlink('pdxcache/user/'.$user->uid.'_sm_needto');
+        if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto') ){
+            unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto');
         }
     }
 }
@@ -6967,18 +6970,7 @@ function pdxgenhelp(){
 
             $right='<p>На данном сайте мы попытались собрать инструкции по всем аспектам работы с сайтами сети <a href="http://needto.me">needto.me</a>. А также ответы на часто задаваемые вопросы. Ниже вы можете увидеть рубрикатор для доступа к ним.</p><div class="menuis"><ul>';
             
-            $anids=array(
-                163=>array(),
-                136=>array(142, 144, 143, 151, 1890),
-                137=>array(),
-                139=>array(150, 152, 153, 154),
-                138=>array(156, 167, 168),
-                141=>array(145, 146),
-                1734=>array(1735),
-                140=>array(164, 165, 171, 147, 148, 149),
-                1892=>array(),
-                4480=>array(),
-            );
+            $anids=pdxgethelpmenu();
 
             
             if( isset($anids) and is_array($anids) and count($anids) ){
@@ -7550,4 +7542,24 @@ function pdxreplacereviewtd(){
     
     
     return $out;
+}
+function pdxgethelpmenu(){
+    $anids=array();
+                $anids=array(
+                    163=>array(),
+                    136=>array(142, 144, 143, 151, 1890),
+                    137=>array(),
+                    139=>array(150, 152, 153, 154),
+                    138=>array(156, 167, 168),
+                    141=>array(145, 146),
+                    1734=>array(1735),
+                    140=>array(164, 165, 171, 147, 148, 149),
+                    1892=>array(),
+                    4480=>array(),
+                );
+    if( file_exists('pdxcache/') ){
+        
+    }
+    
+    return $anids;
 }

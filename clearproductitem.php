@@ -52,7 +52,7 @@ if( defined('PDX_CITY_ID') and is_numeric(PDX_CITY_ID) ){
                 $path='pdxcache/'.$_SERVER['HTTP_HOST'].'/item/';
                 break;
             case 98: //пользователи
-                $path='pdxcache/user/';
+                $path='pdxcache/'.$_SERVER['HTTP_HOST'].'/user/';
                 break;
             case 101: //анонимный кеш, только базовые
                 $nids=db_query('select nid from {node} where type=\'page\'');

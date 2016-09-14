@@ -239,8 +239,8 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>291 ){
                     if( function_exists('updateuseritemimgs') ){
                         updateuseritemimgs($file);
                     }
-                    if( file_exists('pdxcache/user/'.$file.'_sm_needto') ){
-                        unlink('pdxcache/user/'.$file.'_sm_needto');
+                    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$file.'_sm_needto') ){
+                        unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$file.'_sm_needto');
                     }
                 }
             }
@@ -257,8 +257,8 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>291 ){
 
         $uids=db_query('select u.uid from {users} as u inner join {users_roles} as r on u.uid=r.uid where r.rid=3 or r.rid=4');
         while( $uid=$uids->fetchAssoc() ){
-            if( file_exists('pdxcache/user/'.$uid['uid'].'_sm_needto') ){
-                unlink('pdxcache/user/'.$uid['uid'].'_sm_needto');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid['uid'].'_sm_needto') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid['uid'].'_sm_needto');
             }
         }
 

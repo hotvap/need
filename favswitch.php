@@ -54,8 +54,8 @@ if( isset( $_GET['id'] ) and is_numeric( $_GET['id'] ) and isset( $_GET['type'] 
             echo ' jQuery(\'.fav_'.$_GET['type'].'_'.$_GET['id'].' .fv\').attr(\'title\', \''.$flagtitleout.'\');';
             $flagcnt++;
         }
-        if( file_exists('pdxcache/user/'.$_SESSION['pdxuseruid'].'_sm_needto') ){
-            unlink('pdxcache/user/'.$_SESSION['pdxuseruid'].'_sm_needto');
+        if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$_SESSION['pdxuseruid'].'_sm_needto') ){
+            unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$_SESSION['pdxuseruid'].'_sm_needto');
         }
         
             

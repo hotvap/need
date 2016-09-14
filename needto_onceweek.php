@@ -93,8 +93,8 @@ while( $uid=$uids->fetchAssoc() ){
     if( file_exists('sites/default/files/.ht.filecache/cache_field-field user '.$uid['uid']) ){
         unlink('sites/default/files/.ht.filecache/cache_field-field user '.$uid['uid']);
     }
-    if( file_exists('pdxcache/user/'.$uid['uid'].'_o') ){
-        unlink('pdxcache/user/'.$uid['uid'].'_o');
+    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid['uid'].'_o') ){
+        unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$uid['uid'].'_o');
     }
 
     $pages[]='_user_'.$uid['uid'];

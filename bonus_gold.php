@@ -131,17 +131,17 @@
                             cache_clear_all('field:node:' . $nid['nid'], 'cache_field', true);
                         }
 
-            if( file_exists('pdxcache/user/'.$user->uid) ){
-                unlink('pdxcache/user/'.$user->uid);
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid) ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid);
             }
-            if( file_exists('pdxcache/user/'.$user->uid.'_sm') ){
-                unlink('pdxcache/user/'.$user->uid.'_sm');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm');
             }
-            if( file_exists('pdxcache/user/'.$user->uid.'_item') ){
-                unlink('pdxcache/user/'.$user->uid.'_item');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_item') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_item');
             }
-            if( file_exists('pdxcache/user/'.$user->uid.'_o') ){
-                unlink('pdxcache/user/'.$user->uid.'_o');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_o') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_o');
             }
 
                         

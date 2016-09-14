@@ -839,8 +839,8 @@ if( isset( $_REQUEST['op'] ) and is_numeric($_REQUEST['op']) ){
                                     }
                                 }
                             }
-                            if( file_exists('pdxcache/user/'.$user->uid.'_sm_needto') ){
-                                unlink('pdxcache/user/'.$user->uid.'_sm_needto');
+                            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto') ){
+                                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto');
                             }
                         }
                     }
@@ -857,8 +857,8 @@ if( isset( $_REQUEST['op'] ) and is_numeric($_REQUEST['op']) ){
                                     }
                                 }
                             }
-                            if( file_exists('pdxcache/user/'.$user->uid.'_sm_needto') ){
-                                unlink('pdxcache/user/'.$user->uid.'_sm_needto');
+                            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto') ){
+                                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$user->uid.'_sm_needto');
                             }
                         }
                     }
@@ -1619,18 +1619,7 @@ if( isset( $_REQUEST['op'] ) and is_numeric($_REQUEST['op']) ){
             case 14: //получить страницы справки
                 $outs=array();
                 
-                $anids=array(
-                    163=>array(),
-                    136=>array(142, 144, 143, 151, 1890),
-                    137=>array(),
-                    139=>array(150, 152, 153, 154),
-                    138=>array(156, 167, 168),
-                    141=>array(145, 146),
-                    1734=>array(1735),
-                    140=>array(164, 165, 171, 147, 148, 149),
-                    1892=>array(),
-                    4480=>array(),
-                );
+                $anids=pdxgethelpmenu();
                 $outs['anids']=$anids;
                 $outs['apages']=array();
                 $outs['apagestop']=array();

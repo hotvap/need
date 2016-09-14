@@ -3114,8 +3114,8 @@ function pdxseparate_apply($source_content = NULL){
 function pdxseparate_privatemsg_message_insert($message) {
     if( isset($message->recipients) and is_array($message->recipients) and count($message->recipients) ){
         foreach( $message->recipients as $recipient ){
-            if( file_exists('pdxcache/user/'.$recipient->uid.'_sm') ){
-                unlink('pdxcache/user/'.$recipient->uid.'_sm');
+            if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$recipient->uid.'_sm') ){
+                unlink('pdxcache/'.$_SERVER['HTTP_HOST'].'/user/'.$recipient->uid.'_sm');
             }
         }
     }
