@@ -7545,6 +7545,22 @@ function pdxreplacereviewtd(){
 }
 function pdxgethelpmenu(){
     $anids=array();
+    
+    $nums=db_query('select m.link_path, m.link_title, a.alias, m.mlid from {menu_links} as m inner join {url_alias} as a on m.link_path=a.source where m.menu_name=\'menu-help\' and m.plid=0 and m.hidden=0 ORDER BY m.weight ASC');
+            while( $num=$nums->fetchAssoc() ){
+                $isnid=str_replace('node/', '', $num['link_path']);
+                $anids[$isnid]=array();
+
+                $aaddon=array();
+                $nums2=db_query('select m.link_path, m.link_title, a.alias, m.mlid from {menu_links} as m inner join {url_alias} as a on m.link_path=a.source where m.menu_name=\'menu-help\' and m.plid='.$num['mlid'].' and m.hidden=0 ORDER BY m.weight ASC');
+                while( $num2=$nums2->fetchAssoc() ){
+                    $isnid2=str_replace('node/', '', $num2['link_path']);
+                    $anids[$isnid][]=$isnid2;
+                }
+
+            }
+    
+/*    
                 $anids=array(
                     163=>array(),
                     136=>array(142, 144, 143, 151, 1890),
@@ -7557,9 +7573,16 @@ function pdxgethelpmenu(){
                     1892=>array(),
                     4480=>array(),
                 );
-    if( file_exists('pdxcache/') ){
-        
+/*    
+    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/helpmenu') ){
+        $data=file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/settings/helpmenu');
+        if( $data ){
+            $data=unserialize($data);
+            if( isset($data) and is_array($data) and count($data) ){
+                $anids=$data;
+            }
+        }
     }
-    
+*/    
     return $anids;
 }
