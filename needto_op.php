@@ -1656,6 +1656,8 @@ if( isset( $_REQUEST['op'] ) and is_numeric($_REQUEST['op']) ){
                         $body=$body->fetchAssoc();
                         if( isset($body['field_youtube_video_id']) and strlen($body['field_youtube_video_id']) ){
                             $outs['apages'][$isnid]['video']=$body['field_youtube_video_id'];
+                        }
+                        if( isset($body['body_value']) and strlen($body['body_value']) ){
                             $outs['apages'][$isnid]['body']=$body['body_value'];
                         }
                         

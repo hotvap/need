@@ -706,9 +706,9 @@ function parad0x_changes_form_alter(&$form, &$form_state, $form_id){
                         case 'pdxlocales_source':
                         case 'pdxlocales_target':
                         case 'pdxmatch_redirect': //
-                        case 'pdxmenu_custom':
-                        case 'pdxmenu_links':
-                        case 'pdxmenu_router':
+//                        case 'pdxmenu_custom':
+//                        case 'pdxmenu_links':
+//                        case 'pdxmenu_router':
                         case 'pdxnode_type':
                         case 'pdxrole':
                         case 'pdxrole_permission':
