@@ -761,7 +761,8 @@ function pdxcat_catalog($ispath, $cat=0, $brand=0, $tags=0, $filter=array(), $so
         break;
     default:
         $sort='created';
-        $sqlsort=' order by n.sticky DESC, n.created DESC';
+//        $sqlsort=' order by n.sticky DESC, n.created DESC';
+        $sqlsort=' order by n.created DESC';
         break;
     }
 
@@ -862,8 +863,11 @@ function pdxcat_catalog($ispath, $cat=0, $brand=0, $tags=0, $filter=array(), $so
         
         $out.= '<div class="clear">&nbsp;</div>';
         
-    }    
+    }
     
+    if( $cat>0 ){
+        $out.='<section id="block_rec_items_cat" class="cat_'.$cat.'_'.$brand.'_'.$tags.'_'.$celebration.'">test</section>';
+    }
     
     $ares=db_query($sqlcount);
     $ares=$ares->fetchAssoc();

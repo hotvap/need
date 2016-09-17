@@ -306,6 +306,9 @@ jQuery(document).ready(function($){
     }
 
     
+    if( jQuery('#block_rec_items_cat').length ){
+        jQuery.post(Drupal.settings.basePath + 'addinline.php', { id: 9, city: curCity, data: jQuery('#block_rec_items_cat').attr('class') }, function( data ) { jQuery('#block_rec_items_cat').html(data); } );
+    }
     if( jQuery('#block_rec_items').length ){
         jQuery('#block_rec_items').load(Drupal.settings.basePath + 'html/rec_'+curCity+'.htm#start?r='+(new Date).getTime(), function() { } );
     }

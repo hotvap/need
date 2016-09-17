@@ -134,6 +134,50 @@ if( isset( $_REQUEST['id'] ) and is_numeric($_REQUEST['id']) ){
             echo '</div></div></div></div>';
         }
         break;
+    case 9: //рекомендуемые объявления в разделах каталога
+        if( isset( $_REQUEST['city'] ) and is_numeric($_REQUEST['city']) and isset($_REQUEST['data']) and strlen($_REQUEST['data']) ){
+            $_REQUEST['data']=str_replace('cat_', '', $_REQUEST['data']);
+            $_REQUEST['data']=explode('_', $_REQUEST['data']);
+            if( isset($_REQUEST['data']) and is_array($_REQUEST['data']) and count($_REQUEST['data'])==4 and is_numeric($_REQUEST['data'][0]) and $_REQUEST['data'][0]>0 and is_numeric($_REQUEST['data'][1]) and is_numeric($_REQUEST['data'][2]) and is_numeric($_REQUEST['data'][3]) ){
+                $anids=array();
+                require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
+                drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
+                
+                $sqlinner='';
+                $sqlwhere='';
+                if( $_REQUEST['data'][2]>0 ){
+                    $sqlinner.=' inner join {field_data_field_tags} as ft on (n.nid=ft.entity_id and ft.entity_type=\'node\')';
+                    $sqlwhere.=' and ft.field_tags_tid='.$_REQUEST['data'][2];
+                }elseif( $_REQUEST['data'][1]>0 ){
+                    $sqlinner.=' inner join {field_data_field_subpart} as fs on (n.nid=fs.entity_id and fs.entity_type=\'node\')';
+                    $sqlwhere.=' and fs.field_subpart_tid='.$_REQUEST['data'][1];
+                }
+                if( $_REQUEST['data'][3]>0 ){
+                    $sqlinner.=' inner join {field_data_field_celebration} as fc on (n.nid=fc.entity_id and fc.entity_type=\'node\')';
+                    $sqlwhere.=' and fc.field_celebration_tid='.$_REQUEST['data'][3];
+                }
+                $sql='select n.nid from {node} as n inner join {field_data_taxonomy_catalog} as t on (n.nid=t.entity_id and t.entity_type=\'node\') left join {field_data_field_delete} as fd on (n.nid=fd.entity_id and fd.entity_type=\'node\') left join {field_data_field_block} as fb on (n.nid=fb.entity_id and fb.entity_type=\'node\')'.$sqlinner.' where t.taxonomy_catalog_tid='.$_REQUEST['data'][0].' and n.status=1 and n.type=\'item\' and ( fd.field_delete_value IS NULL or fd.field_delete_value=0 ) and ( fb.field_block_value IS NULL or fb.field_block_value=0 ) '.$sqlwhere.' order by RAND() limit 0, 4';
+                $ares=db_query($sql);
+                while( $are=$ares->fetchAssoc() ){
+                    if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/item/'.$are['nid']) and filesize('pdxcache/'.$_SERVER['HTTP_HOST'].'/item/'.$are['nid']) ){
+                        $anids[]='<div class="views-row">'.file_get_contents('pdxcache/'.$_SERVER['HTTP_HOST'].'/item/'.$are['nid']).'</div>';
+                    }else{
+                        if( function_exists('pdxgetmyitem') ){
+                            $anids[]='<div class="views-row">'.pdxgetmyitem($are['nid']).'</div>';
+                        }
+                    }
+                }
+                
+                if( isset($anids) and is_array($anids) and count($anids) ){
+                    echo '<div class="block_rec_items_catis">';
+                    echo implode('', $anids);
+                    echo '</div>';
+                    echo '<script type="text/javascript"> preparecurrency(); addadmuser(); updateswiperitem(); </script>';
+                }
+                
+            }
+        }
+        break;
     case 6: //рекомендуемые объявления
         if( isset( $_REQUEST['city'] ) and is_numeric($_REQUEST['city']) ){
             $connect=0;

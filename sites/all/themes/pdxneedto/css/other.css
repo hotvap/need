@@ -4525,6 +4525,10 @@ table.mycartshow .del{
     top: 0px;
     z-index: 33;
 }
+    .block_rec_items_catis{
+        margin: 33px 0 11px 0;
+    }
+
 
 @media screen and (max-width: 1021px) {
     .status_item{
