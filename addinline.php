@@ -156,7 +156,7 @@ if( isset( $_REQUEST['id'] ) and is_numeric($_REQUEST['id']) ){
                     $sqlinner.=' inner join {field_data_field_celebration} as fc on (n.nid=fc.entity_id and fc.entity_type=\'node\')';
                     $sqlwhere.=' and fc.field_celebration_tid='.$_REQUEST['data'][3];
                 }
-                $sql='select n.nid from {node} as n inner join {field_data_taxonomy_catalog} as t on (n.nid=t.entity_id and t.entity_type=\'node\') left join {field_data_field_delete} as fd on (n.nid=fd.entity_id and fd.entity_type=\'node\') left join {field_data_field_block} as fb on (n.nid=fb.entity_id and fb.entity_type=\'node\')'.$sqlinner.' where t.taxonomy_catalog_tid='.$_REQUEST['data'][0].' and n.status=1 and n.type=\'item\' and ( fd.field_delete_value IS NULL or fd.field_delete_value=0 ) and ( fb.field_block_value IS NULL or fb.field_block_value=0 ) '.$sqlwhere.' order by RAND() limit 0, 4';
+                $sql='select n.nid from {node} as n inner join {field_data_taxonomy_catalog} as t on (n.nid=t.entity_id and t.entity_type=\'node\') left join {field_data_field_delete} as fd on (n.nid=fd.entity_id and fd.entity_type=\'node\') left join {field_data_field_block} as fb on (n.nid=fb.entity_id and fb.entity_type=\'node\')'.$sqlinner.' where t.taxonomy_catalog_tid='.$_REQUEST['data'][0].' and n.status=1 and n.sticky=1 and n.type=\'item\' and ( fd.field_delete_value IS NULL or fd.field_delete_value=0 ) and ( fb.field_block_value IS NULL or fb.field_block_value=0 ) '.$sqlwhere.' order by RAND() limit 0, 4';
                 $ares=db_query($sql);
                 while( $are=$ares->fetchAssoc() ){
                     if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/item/'.$are['nid']) and filesize('pdxcache/'.$_SERVER['HTTP_HOST'].'/item/'.$are['nid']) ){
@@ -170,8 +170,10 @@ if( isset( $_REQUEST['id'] ) and is_numeric($_REQUEST['id']) ){
                 
                 if( isset($anids) and is_array($anids) and count($anids) ){
                     echo '<div class="block_rec_items_catis">';
+                    echo '<div class="postblockover"><div class="content"><div class="view view-rec-new view-id-rec_new view-display-id-item"><div class="view-content">';
                     echo implode('', $anids);
                     echo '</div>';
+                    echo '</div></div></div></div>';
                     echo '<script type="text/javascript"> preparecurrency(); addadmuser(); updateswiperitem(); </script>';
                 }
                 
