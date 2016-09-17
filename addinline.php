@@ -145,18 +145,22 @@ if( isset( $_REQUEST['id'] ) and is_numeric($_REQUEST['id']) ){
                 
                 $sqlinner='';
                 $sqlwhere='';
+                $limit=4;
                 if( $_REQUEST['data'][2]>0 ){
                     $sqlinner.=' inner join {field_data_field_tags} as ft on (n.nid=ft.entity_id and ft.entity_type=\'node\')';
                     $sqlwhere.=' and ft.field_tags_tid='.$_REQUEST['data'][2];
+                    $limit=3;
                 }elseif( $_REQUEST['data'][1]>0 ){
                     $sqlinner.=' inner join {field_data_field_subpart} as fs on (n.nid=fs.entity_id and fs.entity_type=\'node\')';
                     $sqlwhere.=' and fs.field_subpart_tid='.$_REQUEST['data'][1];
+                    $limit=3;
                 }
                 if( $_REQUEST['data'][3]>0 ){
                     $sqlinner.=' inner join {field_data_field_celebration} as fc on (n.nid=fc.entity_id and fc.entity_type=\'node\')';
                     $sqlwhere.=' and fc.field_celebration_tid='.$_REQUEST['data'][3];
                 }
-                $sql='select n.nid from {node} as n inner join {field_data_taxonomy_catalog} as t on (n.nid=t.entity_id and t.entity_type=\'node\') left join {field_data_field_delete} as fd on (n.nid=fd.entity_id and fd.entity_type=\'node\') left join {field_data_field_block} as fb on (n.nid=fb.entity_id and fb.entity_type=\'node\')'.$sqlinner.' where t.taxonomy_catalog_tid='.$_REQUEST['data'][0].' and n.status=1 and n.sticky=1 and n.type=\'item\' and ( fd.field_delete_value IS NULL or fd.field_delete_value=0 ) and ( fb.field_block_value IS NULL or fb.field_block_value=0 ) '.$sqlwhere.' order by RAND() limit 0, 3';
+                
+                $sql='select n.nid from {node} as n inner join {field_data_taxonomy_catalog} as t on (n.nid=t.entity_id and t.entity_type=\'node\') left join {field_data_field_delete} as fd on (n.nid=fd.entity_id and fd.entity_type=\'node\') left join {field_data_field_block} as fb on (n.nid=fb.entity_id and fb.entity_type=\'node\')'.$sqlinner.' where t.taxonomy_catalog_tid='.$_REQUEST['data'][0].' and n.status=1 and n.sticky=1 and n.type=\'item\' and ( fd.field_delete_value IS NULL or fd.field_delete_value=0 ) and ( fb.field_block_value IS NULL or fb.field_block_value=0 ) '.$sqlwhere.' order by RAND() limit 0, '.$limit;
                 $ares=db_query($sql);
                 while( $are=$ares->fetchAssoc() ){
                     if( file_exists('pdxcache/'.$_SERVER['HTTP_HOST'].'/item/'.$are['nid']) and filesize('pdxcache/'.$_SERVER['HTTP_HOST'].'/item/'.$are['nid']) ){
