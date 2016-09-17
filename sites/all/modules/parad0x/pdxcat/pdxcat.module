@@ -866,7 +866,7 @@ function pdxcat_catalog($ispath, $cat=0, $brand=0, $tags=0, $filter=array(), $so
     }
     
     if( $cat>0 ){
-        $out.='<section id="block_rec_items_cat" class="cat_'.$cat.'_'.$brand.'_'.$tags.'_'.$celebration.'">test</section>';
+        $out.='<section id="block_rec_items_cat" class="cat_'.$cat.'_'.$brand.'_'.$tags.'_'.$celebration.'"></section>';
     }
     
     $ares=db_query($sqlcount);
