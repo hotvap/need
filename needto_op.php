@@ -289,7 +289,7 @@ if( isset( $_REQUEST['op'] ) and is_numeric($_REQUEST['op']) ){
                 $img=str_replace('http://'.$_SERVER['HTTP_HOST'].'/', DRUPAL_ROOT.'/', $img);
                 $img=str_replace('https://'.$_SERVER['HTTP_HOST'].'/', DRUPAL_ROOT.'/', $img);
                 $img=str_replace('http://www.'.$_SERVER['HTTP_HOST'].'/', DRUPAL_ROOT.'/', $img);
-                $img=str_replace('https://www.'.$_SERVER['HTTP_HOST'].'/', DRUPAL_ROOT.'/', $img); $img=str_replace('http://d4zbhil5kxgyr.cloudfront.net/static/needtome/'.PDX_CITY_ID.'/', DRUPAL_ROOT.'/sites/default/files/styles/', $img);
+                $img=str_replace('https://www.'.$_SERVER['HTTP_HOST'].'/', DRUPAL_ROOT.'/', $img); $img=str_replace('http://d15mt731vu6ndj.cloudfront.net/static/needtome/'.PDX_CITY_ID.'/', DRUPAL_ROOT.'/sites/default/files/styles/', $img);
                 if( mb_strpos($img, '?')===false ){}else{
                     $img=mb_substr($img, 0, mb_strpos($img, '?') );
                 }

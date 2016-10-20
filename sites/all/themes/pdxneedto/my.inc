@@ -8,8 +8,8 @@ if( file_exists( DRUPAL_ROOT . '/sites/all/themes/pdxneedto/my_'.$_SERVER['HTTP_
     require_once DRUPAL_ROOT . '/sites/all/themes/pdxneedto/my_mn.needto.me.inc';
 }
 
-define('PDX_S3_1', 'AKIAJZBFGP6M7K354GTQ');
-define('PDX_S3_2', 'n3G35KKdug3H4IhYqDS5Y9WtzGgsZfqKneRufqFH');
+define('PDX_S3_1', 'AKIAIOOAEPFHIEZPVPPA');
+define('PDX_S3_2', '3SOPK1kAYXJV8c0oEGJcWH07WJC7tlXUJeQoOUr4');
 define('PDX_URL_HELP', 'help.needto.me');
 define('PDX_PROFILE', serialize(array( 'field_apply3'=>1, 'field_bday'=>1, 'field_gold'=>1, 'field_name'=>1, 'field_notemail'=>1, 'field_phones'=>1, 'field_sex'=>1, 'field_skype'=>1, 'field_url_fb'=>1, 'field_url_in'=>1, 'field_url_site'=>1, 'field_url_vk'=>1, 'field_url_yt'=>1, 'field_who'=>1, 'field_company_name'=>1, 'mail'=>1, 'name'=>1, 'uid'=>1, 'created'=>1, 'access'=>1, 'login'=>1, 'status'=>1, 'init'=>1, 'roles'=>1, 'data'=>1 )) );
 

@@ -793,7 +793,7 @@ function pdxcat_catalog($ispath, $cat=0, $brand=0, $tags=0, $filter=array(), $so
                 if( is_numeric(arg(2)) and arg(2)==$tid['tid'] ){
                     $isyes.= ' active';
                 }
-                $isyes.= '" href="'.url(PDXCAT_NAME.'/'.arg(1).'/'.$tid['tid'], array('absolute'=>TRUE)).'"><span class="image"><img alt="" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.$tid['tid'].'.png" /></span><span class="ttl partis'.$tid['tid'].' admlnk pdxobj'.$tid['tid'].' pdxot pdxpi">'.$tid['name'].'</span></a></div>';
+                $isyes.= '" href="'.url(PDXCAT_NAME.'/'.arg(1).'/'.$tid['tid'], array('absolute'=>TRUE)).'"><span class="image"><img alt="" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/part/i'.$tid['tid'].'.png" /></span><span class="ttl partis'.$tid['tid'].' admlnk pdxobj'.$tid['tid'].' pdxot pdxpi">'.$tid['name'].'</span></a></div>';
             }
             if( isset($isyes) and strlen($isyes) ){
                 $out.= '<div class="headtax">'.$isyes;
@@ -837,7 +837,7 @@ function pdxcat_catalog($ispath, $cat=0, $brand=0, $tags=0, $filter=array(), $so
                             }else{
                                 $isurl=PDXCAT_NAME.'/'.$part;
                             }
-                            $out.= '<div class="headcatis headcatis'.$part.'"><a class="aheadcatis" href="'.url($isurl, array('absolute'=>TRUE)).'"><span class="image"><img alt="" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.$part.'.png" /></span><span class="ttl partis'.$part.'">'.$num['name'].'</span></a></div>';
+                            $out.= '<div class="headcatis headcatis'.$part.'"><a class="aheadcatis" href="'.url($isurl, array('absolute'=>TRUE)).'"><span class="image"><img alt="" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/part/i'.$part.'.png" /></span><span class="ttl partis'.$part.'">'.$num['name'].'</span></a></div>';
                         }
                     }
                     

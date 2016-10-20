@@ -90,9 +90,9 @@ function file_compress($file_name,$file_input) {
 	}else{
         if( isset($_SERVER['HTTP_HOST']) and strlen( $_SERVER['HTTP_HOST'] ) and strpos($_SERVER['HTTP_HOST'], 'site')===false and strpos($_SERVER['HTTP_HOST'], 'localhost')===false and strpos($_SERVER['HTTP_HOST'], '.loc')===false ){
 
-            $fl = str_replace('url(../', 'url(http://d4zbhil5kxgyr.cloudfront.net/', $fl);
-            $fl = str_replace('url(\'../', 'url(\'http://d4zbhil5kxgyr.cloudfront.net/', $fl);
-            $fl = str_replace("url('/sites/all/libraries/img/", "url('http://d4zbhil5kxgyr.cloudfront.net/static/img/", $fl);
+            $fl = str_replace('url(../', 'url(http://d15mt731vu6ndj.cloudfront.net/', $fl);
+            $fl = str_replace('url(\'../', 'url(\'http://d15mt731vu6ndj.cloudfront.net/', $fl);
+            $fl = str_replace("url('/sites/all/libraries/img/", "url('http://d15mt731vu6ndj.cloudfront.net/static/img/", $fl);
         }
 		$fl = preg_replace('/\n\r|\r\n|\n|\r|\t| {2,}/', '', $fl);
 //		$fl = CssMin::minify($fl);			//minify css

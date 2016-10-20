@@ -2,8 +2,8 @@
 //variable_set('pdxnorest', 1);
 if( isset($_SERVER['HTTP_HOST']) and strlen( $_SERVER['HTTP_HOST'] ) and strpos($_SERVER['HTTP_HOST'], 'site')===false and strpos($_SERVER['HTTP_HOST'], 'localhost')===false ){
 //    define('PDX_IMGPATH', 'http://needtominsk.s3.amazonaws.com');
-    define('PDX_IMGPATH', 'http://d4zbhil5kxgyr.cloudfront.net');
-    define('PDX_JSPATH', 'http://d4zbhil5kxgyr.cloudfront.net/static/js');
+    define('PDX_IMGPATH', 'http://d15mt731vu6ndj.cloudfront.net');
+    define('PDX_JSPATH', 'http://d15mt731vu6ndj.cloudfront.net/static/js');
     define('PDX_ISLOCAL', 0);
 }else{
     define('PDX_IMGPATH', $GLOBALS['base_url'].'/sites/all/themes/pdxneedto');
@@ -844,29 +844,29 @@ function pdxgettexts($type){
         break;
     case 'press':
     $text.='<div class="block_right"><h3>Материалы для прессы</h3><p>Все фотографии, использованные в представленных рекламных материалах, были взяты с <noindex><a rel="nofollow" target="_blank" href="http://ru.freeimages.com/license">бесплатного фотостока</a></noindex>. Их разрешено использовать, в том числе, в прессе.</p><div class="imgbox">
-    <div class="imgbox_line"><img width="143" height="111" alt="Не мучайся! Путешествуй налегке" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smauditory2.png" /><div class="imgbox_line_right"><em>Не мучайся! Путешествуй налегке</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory2.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory2.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="111" alt="Не мучайся! Путешествуй налегке" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smauditory2.png" /><div class="imgbox_line_right"><em>Не мучайся! Путешествуй налегке</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory2.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory2.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
     
-    <div class="imgbox_line"><img width="143" height="111" alt="Не тормози! Реализуй свои идеи" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smauditory3.png" /><div class="imgbox_line_right"><em>Не тормози! Реализуй свои идеи</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory3.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory3.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="111" alt="Не тормози! Реализуй свои идеи" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smauditory3.png" /><div class="imgbox_line_right"><em>Не тормози! Реализуй свои идеи</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory3.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory3.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
     
-    <div class="imgbox_line"><img width="143" height="111" alt="Ремонтируй! Без затрат и вложений" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smauditory4.png" /><div class="imgbox_line_right"><em>Ремонтируй! Без затрат и вложений</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory4.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory4.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="111" alt="Ремонтируй! Без затрат и вложений" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smauditory4.png" /><div class="imgbox_line_right"><em>Ремонтируй! Без затрат и вложений</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory4.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory4.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
     
-    <div class="imgbox_line"><img width="143" height="111" alt="Ремонтируй! Без затрат и вложений" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smauditory4_1.png" /><div class="imgbox_line_right"><em>Ремонтируй! Без затрат и вложений</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory4_1.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory4_1.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="111" alt="Ремонтируй! Без затрат и вложений" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smauditory4_1.png" /><div class="imgbox_line_right"><em>Ремонтируй! Без затрат и вложений</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory4_1.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory4_1.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
     
-    <div class="imgbox_line"><img width="143" height="111" alt="Не экономь на счастье родных" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smauditory5.png" /><div class="imgbox_line_right"><em>Не экономь на счастье родных</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory5.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory5.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="111" alt="Не экономь на счастье родных" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smauditory5.png" /><div class="imgbox_line_right"><em>Не экономь на счастье родных</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory5.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory5.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
     
-    <div class="imgbox_line"><img width="143" height="111" alt="Найди себя! Реализуй свои мечты" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smauditory6.png" /><div class="imgbox_line_right"><em>Найди себя! Реализуй свои мечты</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory6.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory6.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="111" alt="Найди себя! Реализуй свои мечты" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smauditory6.png" /><div class="imgbox_line_right"><em>Найди себя! Реализуй свои мечты</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory6.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory6.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
     
-    <div class="imgbox_line"><img width="143" height="111" alt="Нечего надеть? Одежда на любой случай жизни" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smauditory7.png" /><div class="imgbox_line_right"><em>Нечего надеть? Одежда на любой случай жизни</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory7.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory7.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="111" alt="Нечего надеть? Одежда на любой случай жизни" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smauditory7.png" /><div class="imgbox_line_right"><em>Нечего надеть? Одежда на любой случай жизни</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory7.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory7.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
     
-    <div class="imgbox_line"><img width="143" height="111" alt="Развлекайся! Без существенных затрат" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smauditory8.png" /><div class="imgbox_line_right"><em>Развлекайся! Без существенных затрат</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory8.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/auditory8.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="111" alt="Развлекайся! Без существенных затрат" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smauditory8.png" /><div class="imgbox_line_right"><em>Развлекайся! Без существенных затрат</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory8.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/auditory8.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
     
-    <div class="imgbox_line"><img width="143" height="151" alt="Разделы сайта" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smcat.png" /><div class="imgbox_line_right"><em>Разделы сайта</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/cat.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/cat.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="151" alt="Разделы сайта" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smcat.png" /><div class="imgbox_line_right"><em>Разделы сайта</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/cat.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/cat.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
 
-    <div class="imgbox_line"><img width="143" height="143" alt="Сокращенное лого сайта" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smicobg.png" /><div class="imgbox_line_right"><em>Сокращенное лого сайта</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/icobg.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/icobg.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="143" alt="Сокращенное лого сайта" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smicobg.png" /><div class="imgbox_line_right"><em>Сокращенное лого сайта</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/icobg.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/icobg.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
 
-    <div class="imgbox_line"><img width="143" height="151" alt="Логотип плюс разделы сайта" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smsrc512x512.png" /><div class="imgbox_line_right"><em>Логотип плюс разделы сайта 512x512 пикселей</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/src512x512.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/src512x512.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="151" alt="Логотип плюс разделы сайта" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smsrc512x512.png" /><div class="imgbox_line_right"><em>Логотип плюс разделы сайта 512x512 пикселей</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/src512x512.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/src512x512.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
 
-    <div class="imgbox_line"><img width="143" height="73" alt="Логотип плюс разделы сайта и мотиваторы" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/press/smsrc1000x512.png" /><div class="imgbox_line_right"><em>Логотип плюс разделы сайта и мотиваторы 1000x512 пикселей</em><br />Скачать:<ul><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/src1000x512.png">максимальное качество</a></li><li><a target="_blank" href="http://d4zbhil5kxgyr.cloudfront.net/static/press/src1000x512.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
+    <div class="imgbox_line"><img width="143" height="73" alt="Логотип плюс разделы сайта и мотиваторы" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/press/smsrc1000x512.png" /><div class="imgbox_line_right"><em>Логотип плюс разделы сайта и мотиваторы 1000x512 пикселей</em><br />Скачать:<ul><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/src1000x512.png">максимальное качество</a></li><li><a target="_blank" href="http://d15mt731vu6ndj.cloudfront.net/static/press/src1000x512.jpg">для веб</a></li></ul></div><div class="clear">&nbsp;</div></div>
     
     </div></div><div class="block_left" style="padding-top: 21px;">';
         $text.='<p>Хотите написать о нас статью? Предложить сотрудничество? Задать какие-либо вопросы? Мы открыты для любого сотрудничества, и с радостью рассмотрим Ваше предложение.</p>';
@@ -886,7 +886,7 @@ function pdxseparate_catalog($source_content = NULL){
         $source_content.= '<div class="catalog_item">';
         
         $source_content.= '<div class="isttl"><a href="/'.PDXCAT_NAME.'/'.$cat['tid'].'">';
-        $source_content.= '<span class="image"><img class="lazy" alt="'.$cat['name'].'" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.$cat['tid'].'.png" /></span>';
+        $source_content.= '<span class="image"><img class="lazy" alt="'.$cat['name'].'" data-original="http://d15mt731vu6ndj.cloudfront.net/static/part/i'.$cat['tid'].'.png" /></span>';
         $source_content.= '<span class="ttl admlnk pdxobj'.$cat['tid'].' pdxot partis'.$cat['tid'].'">'.$cat['name'].'</span>';
         $source_content.= '</a></div>';
     
@@ -4768,7 +4768,7 @@ $out.='" ></div>';
     height: 31px;
     overflow: hidden;
     padding: 3px 7px;
-    background: transparent url(\'http://d4zbhil5kxgyr.cloudfront.net/img/bg_trans2.png\') repeat left top;
+    background: transparent url(\'http://d15mt731vu6ndj.cloudfront.net/img/bg_trans2.png\') repeat left top;
     display: block;
     font-size: 10pt;
     text-align: center;
@@ -4954,7 +4954,7 @@ function getaddtocat(){
         if( isset($name['name']) and strlen($name['name']) ){
                     
             $outis.= '<div class="submnu_ttl partis'.$term['tid'].'">';
-            $outis.= '<img class="ttlimg" alt="" src="http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.$term['tid'].'.png" />';
+            $outis.= '<img class="ttlimg" alt="" src="http://d15mt731vu6ndj.cloudfront.net/static/part/i'.$term['tid'].'.png" />';
                     
             $outis.= '<a href="'.$GLOBALS['base_url'].'/'.PDXCAT_NAME.'/'.$term['tid'].'">'.$name['name'].'</a></div>';
         }
@@ -5027,7 +5027,7 @@ function getaddtocat(){
             if( isset($term['name']) and strlen($term['name']) ){
 
                 $out.= '<div class="submnu_ttl partis'.$term['tid'].'">';
-                $out.= '<img class="ttlimg" alt="" src="http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.$term['tid'].'.png" />';
+                $out.= '<img class="ttlimg" alt="" src="http://d15mt731vu6ndj.cloudfront.net/static/part/i'.$term['tid'].'.png" />';
                 
                 $out.= '<a href="'.$GLOBALS['base_url'].'/node/add/item?part='.$term['tid'].'">'.$term['name'].'</a></div>';
             }

@@ -538,9 +538,9 @@ echo '<div id="site_title">';
 
                 if( isset($_SESSION['pdxpdx_par_tid']) and is_numeric($_SESSION['pdxpdx_par_tid']) and isset($_SESSION['pdxpdx_par_vid']) ){
                     if($_SESSION['pdxpdx_par_vid']==2 ){
-                        echo '<img class="ttlimg lazy" alt="" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.arg(1).'.png" />';
+                        echo '<img class="ttlimg lazy" alt="" data-original="http://d15mt731vu6ndj.cloudfront.net/static/part/i'.arg(1).'.png" />';
                     }elseif( $_SESSION['pdxpdx_par_vid']==8 or $_SESSION['pdxpdx_par_vid']==1){
-                        echo '<img class="ttlimg lazy" alt="" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.arg(2).'.png" />';
+                        echo '<img class="ttlimg lazy" alt="" data-original="http://d15mt731vu6ndj.cloudfront.net/static/part/i'.arg(2).'.png" />';
                     }
                 }
 
@@ -676,7 +676,7 @@ if(isset($messages) and strlen($messages)){
                 $soc_desc= 'Каталог полезных вещей по выбранной тематике, которые вы можете взять в аренду.';
             }
             
-            echo pdxgetshare($soc_title, $soc_desc, 'http://d4zbhil5kxgyr.cloudfront.net/static/ipart/i'. $_SESSION['pdxpdx_par_tid']. '.jpg');
+            echo pdxgetshare($soc_title, $soc_desc, 'http://d15mt731vu6ndj.cloudfront.net/static/ipart/i'. $_SESSION['pdxpdx_par_tid']. '.jpg');
         }
         
  ?>
@@ -723,7 +723,7 @@ if( drupal_is_front_page() ){
                 foreach( $am as $part2 => $ttl ){
                     $path=path_load(PDXCAT_NAME.'/'.$part1.'/'.$part2);
                     if(strlen($path['alias'])) $path=$path['alias']; else $path=PDXCAT_NAME.'/'.$part1.'/'.$part2;
-                    echo '<div class="headcatis headcatis'.$part2.'"><a class="aheadcatis" href="/'.$path.'"><span class="image"><img alt="" class="lazy" data-original="http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.$part2.'.png" /></span><span class="ttl partis'.$part2.'">'.$ttl.'</span></a></div>';
+                    echo '<div class="headcatis headcatis'.$part2.'"><a class="aheadcatis" href="/'.$path.'"><span class="image"><img alt="" class="lazy" data-original="http://d15mt731vu6ndj.cloudfront.net/static/part/i'.$part2.'.png" /></span><span class="ttl partis'.$part2.'">'.$ttl.'</span></a></div>';
                 }
             }
         }

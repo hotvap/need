@@ -363,7 +363,7 @@ if( !isset($out) or !is_numeric($out) or (time()-$out)>291 ){
                     //$s3->putObject($out, $bucketName, 'static/needtome/'.PDX_CITY_ID.'/'.$file2, S3::ACL_PUBLIC_READ);
                     $s3->putObjectFile( DRUPAL_ROOT.'/sites/default/files/styles/'.$file2 , $bucketName, 'static/needtome/'.PDX_CITY_ID.'/'.$file2, S3::ACL_PUBLIC_READ);
                     $fp = fopen('pdxcache/s3/ok/'.$file, 'w');
-                    fwrite($fp, 'http://d4zbhil5kxgyr.cloudfront.net/static/needtome/'.PDX_CITY_ID.'/'.$file2);
+                    fwrite($fp, 'http://d15mt731vu6ndj.cloudfront.net/static/needtome/'.PDX_CITY_ID.'/'.$file2);
                     fclose($fp);
                     unlink('pdxcache/s3/wait/'.$file);
                 }

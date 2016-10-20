@@ -667,7 +667,7 @@ global $user; if(isset($user->roles[3]) or isset($user->roles[4])){
   }
 */
 if( !PDX_ISLOCAL ){
-    $vars['logo']='http://d4zbhil5kxgyr.cloudfront.net/static/needtome/logo.png';
+    $vars['logo']='http://d15mt731vu6ndj.cloudfront.net/static/needtome/logo.png';
 }
   $vars['imagelogo'] = theme('image', array(
     'path' => $vars['logo'],
@@ -735,7 +735,7 @@ if(drupal_is_front_page()){}else{
             '#tag' => 'meta',
             '#attributes' => array(
                 'property' => 'og:image',
-                'content' => 'http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.arg(2).'.png',
+                'content' => 'http://d15mt731vu6ndj.cloudfront.net/static/part/i'.arg(2).'.png',
             ),
         );
         drupal_add_html_head($data, 'ogimage');
@@ -743,7 +743,7 @@ if(drupal_is_front_page()){}else{
             '#tag' => 'meta',
             '#attributes' => array(
                 'name' => 'twitter:image:src',
-                'content' => 'http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.arg(2).'.png',
+                'content' => 'http://d15mt731vu6ndj.cloudfront.net/static/part/i'.arg(2).'.png',
             ),
         );
         drupal_add_html_head($data, 'twitterimage');
@@ -752,7 +752,7 @@ if(drupal_is_front_page()){}else{
             '#tag' => 'meta',
             '#attributes' => array(
                 'property' => 'og:image',
-                'content' => 'http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.arg(1).'.png',
+                'content' => 'http://d15mt731vu6ndj.cloudfront.net/static/part/i'.arg(1).'.png',
             ),
         );
         drupal_add_html_head($data, 'ogimage');
@@ -760,7 +760,7 @@ if(drupal_is_front_page()){}else{
             '#tag' => 'meta',
             '#attributes' => array(
                 'name' => 'twitter:image:src',
-                'content' => 'http://d4zbhil5kxgyr.cloudfront.net/static/part/i'.arg(1).'.png',
+                'content' => 'http://d15mt731vu6ndj.cloudfront.net/static/part/i'.arg(1).'.png',
             ),
         );
         drupal_add_html_head($data, 'twitterimage');
