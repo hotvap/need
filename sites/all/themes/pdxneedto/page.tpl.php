@@ -865,7 +865,7 @@ if( isset($out) and strlen($out) ){
     echo '<noindex>'.$out.'</noindex>';
 }
 
-?></div><div class="sm copy"><noindex>© <a title="Разработка и поддержка http://soonmy.com" rel="nofollow" target="_blank" href="http://soonmy.com">ФОП Клименко Р.А.</a> разработка и поддержка. <a target="_blank" rel="nofollow" href="http://needto.me/dev.html">Нужен сайт?</a></noindex></div>
+?></div><div class="sm copy"><noindex>© ИП Путилин А.В., 2016</noindex></div>
 <?php
 echo '<div><noindex>';
 if( defined('PDX_APP_ANDROID') and strlen(PDX_APP_ANDROID) ){
